@@ -1,7 +1,9 @@
 import { type OperatorGenerator } from "../operators/types.ts";
 
 export function toSingle<T>(generator: OperatorGenerator<T>) {
-  const result = generator().next();
+  let done = false;
+  const result = generator(() => done).next();
+  done = true;
   if (result.done) {
     throw new Error("No items in generator");
   }

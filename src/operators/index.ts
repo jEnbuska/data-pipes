@@ -2,7 +2,6 @@ import { min } from "./min.ts";
 import { max } from "./max.ts";
 import { find } from "./find.ts";
 import { some } from "./some.ts";
-import { toArray } from "../consumers/toArray.ts";
 import { filter } from "./filter.ts";
 import { defaultIfEmpty } from "./defaultIfEmpty.ts";
 import { distinctBy } from "./distinctBy.ts";
@@ -28,7 +27,6 @@ export const operators = {
   max,
   find,
   some,
-  toArray,
   filter,
   defaultIfEmpty,
   distinctBy,

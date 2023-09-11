@@ -3,13 +3,15 @@ import pipe from "./pipe.ts";
 const p = pipe(1)
   .map((x) => x * 2)
   .toSingle();
-console.log("p", p);
+
 const value = pipe(function* () {
   yield 1;
   yield 2;
   yield 3;
 })
   .map((x) => x * 2)
+  .forEach((x) => console.log("x", x))
+  .takeWhile((x) => x < 4)
   .toArray();
 
 console.log("value", value);

@@ -37,6 +37,7 @@ export type Chainable<T> = {
   every(fn: (next: T) => boolean): Chainable<boolean>;
   unflat(): Chainable<T[]>;
   reverse(): Chainable<T>;
+  toGenerator(): Generator<T>;
 };
 
 export function chainable<T>(
@@ -120,7 +121,10 @@ export function chainable<T>(
       return consumers.toSingle(generator);
     },
     toArray() {
-      return operators.toArray(generator);
+      return consumers.toArray(generator);
+    },
+    toGenerator(): Generator<T> {
+      return consumers.toGenerator(generator);
     },
   };
 }
