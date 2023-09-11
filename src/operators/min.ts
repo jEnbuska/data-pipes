@@ -1,10 +1,21 @@
 import { type OperatorGenerator } from "./types.ts";
-import { yieldMin } from "./utils.ts";
-import { toArray } from "../consumers/toArray.ts";
 import { chainable } from "../chainable.ts";
 
-export const min =
-  <T>(generator: OperatorGenerator<T>) => (fn: (next: T) => number) =>
-    chainable(function* () {
-      yield* yieldMin(toArray(generator), (item) => fn(item));
+export function min<T>(generator: OperatorGenerator<T>) {
+  return (callback: (next: T) => number) =>
+    chainable(function* (isDone) {
+      let currentMin: undefined | number = undefined;
+      let current: undefined | T = undefined;
+      for (const next of generator(isDone)) {
+        if (isDone()) return;
+        const value = callback(next);
+
+        if (currentMin === undefined || value < currentMin) {
+          current = next;
+          currentMin = value;
+        }
+      }
+      if (currentMin === undefined) return;
+      yield current as T;
     });
+}

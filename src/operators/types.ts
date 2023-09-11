@@ -1,2 +1,2 @@
-export type OperatorGenerator<T> = () => Generator<T>;
+export type OperatorGenerator<T> = (isDone: () => boolean) => Generator<T>;
 export type AsyncOperatorGenerator<T> = () => AsyncIterableIterator<T>;

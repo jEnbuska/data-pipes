@@ -1,12 +1,14 @@
 import { type OperatorGenerator } from "./types.ts";
 import { chainable } from "../chainable.ts";
 
-export const filter =
-  <T>(generator: OperatorGenerator<T>) => (predicate: (next: T) => boolean) =>
-    chainable(function* () {
-      for (const next of generator()) {
+export function filter<T>(generator: OperatorGenerator<T>) {
+  return (predicate: (next: T) => boolean) =>
+    chainable(function* (isDone) {
+      for (const next of generator(isDone)) {
+        if (isDone()) return;
         if (predicate(next)) {
           yield next;
         }
       }
     });
+}

@@ -30,7 +30,7 @@ function isArray(source: unknown): source is unknown[] {
 }
 
 export function fromSingle<T>(source: T): Chainable<T> {
-  return chainable(function* () {
+  return chainable(function* (isDone) {
     yield source;
   });
 }

@@ -1,14 +1,14 @@
-import {
-  type AsyncOperatorGenerator,
-  type OperatorGenerator,
-} from "./types.ts";
+import { type OperatorGenerator } from "./types.ts";
 import { chainable } from "../chainable.ts";
 
-export const some =
-  <T>(generator: OperatorGenerator<T>) => (fn: (next: T) => boolean) => {
-    return chainable(function* () {
-      for (const next of generator()) {
+export function some<T>(generator: OperatorGenerator<T>) {
+  return (fn: (next: T) => boolean) => {
+    return chainable(function* (isDone) {
+      let done = false;
+      for (const next of generator(() => done || isDone())) {
+        if (isDone()) return;
         if (fn(next)) {
+          done = true;
           yield true;
           return;
         }
@@ -16,16 +16,4 @@ export const some =
       yield false;
     });
   };
-
-export const someAsync =
-  <T>(generator: AsyncOperatorGenerator<T>) => (fn: (next: T) => boolean) => {
-    return chainable(async function* () {
-      for await (const next of generator()) {
-        if (fn(next)) {
-          yield true;
-          return;
-        }
-      }
-      yield false;
-    });
-  };
+}
