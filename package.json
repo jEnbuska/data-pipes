@@ -1,0 +1,17 @@
+{
+  "name": "data-pipes",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "bun build ./src/index.ts --minify --outfile=dist/index.js",
+    "test": "bun test",
+    "test:watch": "bun test --watch"
+  },
+  "devDependencies": {
+    "bun-types": "latest",
+    "prettier": "^3.0.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

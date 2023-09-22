@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "./types.ts";
+import { type OperatorGenerator } from "../types.ts";
 import { chainable } from "../chainable.ts";
 
 export function defaultIfEmpty<T>(generator: OperatorGenerator<T>) {

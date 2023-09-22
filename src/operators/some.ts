@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "./types.ts";
+import { type OperatorGenerator } from "../types.ts";
 import { chainable } from "../chainable.ts";
 
 export function some<T>(generator: OperatorGenerator<T>) {
@@ -9,8 +9,7 @@ export function some<T>(generator: OperatorGenerator<T>) {
         if (isDone()) return;
         if (fn(next)) {
           done = true;
-          yield true;
-          return;
+          return yield true;
         }
       }
       yield false;

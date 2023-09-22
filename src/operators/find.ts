@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "./types.ts";
+import { type OperatorGenerator } from "../types.ts";
 import { chainable } from "../chainable.ts";
 
 export function find<T>(generator: OperatorGenerator<T>) {

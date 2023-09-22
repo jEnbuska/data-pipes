@@ -19,8 +19,8 @@ import { takeWhile } from "./takeWhile.ts";
 import { every } from "./every.ts";
 import { flat } from "./flat.ts";
 import { groupBy } from "./groupBy.ts";
-import { unflat } from "./unflat.ts";
 import { reverse } from "./reverse.ts";
+import { unflat } from "./unflat.ts";
 
 export const operators = {
   min,
@@ -43,7 +43,7 @@ export const operators = {
   takeWhile,
   every,
   flat,
-  groupBy,
   unflat,
+  groupBy,
   reverse,
 };

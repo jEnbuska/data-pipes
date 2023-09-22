@@ -16,7 +16,7 @@ const value = pipe(function* () {
 
 console.log("value", value);
 
-const value2 = pipe([1, 2, 3])
+const value2 = pipe<number>([1, 2, 3], 4, 5, [6])
   .map((x) => x * 2)
   .toArray();
 console.log("value2", value2);

@@ -1,11 +1,9 @@
-import { type OperatorGenerator } from "./types.ts";
+import { type OperatorGenerator } from "../types.ts";
 import { chainable } from "../chainable.ts";
 
 const defaultCompare = <T>(a: T, b: T) => a === b;
 export function distinctUntilChanged<T>(generator: OperatorGenerator<T>) {
-  return (
-    compare: (previous: T, current: T) => boolean = defaultCompare,
-  ) => {
+  return (compare: (previous: T, current: T) => boolean = defaultCompare) => {
     return chainable(function* (isDone) {
       let first = true;
       let previous: T;

@@ -1,6 +1,5 @@
-import { type OperatorGenerator } from "./types.ts";
-import { reduce } from "./reduce.ts";
 import { chainable } from "../chainable.ts";
+import { OperatorGenerator } from "../types.ts";
 
 export function unflat<T>(generator: OperatorGenerator<T>) {
   return () => {

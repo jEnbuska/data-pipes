@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "../operators/types.ts";
+import { type OperatorGenerator } from "../types.ts";
 
 export function toSingle<T>(generator: OperatorGenerator<T>) {
   let done = false;

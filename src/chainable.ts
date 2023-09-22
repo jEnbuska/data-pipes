@@ -1,10 +1,11 @@
-import { type OperatorGenerator } from "./operators/types.ts";
+import { type OperatorGenerator } from "./types.ts";
 import { operators } from "./operators/index.ts";
 import { consumers } from "./consumers/index.ts";
 
 export type Chainable<T> = {
   map<R>(fn: (next: T) => R): Chainable<R>;
-  flat<D extends number = 1>(depth?: D): Chainable<FlatArray<T, D>>;
+  flat<D extends number = 1>(depth?: D): Chainable<FlatArray<Array<T>, D>>;
+  unflat<D>(): Chainable<T[]>;
   flatMap<U>(callback: (value: T) => U | readonly U[]): Chainable<readonly U[]>;
   filter(fn: (next: T) => boolean): Chainable<T>;
   reduce<R>(fn: (acc: R, next: T) => R, initialValue: R): Chainable<R>;
@@ -17,6 +18,7 @@ export type Chainable<T> = {
   takeWhile(fn: (next: T) => boolean): Chainable<T>;
   toSingle(): T;
   toArray(): T[];
+  toConsumer(): void;
   sort(compareFn?: (a: T, b: T) => number): Chainable<T>;
   groupBy<K extends keyof unknown>(
     keySelector: (next: T) => K,
@@ -35,7 +37,6 @@ export type Chainable<T> = {
   find(fn: (next: T) => boolean): Chainable<T>;
   some(fn: (next: T) => boolean): Chainable<boolean>;
   every(fn: (next: T) => boolean): Chainable<boolean>;
-  unflat(): Chainable<T[]>;
   reverse(): Chainable<T>;
   toGenerator(): Generator<T>;
 };
@@ -47,9 +48,6 @@ export function chainable<T>(
   return {
     get reverse() {
       return operators.reverse(generator);
-    },
-    get unflat() {
-      return operators.unflat(generator);
     },
     get find() {
       return operators.find(generator);
@@ -77,6 +75,9 @@ export function chainable<T>(
     },
     get flat() {
       return operators.flat(generator);
+    },
+    get unflat() {
+      return operators.unflat(generator);
     },
     get map() {
       return operators.map(generator);
@@ -107,10 +108,10 @@ export function chainable<T>(
     },
     get takeWhile() {
       return operators.takeWhile(generator);
-    }, /*
+    } /*
     get awaitMap() {
       return operators.awaitMap(generator) as unknown;
-    }, */
+    }, */,
     get every() {
       return operators.every(generator);
     },
@@ -123,8 +124,11 @@ export function chainable<T>(
     toArray() {
       return consumers.toArray(generator);
     },
-    toGenerator(): Generator<T> {
+    toGenerator() {
       return consumers.toGenerator(generator);
+    },
+    toConsumer() {
+      return consumers.toConsumer(generator);
     },
   };
 }

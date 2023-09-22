@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "./types.ts";
+import { type OperatorGenerator } from "../types.ts";
 import { chainable } from "../chainable.ts";
 
 export function every<T>(generator: OperatorGenerator<T>) {
@@ -9,8 +9,7 @@ export function every<T>(generator: OperatorGenerator<T>) {
         if (isDone()) return;
         if (!predicate(next)) {
           done = true;
-          yield false;
-          return;
+          return yield false;
         }
       }
       yield true;
