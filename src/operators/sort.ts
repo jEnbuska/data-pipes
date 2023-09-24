@@ -4,8 +4,7 @@ import { chainable } from "../chainable.ts";
 export function sort<T>(generator: OperatorGenerator<T>) {
   return (comparator?: (a: T, b: T) => number) => {
     return chainable(function* () {
-      const [...array] = generator();
-      yield* array.sort(comparator);
+      yield* [...generator()].sort(comparator);
     });
   };
 }

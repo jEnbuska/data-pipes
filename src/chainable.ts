@@ -46,8 +46,8 @@ export function chainable<T>(
   // eslint-disable-middlware-line @typescript-eslint/ban-types
 ): Chainable<T> {
   return {
-    get reverse() {
-      return operators.reverse(generator);
+    reverse() {
+      return chainable(operators.reverse(generator));
     },
     get find() {
       return operators.find(generator);
@@ -85,8 +85,8 @@ export function chainable<T>(
     get flatMap() {
       return operators.flatMap(generator);
     },
-    get filter() {
-      return operators.filter(generator);
+    filter(predicate: (next: T) => boolean) {
+      return chainable(operators.filter(generator, predicate));
     },
     get reduce() {
       return operators.reduce(generator);
@@ -103,8 +103,8 @@ export function chainable<T>(
     get take() {
       return operators.take(generator);
     },
-    get count() {
-      return operators.count(generator);
+    count() {
+      return chainable(operators.count(generator));
     },
     get takeWhile() {
       return operators.takeWhile(generator);
@@ -112,11 +112,11 @@ export function chainable<T>(
     get awaitMap() {
       return operators.awaitMap(generator) as unknown;
     }, */,
-    get every() {
-      return operators.every(generator);
+    every(predicate: (next: T) => boolean) {
+      return chainable(operators.every(generator, predicate));
     },
-    get some() {
-      return operators.some(generator);
+    some(predicate: (next: T) => boolean) {
+      return chainable(operators.some(generator, predicate));
     },
     toSingle() {
       return consumers.toSingle(generator);
