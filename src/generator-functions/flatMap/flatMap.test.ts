@@ -1,5 +1,5 @@
 import { describe, test } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 describe("flatMap", () => {
   test("flatten non array", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 describe("count", () => {
   test("count single", () => {

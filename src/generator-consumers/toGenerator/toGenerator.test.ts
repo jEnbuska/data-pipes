@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import { toGenerator } from "./toGenerator.ts";
-import pipe from "../../index.ts";
+import { toGenerator } from "./toGenerator";
+import pipe from "../..";
 
 describe("toGenerator", () => {
   const numbers = [1, 2, 3];

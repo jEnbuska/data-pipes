@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 describe("skipWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];

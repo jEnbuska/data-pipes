@@ -1,15 +1,15 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* flatMap<T, R>(
-  generator: OperatorGenerator<T>,
-  callback: (next: T) => R | readonly R[],
-): OperatorGenerator<R> {
+export function* flatMap<Input, Output>(
+  generator: OperatorGenerator<Input>,
+  callback: (next: Input) => Output | readonly Output[],
+): OperatorGenerator<Output> {
   for (const next of generator) {
     const out = callback(next);
     if (Array.isArray(out)) {
       yield* out as any;
     } else {
-      yield out as R;
+      yield out as Output;
     }
   }
 }

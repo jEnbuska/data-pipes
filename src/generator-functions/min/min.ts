@@ -1,11 +1,11 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* min<T>(
-  generator: OperatorGenerator<T>,
-  callback: (next: T) => number,
+export function* min<Input>(
+  generator: OperatorGenerator<Input>,
+  callback: (next: Input) => number,
 ) {
   let currentMin: undefined | number;
-  let current: undefined | T;
+  let current: undefined | Input;
   for (const next of generator) {
     const value = callback(next);
     if (currentMin === undefined || value < currentMin) {
@@ -14,5 +14,5 @@ export function* min<T>(
     }
   }
   if (currentMin === undefined) return;
-  yield current as T;
+  yield current as Input;
 }

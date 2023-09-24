@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {

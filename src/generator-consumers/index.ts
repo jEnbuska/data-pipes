@@ -1,6 +1,6 @@
-import { toSingle } from "./toSingle/toSingle.ts";
-import { toArray } from "./toArray/toArray.ts";
-import { toGenerator } from "./toGenerator/toGenerator.ts";
-import { toConsumer } from "./toConsumer/toConsumer.ts";
+import { toSingle } from "./toSingle/toSingle";
+import { toArray } from "./toArray/toArray";
+import { toGenerator } from "./toGenerator/toGenerator";
+import { toConsumer } from "./toConsumer/toConsumer";
 
 export { toSingle, toArray, toGenerator, toConsumer };

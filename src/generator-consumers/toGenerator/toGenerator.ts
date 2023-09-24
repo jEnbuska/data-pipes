@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function toGenerator<T>(
-  generator: OperatorGenerator<T>,
-): Generator<T, void, void> {
+export function toGenerator<Input>(
+  generator: OperatorGenerator<Input>,
+): Generator<Input, void, void> {
   return generator;
 }

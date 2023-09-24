@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
-import pipe from "./index.ts";
+import pipe from ".";
 
-describe("pipe", () => {
+describe("pipe input", () => {
   const numbers = [1, 2, 3];
   function* generator() {
     yield* numbers;

@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* reverse<T>(
-  generator: OperatorGenerator<T>,
-): OperatorGenerator<T> {
+export function* reverse<Input>(
+  generator: OperatorGenerator<Input>,
+): OperatorGenerator<Input> {
   yield* [...generator].reverse();
 }

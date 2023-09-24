@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* take<T>(
-  generator: OperatorGenerator<T>,
+export function* take<Input>(
+  generator: OperatorGenerator<Input>,
   count: number,
-): OperatorGenerator<T> {
+): OperatorGenerator<Input> {
   for (const next of generator) {
     if (count <= 0) {
       break;

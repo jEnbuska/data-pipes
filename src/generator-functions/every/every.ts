@@ -1,8 +1,8 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* every<T>(
-  generator: OperatorGenerator<T>,
-  predicate: (next: T) => boolean,
+export function* every<Input>(
+  generator: OperatorGenerator<Input>,
+  predicate: (next: Input) => boolean,
 ): OperatorGenerator<boolean> {
   for (const next of generator) {
     if (!predicate(next)) {

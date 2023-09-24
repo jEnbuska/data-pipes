@@ -1,5 +1,5 @@
 import { describe, test, expect, mock } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 describe("takeWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];

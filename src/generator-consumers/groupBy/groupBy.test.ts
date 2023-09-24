@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import pipe from "../../index.ts";
+import pipe from "../..";
 
 describe("groupBy", () => {
   test("group by identity", () => {

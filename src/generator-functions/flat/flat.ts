@@ -1,10 +1,10 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* flat<T, D extends number = 1>(
-  generator: OperatorGenerator<T>,
-  depth?: D,
-): OperatorGenerator<FlatArray<T[], D>> {
-  depth = depth ?? (1 as D);
+export function* flat<Input, Depth extends number = 1>(
+  generator: OperatorGenerator<Input>,
+  depth?: Depth,
+): OperatorGenerator<FlatArray<Input[], Depth>> {
+  depth = depth ?? (1 as Depth);
   for (const next of generator) {
     if (!Array.isArray(next) || depth <= 0) {
       yield next as any;

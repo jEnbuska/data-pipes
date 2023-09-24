@@ -1,12 +1,12 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-const defaultCompare = <T>(a: T, b: T) => a === b;
-export function* distinctUntilChanged<T>(
-  generator: OperatorGenerator<T>,
-  isEqual: (previous: T, current: T) => boolean = defaultCompare,
-): OperatorGenerator<T> {
+const defaultCompare = <Input>(a: Input, b: Input) => a === b;
+export function* distinctUntilChanged<Input>(
+  generator: OperatorGenerator<Input>,
+  isEqual: (previous: Input, current: Input) => boolean = defaultCompare,
+): OperatorGenerator<Input> {
   let first = true;
-  let previous: T;
+  let previous: Input;
   for (const current of generator) {
     if (first || !isEqual(previous!, current)) {
       previous = current;

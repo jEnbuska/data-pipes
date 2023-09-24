@@ -1,5 +1,5 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function toConsumer<T>(generator: OperatorGenerator<T>) {
+export function toConsumer(generator: OperatorGenerator<unknown>) {
   void [...generator];
 }

@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* defaultIfEmpty<T, R = T>(
-  generator: OperatorGenerator<T>,
-  defaultValue: R,
-): OperatorGenerator<R | T> {
+export function* defaultIfEmpty<Input, Default = Input>(
+  generator: OperatorGenerator<Input>,
+  defaultValue: Default,
+): OperatorGenerator<Default | Input> {
   let empty = true;
   for (const next of generator) {
     yield next;

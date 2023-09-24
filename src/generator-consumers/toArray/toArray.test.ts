@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import { toArray } from "./toArray.ts";
-import pipe from "../../index.ts";
+import { toArray } from "./toArray";
+import pipe from "../..";
 
 describe("toArray", () => {
   const numbers = [1, 2, 3];

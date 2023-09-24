@@ -1,8 +1,8 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* forEach<T>(
-  generator: OperatorGenerator<T>,
-  consumer: (next: T) => unknown,
+export function* forEach<Input>(
+  generator: OperatorGenerator<Input>,
+  consumer: (next: Input) => unknown,
 ) {
   for (const next of generator) {
     consumer(next);

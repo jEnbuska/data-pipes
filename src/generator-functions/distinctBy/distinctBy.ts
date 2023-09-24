@@ -1,10 +1,10 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* distinctBy<T, R>(
-  generator: OperatorGenerator<T>,
-  selector: (next: T) => R,
-): OperatorGenerator<T> {
-  const set = new Set<R>();
+export function* distinctBy<Input, Value>(
+  generator: OperatorGenerator<Input>,
+  selector: (next: Input) => Value,
+): OperatorGenerator<Input> {
+  const set = new Set<Value>();
   for (const next of generator) {
     const key = selector(next);
     if (set.has(key)) {

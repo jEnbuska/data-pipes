@@ -1,11 +1,11 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* max<T>(
-  generator: OperatorGenerator<T>,
-  callback: (next: T) => number,
+export function* max<Input>(
+  generator: OperatorGenerator<Input>,
+  callback: (next: Input) => number,
 ) {
   let currentMax: undefined | number;
-  let current: undefined | T;
+  let current: undefined | Input;
   for (const next of generator) {
     const value = callback(next);
     if (currentMax === undefined || value > currentMax) {
@@ -14,5 +14,5 @@ export function* max<T>(
     }
   }
   if (currentMax === undefined) return;
-  yield current as T;
+  yield current as Input;
 }

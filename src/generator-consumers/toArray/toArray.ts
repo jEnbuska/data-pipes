@@ -1,5 +1,5 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function toArray<T>(generator: OperatorGenerator<T>) {
+export function toArray<Input>(generator: OperatorGenerator<Input>) {
   return [...generator];
 }

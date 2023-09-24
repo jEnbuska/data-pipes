@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* reduce<T, R>(
-  generator: OperatorGenerator<T>,
-  reducer: (acc: R, next: T) => R,
-  initialValue: R,
+export function* reduce<Input, Output>(
+  generator: OperatorGenerator<Input>,
+  reducer: (acc: Output, next: Input) => Output,
+  initialValue: Output,
 ) {
   let acc = initialValue;
   for (const next of generator) {

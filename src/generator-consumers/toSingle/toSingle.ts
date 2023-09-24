@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function toSingle<T, R = T>(
-  generator: OperatorGenerator<T>,
-  ...args: [R] | []
-): R | T {
+export function toSingle<Input, Default = Input>(
+  generator: OperatorGenerator<Input>,
+  ...args: [Default] | []
+): Default | Input {
   const result = generator.next();
   if (result.done) {
     if (args.length) {

@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
-import { toSingle } from "./toSingle.ts";
-import pipe from "../../index.ts";
-import { type OperatorGenerator } from "../../types.ts";
+import { toSingle } from "./toSingle";
+import pipe from "../..";
+import { type OperatorGenerator } from "../../types";
 
 describe("toSingle", () => {
   test("iterable to single", () => {

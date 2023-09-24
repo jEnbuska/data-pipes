@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* skip<T>(
-  generator: OperatorGenerator<T>,
+export function* skip<Input>(
+  generator: OperatorGenerator<Input>,
   count: number,
-): OperatorGenerator<T> {
+): OperatorGenerator<Input> {
   let skipped = 0;
   for (const next of generator) {
     if (skipped < count) {

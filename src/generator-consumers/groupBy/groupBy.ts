@@ -1,11 +1,11 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* groupBy<T, K extends PropertyKey>(
-  generator: OperatorGenerator<T>,
-  keySelector: (next: T) => K,
-  groups?: K[],
+export function* groupBy<Input, Key extends PropertyKey>(
+  generator: OperatorGenerator<Input>,
+  keySelector: (next: Input) => Key,
+  groups?: Key[],
 ) {
-  const map = new Map<K, T[]>(groups?.map((key) => [key, []]));
+  const map = new Map<Key, Input[]>(groups?.map((key) => [key, []]));
   for (const next of generator) {
     const key = keySelector(next);
     if (!map.has(key)) {
@@ -16,5 +16,5 @@ export function* groupBy<T, K extends PropertyKey>(
     }
     map.get(key)?.push(next);
   }
-  yield Object.fromEntries(map.entries()) as Partial<Record<K, T[]>>;
+  yield Object.fromEntries(map.entries()) as Partial<Record<Key, Input[]>>;
 }

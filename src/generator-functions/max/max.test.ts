@@ -1,8 +1,8 @@
 import { describe, test, expect } from "bun:test";
 import pipe from "../..";
 
-describe("min", () => {
-  const numbers = [2, 1, 3, 5, 4];
+describe("max", () => {
+  const numbers = [1, 2, 3, 5, 4];
   test("empty", () => {
     expect(
       pipe<number>()
@@ -14,16 +14,16 @@ describe("min", () => {
   test("by value", () => {
     expect(
       pipe<number>(numbers)
-        .min((v) => v)
+        .max((v) => v)
         .toSingle(),
-    ).toBe(1);
+    ).toBe(5);
   });
 
   test("by module 4", () => {
     expect(
       pipe<number>(numbers)
-        .min((v) => v % 4)
+        .max((v) => v % 4)
         .toSingle(),
-    ).toBe(4);
+    ).toBe(3);
   });
 });

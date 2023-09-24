@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* find<T>(
-  generator: OperatorGenerator<T>,
-  predicate: (next: T) => boolean,
-): OperatorGenerator<T> {
+export function* find<Input>(
+  generator: OperatorGenerator<Input>,
+  predicate: (next: Input) => boolean,
+): OperatorGenerator<Input> {
   for (const next of generator) {
     if (predicate(next)) {
       yield next;

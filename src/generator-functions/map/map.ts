@@ -1,8 +1,8 @@
 import { type OperatorGenerator } from "../../types";
-export function* map<T, R>(
-  generator: OperatorGenerator<T>,
-  mapper: (next: T) => R,
-): OperatorGenerator<R> {
+export function* map<Input, Output>(
+  generator: OperatorGenerator<Input>,
+  mapper: (next: Input) => Output,
+): OperatorGenerator<Output> {
   for (const next of generator) {
     yield mapper(next);
   }

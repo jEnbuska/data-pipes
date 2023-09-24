@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types.ts";
+import { type OperatorGenerator } from "../../types";
 
-export function* count<T>(
-  generator: OperatorGenerator<T>,
+export function* count<Input>(
+  generator: OperatorGenerator<Input>,
 ): OperatorGenerator<number> {
   yield [...generator].length;
 }

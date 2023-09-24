@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import pipe from "../../index.ts";
-import { toConsumer } from "./toConsumer.ts";
+import pipe from "../..";
+import { toConsumer } from "./toConsumer";
 
 describe("toConsumer", () => {
   const numbers = [1, 2, 3];
