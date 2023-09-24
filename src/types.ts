@@ -1,3 +1,1 @@
-export type OperatorGenerator<T> = (
-  isDone: () => boolean,
-) => Generator<T, void, void>;
+export type OperatorGenerator<T> = () => Generator<T, void, void>;

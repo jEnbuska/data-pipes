@@ -3,10 +3,9 @@ import { chainable } from "../chainable.ts";
 
 export function groupBy<T>(generator: OperatorGenerator<T>) {
   return <K extends keyof unknown>(keySelector: (next: T) => K, groups?: K[]) =>
-    chainable(function* (isDone) {
+    chainable(function* () {
       const map = new Map<K, T[]>(groups?.map((key) => [key, []]));
-      for (const next of generator(isDone)) {
-        if (isDone()) return;
+      for (const next of generator()) {
         const key = keySelector(next);
         if (!map.has(key)) {
           if (groups) {

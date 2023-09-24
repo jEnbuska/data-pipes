@@ -1,29 +1,35 @@
-import { describe, test, expect } from "bun:test";
+import { describe, test, expect, mock } from "bun:test";
 import pipe from "../src/pipe.ts";
 
 describe("takeWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];
   test("takeWhile negative", () => {
-    expect(
-      pipe(numbers)
-        .takeWhile((n) => n < 0)
-        .toArray(),
-    ).toStrictEqual([-2, -1]);
+    const callback = mock(() => {});
+    const result = pipe(numbers)
+      .forEach(callback)
+      .takeWhile((n) => n < 0)
+      .toArray();
+    expect(result).toStrictEqual([-2, -1]);
+    expect(callback).toHaveBeenCalledTimes(3);
   });
 
   test("takeWhile always", () => {
-    expect(
-      pipe(numbers)
-        .takeWhile(() => true)
-        .toArray(),
-    ).toStrictEqual(numbers);
+    const callback = mock(() => {});
+    const result = pipe(numbers)
+      .forEach(callback)
+      .takeWhile(() => true)
+      .toArray();
+    expect(result).toStrictEqual(numbers);
+    expect(callback).toHaveBeenCalledTimes(numbers.length);
   });
 
   test("takeWhile never", () => {
-    expect(
-      pipe(numbers)
-        .takeWhile(() => false)
-        .toArray(),
-    ).toStrictEqual([]);
+    const callback = mock(() => {});
+    const array = pipe(numbers)
+      .forEach(callback)
+      .takeWhile(() => false)
+      .toArray();
+    expect(array).toStrictEqual([]);
+    expect(callback).toHaveBeenCalledTimes(1);
   });
 });

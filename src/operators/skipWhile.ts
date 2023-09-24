@@ -3,10 +3,9 @@ import { chainable } from "../chainable.ts";
 
 export function skipWhile<T>(generator: OperatorGenerator<T>) {
   return (predicate: (next: T) => boolean) =>
-    chainable(function* (isDone) {
+    chainable(function* () {
       let skip = true;
-      for (const next of generator(isDone)) {
-        if (isDone()) return;
+      for (const next of generator()) {
         if (skip && predicate(next)) {
           continue;
         }

@@ -3,11 +3,10 @@ import { chainable } from "../chainable.ts";
 
 export function min<T>(generator: OperatorGenerator<T>) {
   return (callback: (next: T) => number) =>
-    chainable(function* (isDone) {
+    chainable(function* () {
       let currentMin: undefined | number = undefined;
       let current: undefined | T = undefined;
-      for (const next of generator(isDone)) {
-        if (isDone()) return;
+      for (const next of generator()) {
         const value = callback(next);
 
         if (currentMin === undefined || value < currentMin) {
