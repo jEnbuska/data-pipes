@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* unflat<Input>(
-  generator: OperatorGenerator<Input>,
-): OperatorGenerator<Input[]> {
+  generator: ChainableGenerator<Input>,
+): ChainableGenerator<Input[]> {
   yield [...generator];
 }

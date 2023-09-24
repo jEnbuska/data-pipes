@@ -1,14 +1,9 @@
 import { type ChainableGenerator } from "../../types";
 
-export function* take<Input>(
+export function* takeLast<Input>(
   generator: ChainableGenerator<Input>,
   count: number,
 ): ChainableGenerator<Input> {
-  for (const next of generator) {
-    if (count <= 0) {
-      break;
-    }
-    count--;
-    yield next;
-  }
+  const array = [...generator];
+  yield* array.slice(Math.max(array.length - count, 0));
 }

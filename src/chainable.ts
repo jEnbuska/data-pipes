@@ -1,4 +1,4 @@
-import { type OperatorGenerator } from "./types";
+import { type Chainable, type ChainableGenerator } from "./types";
 import {
   min,
   max,
@@ -30,62 +30,11 @@ import {
   toConsumer,
   toSingle,
 } from "./generator-consumers";
-
-export type Chainable<Input> = {
-  map<Output>(fn: (next: Input) => Output): Chainable<Output>;
-  flat<Depth extends number = 1>(
-    depth?: Depth,
-  ): Chainable<FlatArray<Input[], Depth>>;
-  unflat(): Chainable<Input[]>;
-  flatMap<Output>(
-    callback: (value: Input) => Output | readonly Output[],
-  ): Chainable<Output>;
-  filter(fn: (next: Input) => boolean): Chainable<Input>;
-  reduce<Output>(
-    fn: (acc: Output, next: Input) => Output,
-    initialValue: Output,
-  ): Chainable<Output>;
-  forEach(fn: (next: Input) => void): Chainable<Input>;
-  skipWhile(fn: (next: Input) => boolean): Chainable<Input>;
-  skip(count: number): Chainable<Input>;
-  take(count: number): Chainable<Input>;
-  count(): Chainable<number>;
-  takeWhile(fn: (next: Input) => boolean): Chainable<Input>;
-  toSingle<Default = Input>(defaultValue?: Default): Input | Default;
-  toArray(): Input[];
-  toConsumer(): void;
-  sort(compareFn?: (a: Input, b: Input) => number): Chainable<Input>;
-  groupBy<Key extends PropertyKey>(
-    keySelector: (next: Input) => Key,
-    groups: Key[],
-  ): Chainable<Record<Key, Input[]>>;
-  groupBy<Key extends PropertyKey>(
-    keySelector: (next: Input) => Key,
-  ): Chainable<Partial<Record<Key, Input[]>>>;
-  distinctBy<Value>(selector: (next: Input) => Value): Chainable<Input>;
-  distinctUntilChanged(
-    comparator?: (previous: Input, current: Input) => boolean,
-  ): Chainable<Input>;
-  min(selector: (next: Input) => number): Chainable<Input>;
-  max(selector: (next: Input) => number): Chainable<Input>;
-  defaultIfEmpty<Default = Input>(
-    defaultValue: Default,
-  ): Chainable<Input | Default>;
-  find(fn: (next: Input) => boolean): Chainable<Input>;
-  some(fn: (next: Input) => boolean): Chainable<boolean>;
-  every(fn: (next: Input) => boolean): Chainable<boolean>;
-  reverse(): Chainable<Input>;
-  toGenerator(): Generator<Input>;
-  // Custom GeneratorOperator
-  lift<Output = Input>(
-    generatorFunction: (
-      generator: OperatorGenerator<Input>,
-    ) => OperatorGenerator<Output>,
-  ): Chainable<Output>;
-};
+import { takeLast } from "./generator-functions/takeLast/takeLast.ts";
+import { skipLast } from "./generator-functions/skipLast/skipLast.ts";
 
 export function chainable<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
 ): Chainable<Input> {
   return {
     reverse() {
@@ -94,7 +43,7 @@ export function chainable<Input>(
     find(predicate) {
       return chainable(find(generator, predicate));
     },
-    defaultIfEmpty<R>(defaultValue: R) {
+    defaultIfEmpty<Default>(defaultValue: Default) {
       return chainable(defaultIfEmpty(generator, defaultValue));
     },
     min(callback) {
@@ -112,10 +61,10 @@ export function chainable<Input>(
     sort(comparator) {
       return chainable(sort(generator, comparator));
     },
-    lift<Output = Input>(
+    lift<Output>(
       generatorFunction: (
-        generator: OperatorGenerator<Input>,
-      ) => OperatorGenerator<Output>,
+        generator: ChainableGenerator<Input>,
+      ) => ChainableGenerator<Output>,
     ) {
       return chainable(generatorFunction(generator));
     },
@@ -137,7 +86,7 @@ export function chainable<Input>(
     flatMap<Output>(callback: (next: Input) => Output | readonly Output[]) {
       return chainable(flatMap(generator, callback));
     },
-    filter(predicate: (next: Input) => boolean) {
+    filter(predicate) {
       return chainable(filter(generator, predicate));
     },
     reduce<Output>(
@@ -146,31 +95,37 @@ export function chainable<Input>(
     ) {
       return chainable(reduce(generator, reducer, initialValue));
     },
-    forEach(consumer: (next: Input) => unknown) {
+    forEach(consumer) {
       return chainable(forEach(generator, consumer));
     },
-    skipWhile(predicate: (next: Input) => boolean) {
+    skipWhile(predicate) {
       return chainable(skipWhile(generator, predicate));
     },
-    skip(count: number) {
+    skip(count) {
       return chainable(skip(generator, count));
     },
-    take(count: number) {
+    skipLast(count: number): Chainable<Input> {
+      return chainable(skipLast(generator, count));
+    },
+    take(count) {
       return chainable(take(generator, count));
+    },
+    takeLast(count) {
+      return chainable(takeLast(generator, count));
     },
     count() {
       return chainable(count(generator));
     },
-    takeWhile(predicate: (next: Input) => boolean) {
+    takeWhile(predicate) {
       return chainable(takeWhile(generator, predicate));
     },
-    every(predicate: (next: Input) => boolean) {
+    every(predicate) {
       return chainable(every(generator, predicate));
     },
-    some(predicate: (next: Input) => boolean) {
+    some(predicate) {
       return chainable(some(generator, predicate));
     },
-    toSingle<Default = Input>(...args: [Default] | []) {
+    toSingle<Default>(...args: [Default] | []) {
       return toSingle(generator, ...args);
     },
     toArray() {

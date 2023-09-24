@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 import { toSingle } from "./toSingle";
 import pipe from "../..";
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 describe("toSingle", () => {
   test("iterable to single", () => {
@@ -17,7 +17,7 @@ describe("toSingle", () => {
   });
 
   test("none to single defaultValue", () => {
-    function* source(): OperatorGenerator<number> {}
+    function* source(): ChainableGenerator<number> {}
     const value: string | number = toSingle(source(), "default");
     expect(value).toBe("default");
   });

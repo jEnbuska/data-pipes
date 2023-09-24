@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* forEach<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   consumer: (next: Input) => unknown,
 ) {
   for (const next of generator) {

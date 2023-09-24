@@ -1,8 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
+export type ToSingleArgs<Default> = [Default] | [];
 export function toSingle<Input, Default = Input>(
-  generator: OperatorGenerator<Input>,
-  ...args: [Default] | []
+  generator: ChainableGenerator<Input>,
+  ...args: ToSingleArgs<Default>
 ): Default | Input {
   const result = generator.next();
   if (result.done) {

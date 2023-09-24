@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* count<Input>(
-  generator: OperatorGenerator<Input>,
-): OperatorGenerator<number> {
+  generator: ChainableGenerator<Input>,
+): ChainableGenerator<number> {
   yield [...generator].length;
 }

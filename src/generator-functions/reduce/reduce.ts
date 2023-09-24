@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* reduce<Input, Output>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   reducer: (acc: Output, next: Input) => Output,
   initialValue: Output,
 ) {

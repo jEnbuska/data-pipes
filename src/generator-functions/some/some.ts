@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* some<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   fn: (next: Input) => boolean,
 ) {
   for (const next of generator) {

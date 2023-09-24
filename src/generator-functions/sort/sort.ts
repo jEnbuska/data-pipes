@@ -1,8 +1,8 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* sort<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   comparator?: (a: Input, b: Input) => number,
-): OperatorGenerator<Input> {
+): ChainableGenerator<Input> {
   yield* [...generator].sort(comparator);
 }

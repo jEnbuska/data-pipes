@@ -1,5 +1,5 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
-export function toConsumer(generator: OperatorGenerator<unknown>) {
+export function toConsumer(generator: ChainableGenerator<unknown>) {
   void [...generator];
 }

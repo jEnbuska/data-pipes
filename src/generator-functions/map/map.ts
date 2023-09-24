@@ -1,8 +1,8 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 export function* map<Input, Output>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   mapper: (next: Input) => Output,
-): OperatorGenerator<Output> {
+): ChainableGenerator<Output> {
   for (const next of generator) {
     yield mapper(next);
   }

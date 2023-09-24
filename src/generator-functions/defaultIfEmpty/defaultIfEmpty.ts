@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* defaultIfEmpty<Input, Default = Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   defaultValue: Default,
-): OperatorGenerator<Default | Input> {
+): ChainableGenerator<Default | Input> {
   let empty = true;
   for (const next of generator) {
     yield next;

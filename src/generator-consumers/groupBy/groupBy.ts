@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* groupBy<Input, Key extends PropertyKey>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   keySelector: (next: Input) => Key,
   groups?: Key[],
 ) {

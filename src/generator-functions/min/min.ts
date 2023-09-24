@@ -1,7 +1,7 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* min<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   callback: (next: Input) => number,
 ) {
   let currentMin: undefined | number;

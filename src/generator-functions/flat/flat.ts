@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* flat<Input, Depth extends number = 1>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   depth?: Depth,
-): OperatorGenerator<FlatArray<Input[], Depth>> {
+): ChainableGenerator<FlatArray<Input[], Depth>> {
   depth = depth ?? (1 as Depth);
   for (const next of generator) {
     if (!Array.isArray(next) || depth <= 0) {

@@ -1,10 +1,10 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 const defaultCompare = <Input>(a: Input, b: Input) => a === b;
 export function* distinctUntilChanged<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   isEqual: (previous: Input, current: Input) => boolean = defaultCompare,
-): OperatorGenerator<Input> {
+): ChainableGenerator<Input> {
   let first = true;
   let previous: Input;
   for (const current of generator) {

@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* flatMap<Input, Output>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   callback: (next: Input) => Output | readonly Output[],
-): OperatorGenerator<Output> {
+): ChainableGenerator<Output> {
   for (const next of generator) {
     const out = callback(next);
     if (Array.isArray(out)) {

@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* distinctBy<Input, Value>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   selector: (next: Input) => Value,
-): OperatorGenerator<Input> {
+): ChainableGenerator<Input> {
   const set = new Set<Value>();
   for (const next of generator) {
     const key = selector(next);

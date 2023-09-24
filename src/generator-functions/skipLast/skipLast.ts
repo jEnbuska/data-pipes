@@ -1,15 +1,17 @@
 import { type ChainableGenerator } from "../../types";
 
-export function* skip<Input>(
+export function* skipLast<Input>(
   generator: ChainableGenerator<Input>,
   count: number,
 ): ChainableGenerator<Input> {
+  const buffer: Input[] = [];
   let skipped = 0;
   for (const next of generator) {
+    buffer.push(next);
     if (skipped < count) {
       skipped++;
       continue;
     }
-    yield next;
+    yield buffer.shift()!;
   }
 }

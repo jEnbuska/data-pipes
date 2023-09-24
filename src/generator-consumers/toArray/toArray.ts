@@ -1,5 +1,5 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
-export function toArray<Input>(generator: OperatorGenerator<Input>) {
+export function toArray<Input>(generator: ChainableGenerator<Input>) {
   return [...generator];
 }

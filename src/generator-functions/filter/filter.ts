@@ -1,9 +1,9 @@
-import { type OperatorGenerator } from "../../types";
+import { type ChainableGenerator } from "../../types";
 
 export function* filter<Input>(
-  generator: OperatorGenerator<Input>,
+  generator: ChainableGenerator<Input>,
   predicate: (next: Input) => boolean,
-): OperatorGenerator<Input> {
+): ChainableGenerator<Input> {
   for (const next of generator) {
     if (predicate(next)) {
       yield next;
