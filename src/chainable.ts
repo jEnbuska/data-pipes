@@ -1,12 +1,41 @@
-import { type OperatorGenerator } from "./types.ts";
-import { operators } from "./operators/index.ts";
-import { consumers } from "./consumers/index.ts";
+import { type OperatorGenerator } from "./types";
+import {
+  min,
+  max,
+  find,
+  some,
+  filter,
+  defaultIfEmpty,
+  distinctBy,
+  distinctUntilChanged,
+  sort,
+  map,
+  flatMap,
+  flat,
+  unflat,
+  groupBy,
+  reverse,
+  count,
+  takeWhile,
+  every,
+  take,
+  skip,
+  skipWhile,
+  forEach,
+  reduce,
+} from "./generator-functions";
+import {
+  toArray,
+  toGenerator,
+  toConsumer,
+  toSingle,
+} from "./generator-consumers";
 
 export type Chainable<T> = {
   map<R>(fn: (next: T) => R): Chainable<R>;
-  flat<D extends number = 1>(depth?: D): Chainable<FlatArray<Array<T>, D>>;
-  unflat<D>(): Chainable<T[]>;
-  flatMap<U>(callback: (value: T) => U | readonly U[]): Chainable<readonly U[]>;
+  flat<D extends number = 1>(depth?: D): Chainable<FlatArray<T[], D>>;
+  unflat(): Chainable<T[]>;
+  flatMap<R>(callback: (value: T) => R | readonly R[]): Chainable<R>;
   filter(fn: (next: T) => boolean): Chainable<T>;
   reduce<R>(fn: (acc: R, next: T) => R, initialValue: R): Chainable<R>;
   // awaitMap<R>(fn: (middlware: T) => Promise<R>): AsyncPipe<R>;
@@ -16,15 +45,15 @@ export type Chainable<T> = {
   take(count: number): Chainable<T>;
   count(): Chainable<number>;
   takeWhile(fn: (next: T) => boolean): Chainable<T>;
-  toSingle(): T;
+  toSingle<R = T>(defaultValue?: R): T | R;
   toArray(): T[];
   toConsumer(): void;
   sort(compareFn?: (a: T, b: T) => number): Chainable<T>;
-  groupBy<K extends keyof unknown>(
+  groupBy<K extends PropertyKey>(
     keySelector: (next: T) => K,
     groups: K[],
   ): Chainable<Record<K, T[]>>;
-  groupBy<K extends keyof unknown>(
+  groupBy<K extends PropertyKey>(
     keySelector: (next: T) => K,
   ): Chainable<Partial<Record<K, T[]>>>;
   distinctBy<R>(selector: (next: T) => R): Chainable<T>;
@@ -47,88 +76,85 @@ export function chainable<T>(
 ): Chainable<T> {
   return {
     reverse() {
-      return chainable(operators.reverse(generator));
+      return chainable(reverse(generator));
     },
-    get find() {
-      return operators.find(generator);
+    find(predicate) {
+      return chainable(find(generator, predicate));
     },
-    get defaultIfEmpty() {
-      return operators.defaultIfEmpty(generator);
+    defaultIfEmpty<R>(defaultValue: R) {
+      return chainable(defaultIfEmpty(generator, defaultValue));
     },
-    get min() {
-      return operators.min(generator);
+    min(callback) {
+      return chainable(min(generator, callback));
     },
-    get max() {
-      return operators.max(generator);
+    max(callback) {
+      return chainable(max(generator, callback));
     },
-    get distinctBy() {
-      return operators.distinctBy(generator);
+    distinctBy<R>(selector: (next: T) => R) {
+      return chainable(distinctBy(generator, selector));
     },
-    get distinctUntilChanged() {
-      return operators.distinctUntilChanged(generator);
+    distinctUntilChanged(isEqual) {
+      return chainable(distinctUntilChanged(generator, isEqual));
     },
-    get sort() {
-      return operators.sort(generator);
+    sort(comparator) {
+      return chainable(sort(generator, comparator));
     },
-    get groupBy() {
-      return operators.groupBy(generator) as Chainable<T>["groupBy"];
+    groupBy<K extends PropertyKey>(keySelector: (next: T) => K, groups?: K[]) {
+      return chainable(groupBy(generator, keySelector, groups)) as any;
     },
-    get flat() {
-      return operators.flat(generator);
+    flat<D extends number = 1>(depth?: D) {
+      return chainable(flat(generator, depth));
     },
-    get unflat() {
-      return operators.unflat(generator);
+    unflat() {
+      return chainable(unflat(generator));
     },
-    get map() {
-      return operators.map(generator);
+    map<R>(mapper: (next: T) => R) {
+      return chainable(map(generator, mapper));
     },
-    get flatMap() {
-      return operators.flatMap(generator);
+    flatMap<R>(callback: (next: T) => R | readonly R[]) {
+      return chainable(flatMap(generator, callback));
     },
     filter(predicate: (next: T) => boolean) {
-      return chainable(operators.filter(generator, predicate));
+      return chainable(filter(generator, predicate));
     },
-    get reduce() {
-      return operators.reduce(generator);
+    reduce<R>(reducer: (acc: R, next: T) => R, initialValue: R) {
+      return chainable(reduce(generator, reducer, initialValue));
     },
-    get forEach() {
-      return operators.forEach(generator);
+    forEach(consumer: (next: T) => unknown) {
+      return chainable(forEach(generator, consumer));
     },
-    get skipWhile() {
-      return operators.skipWhile(generator);
+    skipWhile(predicate: (next: T) => boolean) {
+      return chainable(skipWhile(generator, predicate));
     },
-    get skip() {
-      return operators.skip(generator);
+    skip(count: number) {
+      return chainable(skip(generator, count));
     },
-    get take() {
-      return operators.take(generator);
+    take(count: number) {
+      return chainable(take(generator, count));
     },
     count() {
-      return chainable(operators.count(generator));
+      return chainable(count(generator));
     },
-    get takeWhile() {
-      return operators.takeWhile(generator);
-    } /*
-    get awaitMap() {
-      return operators.awaitMap(generator) as unknown;
-    }, */,
+    takeWhile(predicate: (next: T) => boolean) {
+      return chainable(takeWhile(generator, predicate));
+    },
     every(predicate: (next: T) => boolean) {
-      return chainable(operators.every(generator, predicate));
+      return chainable(every(generator, predicate));
     },
     some(predicate: (next: T) => boolean) {
-      return chainable(operators.some(generator, predicate));
+      return chainable(some(generator, predicate));
     },
-    toSingle() {
-      return consumers.toSingle(generator);
+    toSingle<R = T>(...args: [R] | []) {
+      return toSingle(generator, ...args);
     },
     toArray() {
-      return consumers.toArray(generator);
+      return toArray(generator);
     },
     toGenerator() {
-      return consumers.toGenerator(generator);
+      return toGenerator(generator);
     },
     toConsumer() {
-      return consumers.toConsumer(generator);
+      toConsumer(generator);
     },
   };
 }

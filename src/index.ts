@@ -1,37 +1,25 @@
-import pipe from "./pipe.ts";
+import { chainable } from "./chainable";
+import { type OperatorGenerator } from "./types.ts";
 
-const p = pipe(1)
-  .map((x) => x * 2)
-  .toSingle();
-
-const value = pipe(function* () {
-  yield 1;
-  yield 2;
-  yield 3;
-})
-  .map((x) => x * 2)
-  .forEach((x) => console.log("x", x))
-  .takeWhile((x) => x < 4)
-  .toArray();
-
-console.log("value", value);
-
-const value2 = pipe<number>([1, 2, 3], 4, 5, [6])
-  .map((x) => x * 2)
-  .toArray();
-console.log("value2", value2);
-
-const value3 = pipe(1)
-  .map((x) => x * 2)
-  .toArray();
-
-console.log("value3", value3);
-/*
-const value4 = pipe(async function* () {
-  yield await Promise.resolve(1);
-})
-  .map((x) => x * 2)
-  .toArray();
-
-console.log("value4", value4);
-*/
+function isGeneratorFunction(
+  source: unknown,
+): source is () => Generator<unknown, unknown> {
+  return Object.getPrototypeOf(source).constructor.name === "GeneratorFunction";
+}
+export default function pipe<T>(
+  ...sources: Array<T | T[] | (() => Generator<T, void, void>)>
+) {
+  return chainable(
+    (function* (): OperatorGenerator<T> {
+      for (const next of sources) {
+        if (isGeneratorFunction(next)) {
+          yield* next();
+        } else if (Array.isArray(next)) {
+          yield* next;
+        } else {
+          yield next;
+        }
+      }
+    })(),
+  );
+}

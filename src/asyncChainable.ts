@@ -1,6 +1,6 @@
-/* import { Pipe } from "./pipe-middlware.ts";
+/* import { Pipe } from "./pipe-middlware";
 
-import { type AsyncOperatorGenerator } from "../operators/types.ts";
+import { type AsyncOperatorGenerator } from "../operators/types";
 */
 export type AsyncPipe<T> = T;
 /* export type AsyncPipe<T> = {
@@ -114,7 +114,7 @@ export function pipeFromAsyncIterableIterator<T>(
 
     flat<D extends number = 1>(depth?: D) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (!Array.isArray(item)) {
             yield item as FlatArray<T, D>;
           } else {
@@ -128,7 +128,7 @@ export function pipeFromAsyncIterableIterator<T>(
     reduce<R>(fn: (acc: R, middlware: T) => R, initialValue: R): AsyncPipe<R> {
       return pipeFromAsyncIterableIterator(async function* () {
         let acc = initialValue;
-        for await (const item of generator()) {
+        for await (const item of generator) {
           acc = fn(acc, item);
         }
         yield acc;
@@ -136,14 +136,14 @@ export function pipeFromAsyncIterableIterator<T>(
     },
     map<R>(fn: (middlware: T) => R) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           yield fn(item);
         }
       });
     },
     flatMap() {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (Array.isArray(item)) {
             for (const subItem of item) {
               yield subItem;
@@ -156,7 +156,7 @@ export function pipeFromAsyncIterableIterator<T>(
     },
     filter(fn: (middlware: T) => boolean) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (fn(item)) {
             yield item;
           }
@@ -166,7 +166,7 @@ export function pipeFromAsyncIterableIterator<T>(
 
     forEach(fn: (middlware: T) => void) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           fn(item);
           yield item;
         }
@@ -175,7 +175,7 @@ export function pipeFromAsyncIterableIterator<T>(
     skipWhile(fn: (middlware: T) => boolean) {
       return pipeFromAsyncIterableIterator(async function* () {
         let skip = true;
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (skip && fn(item)) {
             continue;
           }
@@ -187,7 +187,7 @@ export function pipeFromAsyncIterableIterator<T>(
     skip(count: number) {
       return pipeFromAsyncIterableIterator(async function* () {
         let skipped = 0;
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (skipped < count) {
             skipped++;
             continue;
@@ -198,7 +198,7 @@ export function pipeFromAsyncIterableIterator<T>(
     },
     take(count: number) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (count <= 0) {
             break;
           }
@@ -210,7 +210,7 @@ export function pipeFromAsyncIterableIterator<T>(
     count() {
       return pipeFromAsyncIterableIterator(async function* () {
         let count = 0;
-        for await (const _ of generator()) {
+        for await (const _ of generator) {
           count++;
         }
         yield count;
@@ -218,7 +218,7 @@ export function pipeFromAsyncIterableIterator<T>(
     },
     takeWhile(fn: (middlware: T) => boolean) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           if (fn(item)) {
             yield item;
           } else {
@@ -229,20 +229,20 @@ export function pipeFromAsyncIterableIterator<T>(
     },
     awaitMap<R>(fn: (middlware: T) => Promise<R>) {
       return pipeFromAsyncIterableIterator(async function* () {
-        for await (const item of generator()) {
+        for await (const item of generator) {
           yield await fn(item);
         }
       });
     },
     async toSingle() {
-      for await (const item of generator()) {
+      for await (const item of generator) {
         return item;
       }
       throw new Error("No items in generator");
     },
     async toArray() {
       const array: T[] = [];
-      for await (const item of generator()) {
+      for await (const item of generator) {
         array.push(item);
       }
       return array;
