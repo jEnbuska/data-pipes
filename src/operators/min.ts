@@ -8,7 +8,6 @@ export function min<T>(generator: OperatorGenerator<T>) {
       let current: undefined | T = undefined;
       for (const next of generator()) {
         const value = callback(next);
-
         if (currentMin === undefined || value < currentMin) {
           current = next;
           currentMin = value;
