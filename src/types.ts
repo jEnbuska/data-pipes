@@ -1,6 +1,21 @@
-export type ChainableGenerator<T> = Generator<T, void, undefined & void>;
+export type GeneratorProvider<T> = Generator<T, void, undefined & void>;
 
-export type Chainable<Input> = {
+export type GeneratorMiddleware<Input, Output = Input> = (
+  generator: GeneratorProvider<Input>,
+) => GeneratorProvider<Output>;
+
+export type PipeSource<Input> =
+  | Input
+  | Input[]
+  | (() => Generator<Input, void, void>);
+
+export type GeneratorConsumer<Input> = {
+  toGenerator(): Generator<Input>;
+  toArray(): Input[];
+  toConsumer(): void;
+  toSingle<Default = Input>(defaultValue?: Default): Input | Default;
+};
+export type Chainable<Input> = GeneratorConsumer<Input> & {
   map<Output>(fn: (next: Input) => Output): Chainable<Output>;
   flat<Depth extends number = 1>(
     depth?: Depth,
@@ -22,9 +37,6 @@ export type Chainable<Input> = {
   takeLast(count: number): Chainable<Input>;
   count(): Chainable<number>;
   takeWhile(fn: (next: Input) => boolean): Chainable<Input>;
-  toSingle<Default = Input>(defaultValue?: Default): Input | Default;
-  toArray(): Input[];
-  toConsumer(): void;
   sort(compareFn?: (a: Input, b: Input) => number): Chainable<Input>;
   groupBy<Key extends PropertyKey>(
     keySelector: (next: Input) => Key,
@@ -46,11 +58,8 @@ export type Chainable<Input> = {
   some(fn: (next: Input) => boolean): Chainable<boolean>;
   every(fn: (next: Input) => boolean): Chainable<boolean>;
   reverse(): Chainable<Input>;
-  toGenerator(): Generator<Input>;
   // Custom GeneratorOperator
-  lift<Output = Input>(
-    generatorFunction: (
-      generator: ChainableGenerator<Input>,
-    ) => ChainableGenerator<Output>,
+  lift<Output = never>(
+    generatorFunction: GeneratorMiddleware<Input, Output>,
   ): Chainable<Output>;
 };

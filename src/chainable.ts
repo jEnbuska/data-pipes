@@ -1,4 +1,9 @@
-import { type Chainable, type ChainableGenerator } from "./types";
+import {
+  type Chainable,
+  type GeneratorProvider,
+  type GeneratorMiddleware,
+  type PipeSource,
+} from "./types";
 import {
   min,
   max,
@@ -23,119 +28,137 @@ import {
   skipWhile,
   forEach,
   reduce,
-} from "./generator-functions";
-import {
-  toArray,
-  toGenerator,
-  toConsumer,
-  toSingle,
-} from "./generator-consumers";
-import { takeLast } from "./generator-functions/takeLast/takeLast.ts";
-import { skipLast } from "./generator-functions/skipLast/skipLast.ts";
+} from "./generators";
+import { toArray, toGenerator, toConsumer, toSingle } from "./consumers";
+import { takeLast } from "./generators/takeLast/takeLast.ts";
+import { skipLast } from "./generators/skipLast/skipLast.ts";
 
-export function chainable<Input>(
-  generator: ChainableGenerator<Input>,
+function chainable<Input>(
+  generator: GeneratorProvider<Input>,
 ): Chainable<Input> {
   return {
     reverse() {
-      return chainable(reverse(generator));
+      return chainable(reverse()(generator));
     },
     find(predicate) {
-      return chainable(find(generator, predicate));
+      return chainable(find(predicate)(generator));
     },
     defaultIfEmpty<Default>(defaultValue: Default) {
-      return chainable(defaultIfEmpty(generator, defaultValue));
+      return chainable(defaultIfEmpty(defaultValue)(generator));
     },
     min(callback) {
-      return chainable(min(generator, callback));
+      return chainable(min(callback)(generator));
     },
     max(callback) {
-      return chainable(max(generator, callback));
+      return chainable(max(callback)(generator));
     },
     distinctBy<Value>(selector: (next: Input) => Value) {
-      return chainable(distinctBy(generator, selector));
+      return chainable(distinctBy(selector)(generator));
     },
     distinctUntilChanged(isEqual) {
-      return chainable(distinctUntilChanged(generator, isEqual));
+      return chainable(distinctUntilChanged(isEqual)(generator));
     },
     sort(comparator) {
-      return chainable(sort(generator, comparator));
+      return chainable(sort(comparator)(generator));
     },
-    lift<Output>(
-      generatorFunction: (
-        generator: ChainableGenerator<Input>,
-      ) => ChainableGenerator<Output>,
-    ) {
-      return chainable(generatorFunction(generator));
+    lift<Output>(middleware: GeneratorMiddleware<Input, Output>) {
+      return chainable(middleware(generator));
     },
     groupBy<Key extends PropertyKey>(
       keySelector: (next: Input) => Key,
       groups?: Key[],
     ) {
-      return chainable(groupBy(generator, keySelector, groups)) as any;
+      return chainable(groupBy(keySelector, groups)(generator)) as any;
     },
     flat<Depth extends number = 1>(depth?: Depth) {
-      return chainable(flat(generator, depth));
+      return chainable(flat(depth)(generator));
     },
     unflat() {
-      return chainable(unflat(generator));
+      return chainable(unflat()(generator));
     },
     map<Output>(mapper: (next: Input) => Output) {
-      return chainable(map(generator, mapper));
+      return chainable(map(mapper)(generator));
     },
     flatMap<Output>(callback: (next: Input) => Output | readonly Output[]) {
-      return chainable(flatMap(generator, callback));
+      return chainable(flatMap(callback)(generator));
     },
     filter(predicate) {
-      return chainable(filter(generator, predicate));
+      return chainable(filter(predicate)(generator));
     },
     reduce<Output>(
       reducer: (acc: Output, next: Input) => Output,
       initialValue: Output,
     ) {
-      return chainable(reduce(generator, reducer, initialValue));
+      return chainable(reduce(reducer, initialValue)(generator));
     },
     forEach(consumer) {
-      return chainable(forEach(generator, consumer));
+      return chainable(forEach(consumer)(generator));
     },
     skipWhile(predicate) {
-      return chainable(skipWhile(generator, predicate));
+      return chainable(skipWhile(predicate)(generator));
     },
     skip(count) {
-      return chainable(skip(generator, count));
+      return chainable(skip(count)(generator));
     },
     skipLast(count: number): Chainable<Input> {
-      return chainable(skipLast(generator, count));
+      return chainable(skipLast(count)(generator));
     },
     take(count) {
-      return chainable(take(generator, count));
+      return chainable(take(count)(generator));
     },
     takeLast(count) {
-      return chainable(takeLast(generator, count));
+      return chainable(takeLast(count)(generator));
     },
     count() {
-      return chainable(count(generator));
+      return chainable(count()(generator));
     },
     takeWhile(predicate) {
-      return chainable(takeWhile(generator, predicate));
+      return chainable(takeWhile(predicate)(generator));
     },
     every(predicate) {
-      return chainable(every(generator, predicate));
+      return chainable(every(predicate)(generator));
     },
     some(predicate) {
-      return chainable(some(generator, predicate));
+      return chainable(some(predicate)(generator));
     },
     toSingle<Default>(...args: [Default] | []) {
-      return toSingle(generator, ...args);
+      return toSingle(...args)(generator);
     },
     toArray() {
-      return toArray(generator);
+      return toArray()(generator);
     },
     toGenerator() {
-      return toGenerator(generator);
+      return toGenerator()(generator);
     },
     toConsumer() {
-      toConsumer(generator);
+      toConsumer()(generator);
     },
   };
 }
+
+function isGeneratorFunction(
+  source: unknown,
+): source is () => Generator<unknown, unknown> {
+  return (
+    Boolean(source) &&
+    Object.getPrototypeOf(source).constructor.name === "GeneratorFunction"
+  );
+}
+
+export default Object.assign(chainable, {
+  from<Input>(...sources: Array<PipeSource<Input>>): Chainable<Input> {
+    return chainable(
+      (function* (): GeneratorProvider<Input> {
+        for (const next of sources) {
+          if (isGeneratorFunction(next)) {
+            yield* next();
+          } else if (Array.isArray(next)) {
+            yield* next;
+          } else {
+            yield next;
+          }
+        }
+      })(),
+    );
+  },
+});
