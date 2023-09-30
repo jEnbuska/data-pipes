@@ -36,6 +36,12 @@ describe("chainable from", () => {
     ]);
   });
 
+  test("Symbol.iterator", () => {
+    expect([...chainable.from([1, 2, 3]).map((it) => it * 2)]).toStrictEqual([
+      2, 4, 6,
+    ]);
+  });
+
   test("mixed", () => {
     expect(
       chainable.from(...numbers, numbers, generator).toArray(),

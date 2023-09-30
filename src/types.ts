@@ -14,6 +14,7 @@ export type GeneratorConsumer<Input> = {
   toArray(): Input[];
   toConsumer(): void;
   toSingle<Default = Input>(defaultValue?: Default): Input | Default;
+  [Symbol.iterator](): Iterator<Input>;
 };
 export type Chainable<Input> = GeneratorConsumer<Input> & {
   map<Output>(fn: (next: Input) => Output): Chainable<Output>;

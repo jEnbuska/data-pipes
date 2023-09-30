@@ -29,14 +29,16 @@ import {
   forEach,
   reduce,
 } from "./generators";
-import { toArray, toGenerator, toConsumer, toSingle } from "./consumers";
 import { takeLast } from "./generators/takeLast/takeLast.ts";
 import { skipLast } from "./generators/skipLast/skipLast.ts";
+import { createProvider } from "./create-provider.ts";
+import { createConsumers } from "./create-consumers.ts";
 
 function chainable<Input>(
   generator: GeneratorProvider<Input>,
 ): Chainable<Input> {
   return {
+    ...createConsumers(generator),
     reverse() {
       return chainable(reverse()(generator));
     },
@@ -121,44 +123,11 @@ function chainable<Input>(
     some(predicate) {
       return chainable(some(predicate)(generator));
     },
-    toSingle<Default>(...args: [Default] | []) {
-      return toSingle(...args)(generator);
-    },
-    toArray() {
-      return toArray()(generator);
-    },
-    toGenerator() {
-      return toGenerator()(generator);
-    },
-    toConsumer() {
-      toConsumer()(generator);
-    },
   };
-}
-
-function isGeneratorFunction(
-  source: unknown,
-): source is () => Generator<unknown, unknown> {
-  return (
-    Boolean(source) &&
-    Object.getPrototypeOf(source).constructor.name === "GeneratorFunction"
-  );
 }
 
 export default Object.assign(chainable, {
   from<Input>(...sources: Array<PipeSource<Input>>): Chainable<Input> {
-    return chainable(
-      (function* (): GeneratorProvider<Input> {
-        for (const next of sources) {
-          if (isGeneratorFunction(next)) {
-            yield* next();
-          } else if (Array.isArray(next)) {
-            yield* next;
-          } else {
-            yield next;
-          }
-        }
-      })(),
-    );
+    return chainable(createProvider(sources));
   },
 });
