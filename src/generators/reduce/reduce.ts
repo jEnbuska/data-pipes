@@ -1,4 +1,4 @@
-import { type GeneratorProvider, type GeneratorMiddleware } from "../../types";
+import { type GeneratorMiddleware } from "../../types";
 
 export function reduce<Input, Output>(
   reducer: (acc: Output, next: Input) => Output,
