@@ -1,6 +1,6 @@
 {
   "name": "data-pipes",
-  "module": "index.ts",
+  "module": "./src/index.ts",
   "type": "module",
   "scripts": {
     "build": "bun build ./src/index.ts --minify --outfile=dist/index.js",
