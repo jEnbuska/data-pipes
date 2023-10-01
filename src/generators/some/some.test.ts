@@ -1,22 +1,26 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, some } from "../..";
+import { pipe } from "../../pipe/pipe.ts";
 
 describe("some", () => {
   test("has some", () => {
-    expect(chainable.from(false, true, false).some(Boolean).toSingle()).toBe(
-      true,
-    );
+    expect(chainable(false, true, false).some(Boolean).first()).toBe(true);
   });
 
   test("has none", () => {
-    expect(chainable.from(false, false, false).some(Boolean).toSingle()).toBe(
-      false,
-    );
+    expect(chainable(false, false, false).some(Boolean).first()).toBe(false);
   });
 
   test("has every", () => {
-    expect(chainable.from(true, true, true).some(Boolean).toSingle()).toBe(
-      true,
-    );
+    expect(chainable(true, true, true).some(Boolean).first()).toBe(true);
+  });
+
+  test("pipe - some", () => {
+    expect(
+      pipe(
+        [1, 2, 3, 4],
+        some((n) => n > 2),
+      ).first(),
+    ).toBe(true);
   });
 });

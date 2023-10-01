@@ -1,13 +1,22 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, filter } from "../..";
+import { pipe } from "../../pipe/pipe.ts";
 
 describe("filter", () => {
-  test("filter evens", () => {
+  test("chainable", () => {
     expect(
-      chainable
-        .from(1, 2, 3, 4)
-        .filter((n) => n % 2 === 0)
+      chainable(1, 2, 3, 4)
+        .filter((n) => n % 2)
         .toArray(),
-    ).toStrictEqual([2, 4]);
+    ).toStrictEqual([1, 3]);
+  });
+
+  test("pipe", () => {
+    expect(
+      pipe(
+        [1, 2, 3, 4],
+        filter((n) => n % 2),
+      ).toArray(),
+    ).toStrictEqual([1, 3]);
   });
 });

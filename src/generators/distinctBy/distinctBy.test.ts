@@ -4,8 +4,7 @@ import { chainable } from "../..";
 describe("distinctBy", () => {
   test("empty", () => {
     expect(
-      chainable
-        .from()
+      chainable()
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([]);
@@ -13,8 +12,7 @@ describe("distinctBy", () => {
 
   test("all unique", () => {
     expect(
-      chainable
-        .from(1, 2, 3)
+      chainable(1, 2, 3)
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -22,8 +20,7 @@ describe("distinctBy", () => {
 
   test("by module 2", () => {
     expect(
-      chainable
-        .from(1, 2, 3, 4)
+      chainable(1, 2, 3, 4)
         .distinctBy((it) => it % 2)
         .toArray(),
     ).toStrictEqual([1, 2]);

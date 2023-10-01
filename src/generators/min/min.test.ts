@@ -1,32 +1,39 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, min } from "../..";
+import { pipe } from "../../pipe/pipe.ts";
 
 describe("min", () => {
   const numbers = [2, 1, 3, 5, 4];
   test("empty", () => {
     expect(
-      chainable
-        .from<number>()
+      chainable<number>()
         .max((v) => v)
-        .toSingle(-1),
+        .first(-1),
     ).toBe(-1);
   });
 
   test("by value", () => {
     expect(
-      chainable
-        .from<number>(numbers)
+      chainable<number>(numbers)
         .min((v) => v)
-        .toSingle(),
+        .first(),
     ).toBe(1);
   });
 
   test("by module 4", () => {
     expect(
-      chainable
-        .from<number>(numbers)
+      chainable<number>(numbers)
         .min((v) => v % 4)
-        .toSingle(),
+        .first(),
     ).toBe(4);
+  });
+
+  test("pipe - min", () => {
+    expect(
+      pipe(
+        [2, 1, 3, 4],
+        min((v) => v),
+      ).first(),
+    ).toBe(1);
   });
 });

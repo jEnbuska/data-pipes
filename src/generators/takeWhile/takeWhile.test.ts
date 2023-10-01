@@ -5,8 +5,7 @@ describe("takeWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];
   test("takeWhile negative", () => {
     const callback = mock(() => {});
-    const result = chainable
-      .from(numbers)
+    const result = chainable(numbers)
       .forEach(callback)
       .takeWhile((n) => n < 0)
       .toArray();
@@ -16,8 +15,7 @@ describe("takeWhile", () => {
 
   test("takeWhile always", () => {
     const callback = mock(() => {});
-    const result = chainable
-      .from(numbers)
+    const result = chainable(numbers)
       .forEach(callback)
       .takeWhile(() => true)
       .toArray();
@@ -27,8 +25,7 @@ describe("takeWhile", () => {
 
   test("takeWhile never", () => {
     const callback = mock(() => {});
-    const array = chainable
-      .from(numbers)
+    const array = chainable(numbers)
       .forEach(callback)
       .takeWhile(() => false)
       .toArray();

@@ -3,8 +3,7 @@ import { chainable } from "../..";
 
 describe("flatMap", () => {
   test("flatten non array", () => {
-    chainable
-      .from(1, 2, 3)
+    chainable(1, 2, 3)
       .flatMap((it) => it)
       .forEach((_) => {});
   });

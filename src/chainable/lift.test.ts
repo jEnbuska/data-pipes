@@ -1,10 +1,9 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from ".";
+import { chainable } from "./chainable.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
-    const array = chainable
-      .from(1, 2, 3)
+    const array = chainable(1, 2, 3)
       .lift(function* multiplyByTwo(generator) {
         for (const next of generator) {
           yield next * 2;
@@ -15,8 +14,7 @@ describe("lift", () => {
   });
 
   test("lift filter", () => {
-    const array = chainable
-      .from(-2, 1, 2, -3, 4)
+    const array = chainable(-2, 1, 2, -3, 4)
       .lift(function* filterNegatives(generator) {
         for (const next of generator) {
           if (next < 0) continue;
@@ -28,8 +26,7 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = chainable
-      .from("a", "b", "c")
+    const text = chainable("a", "b", "c")
       .lift(function* joinStrings(generator) {
         const acc: string[] = [];
         for (const next of generator) {
@@ -37,7 +34,7 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .toSingle();
+      .first();
     expect(text).toStrictEqual("a.b.c");
   });
 });

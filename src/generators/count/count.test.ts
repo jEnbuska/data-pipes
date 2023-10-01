@@ -3,12 +3,12 @@ import { chainable } from "../..";
 
 describe("count", () => {
   test("count single", () => {
-    expect(chainable.from(0).count().toSingle()).toBe(1);
+    expect(chainable(0).count().first()).toBe(1);
   });
   test("count multiple", () => {
-    expect(chainable.from(0, 1, 2, [3, 4]).count().toSingle()).toBe(5);
+    expect(chainable(0, 1, 2, [3, 4]).count().first()).toBe(5);
   });
   test("count none", () => {
-    expect(chainable.from().count().toSingle()).toBe(0);
+    expect(chainable().count().first()).toBe(0);
   });
 });

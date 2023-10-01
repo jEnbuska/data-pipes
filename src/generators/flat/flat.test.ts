@@ -9,8 +9,7 @@ describe("flat", () => {
   const numbers = [1, 2, 3];
   function flatten<T, const D extends number>(input: T[], depth: D) {
     return (
-      chainable
-        .from(input)
+      chainable(input)
         .forEach(verify<FlatArray<T[], 0>>())
         .flat(depth)
         // Verify typing works correctly

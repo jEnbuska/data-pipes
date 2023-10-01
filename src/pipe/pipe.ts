@@ -1,10 +1,10 @@
 import {
-  type GeneratorMiddleware,
-  type GeneratorConsumer,
   type PipeSource,
-} from "./types.ts";
-import { createProvider } from "./create-provider.ts";
-import { createConsumers } from "./create-consumers.ts";
+  type GeneratorMiddleware,
+  type GeneratorConsumable,
+} from "../types.ts";
+import { createProvider } from "../create-provider.ts";
+import { createConsumable } from "../create-consumable.ts";
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
   source: PipeSource<Input>,
@@ -25,7 +25,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
   middleware15: GeneratorMiddleware<N, O>,
   middleware16: GeneratorMiddleware<O, P>,
   middleware17: GeneratorMiddleware<P, Q>,
-): GeneratorConsumer<Q>;
+): GeneratorConsumable<Q>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
   source: PipeSource<Input>,
@@ -45,7 +45,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
   middleware14: GeneratorMiddleware<M, N>,
   middleware15: GeneratorMiddleware<N, O>,
   middleware16: GeneratorMiddleware<O, P>,
-): GeneratorConsumer<P>;
+): GeneratorConsumable<P>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
   source: PipeSource<Input>,
@@ -64,7 +64,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
   middleware13: GeneratorMiddleware<L, M>,
   middleware14: GeneratorMiddleware<M, N>,
   middleware15: GeneratorMiddleware<N, O>,
-): GeneratorConsumer<O>;
+): GeneratorConsumable<O>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   source: PipeSource<Input>,
@@ -82,7 +82,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
   middleware12: GeneratorMiddleware<K, L>,
   middleware13: GeneratorMiddleware<L, M>,
   middleware14: GeneratorMiddleware<M, N>,
-): GeneratorConsumer<N>;
+): GeneratorConsumable<N>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M>(
   source: PipeSource<Input>,
@@ -99,7 +99,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M>(
   middleware11: GeneratorMiddleware<J, K>,
   middleware12: GeneratorMiddleware<K, L>,
   middleware13: GeneratorMiddleware<L, M>,
-): GeneratorConsumer<M>;
+): GeneratorConsumable<M>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L>(
   source: PipeSource<Input>,
@@ -115,7 +115,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L>(
   middleware10: GeneratorMiddleware<I, J>,
   middleware11: GeneratorMiddleware<J, K>,
   middleware12: GeneratorMiddleware<K, L>,
-): GeneratorConsumer<L>;
+): GeneratorConsumable<L>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K>(
   source: PipeSource<Input>,
@@ -130,7 +130,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K>(
   middleware9: GeneratorMiddleware<H, I>,
   middleware10: GeneratorMiddleware<I, J>,
   middleware11: GeneratorMiddleware<J, K>,
-): GeneratorConsumer<K>;
+): GeneratorConsumable<K>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I, J>(
   source: PipeSource<Input>,
@@ -144,7 +144,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J>(
   middleware8: GeneratorMiddleware<G, H>,
   middleware9: GeneratorMiddleware<H, I>,
   middleware10: GeneratorMiddleware<I, J>,
-): GeneratorConsumer<J>;
+): GeneratorConsumable<J>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H, I>(
   source: PipeSource<Input>,
@@ -157,7 +157,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I>(
   middleware7: GeneratorMiddleware<F, G>,
   middleware8: GeneratorMiddleware<G, H>,
   middleware9: GeneratorMiddleware<H, I>,
-): GeneratorConsumer<I>;
+): GeneratorConsumable<I>;
 
 export function pipe<Input, A, B, C, D, E, F, G, H>(
   source: PipeSource<Input>,
@@ -169,7 +169,7 @@ export function pipe<Input, A, B, C, D, E, F, G, H>(
   middleware6: GeneratorMiddleware<E, F>,
   middleware7: GeneratorMiddleware<F, G>,
   middleware8: GeneratorMiddleware<G, H>,
-): GeneratorConsumer<H>;
+): GeneratorConsumable<H>;
 
 export function pipe<Input, A, B, C, D, E, F, G>(
   source: PipeSource<Input>,
@@ -180,7 +180,7 @@ export function pipe<Input, A, B, C, D, E, F, G>(
   middleware5: GeneratorMiddleware<D, E>,
   middleware6: GeneratorMiddleware<E, F>,
   middleware7: GeneratorMiddleware<F, G>,
-): GeneratorConsumer<G>;
+): GeneratorConsumable<G>;
 
 export function pipe<Input, A, B, C, D, E, F>(
   source: PipeSource<Input>,
@@ -190,7 +190,7 @@ export function pipe<Input, A, B, C, D, E, F>(
   middleware4: GeneratorMiddleware<C, D>,
   middleware5: GeneratorMiddleware<D, E>,
   middleware6: GeneratorMiddleware<E, F>,
-): GeneratorConsumer<F>;
+): GeneratorConsumable<F>;
 
 export function pipe<Input, A, B, C, D, E>(
   source: PipeSource<Input>,
@@ -199,7 +199,7 @@ export function pipe<Input, A, B, C, D, E>(
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
   middleware5: GeneratorMiddleware<D, E>,
-): GeneratorConsumer<E>;
+): GeneratorConsumable<E>;
 
 export function pipe<Input, A, B, C, D>(
   source: PipeSource<Input>,
@@ -207,35 +207,35 @@ export function pipe<Input, A, B, C, D>(
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
-): GeneratorConsumer<D>;
+): GeneratorConsumable<D>;
 
 export function pipe<Input, A, B, C>(
   source: PipeSource<Input>,
   middleware1: GeneratorMiddleware<Input, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
-): GeneratorConsumer<C>;
+): GeneratorConsumable<C>;
 
 export function pipe<Input, A, B>(
   source: PipeSource<Input>,
   middleware1: GeneratorMiddleware<Input, A>,
   middleware2: GeneratorMiddleware<A, B>,
-): GeneratorConsumer<B>;
+): GeneratorConsumable<B>;
 
 export function pipe<Input, A>(
   source: PipeSource<Input>,
   middleware1: GeneratorMiddleware<Input, A>,
-): GeneratorConsumer<A>;
+): GeneratorConsumable<A>;
 
 export function pipe<Input>(
   source: PipeSource<Input>,
-): GeneratorConsumer<Input>;
+): GeneratorConsumable<Input>;
 
-export function pipe(...args: unknown[]): GeneratorConsumer<unknown> {
+export function pipe(...args: unknown[]): GeneratorConsumable<unknown> {
   const [source, ...middlewares] = args;
   const generator = middlewares.reduce(
     (acc, next) => (next as any)(acc),
     createProvider([source]),
   );
-  return createConsumers(generator as any);
+  return createConsumable(generator as any);
 }

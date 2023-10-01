@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, find } from "../..";
+import { pipe } from "../../pipe/pipe.ts";
 
 describe("find", () => {
   test("find first", () => {
     expect(
-      chainable
-        .from(1, 2, 3)
+      chainable(1, 2, 3)
         .find((it) => it === 1)
         .toArray(),
     ).toStrictEqual([1]);
@@ -13,8 +13,7 @@ describe("find", () => {
 
   test("find second", () => {
     expect(
-      chainable
-        .from(1, 2, 3)
+      chainable(1, 2, 3)
         .find((it) => it === 2)
         .toArray(),
     ).toStrictEqual([2]);
@@ -22,8 +21,7 @@ describe("find", () => {
 
   test("find last", () => {
     expect(
-      chainable
-        .from(1, 2, 3)
+      chainable(1, 2, 3)
         .find((it) => it === 3)
         .toArray(),
     ).toStrictEqual([3]);
@@ -31,10 +29,18 @@ describe("find", () => {
 
   test("find none", () => {
     expect(
-      chainable
-        .from(1, 2, 3)
+      chainable(1, 2, 3)
         .find((it) => it === 4)
         .toArray(),
     ).toStrictEqual([]);
+  });
+
+  test("pipe - find", () => {
+    expect(
+      pipe(
+        [1, 2, 3, 4],
+        find((n) => n > 2),
+      ).toArray(),
+    ).toStrictEqual([3]);
   });
 });

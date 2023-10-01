@@ -1,9 +1,9 @@
 import { type GeneratorProvider } from "../../types";
 
-export function toSingle<Default, ImperativeInput = never>(
+export function first<Default, ImperativeInput = never>(
   ...args: [Default] | []
 ) {
-  return function toSingle<Input = ImperativeInput>(
+  return function toFirst<Input = ImperativeInput>(
     generator: GeneratorProvider<Input>,
   ): Default | Input {
     const result = generator.next();

@@ -17,13 +17,11 @@ describe("toConsumer", () => {
 
   test("pipe to consumer", () => {
     const consumed: number[] = [];
-    chainable
-      .from(function* source() {
-        yield consumed.push(1);
-        yield consumed.push(2);
-        yield consumed.push(3);
-      })
-      .toConsumer();
+    chainable(function* source() {
+      yield consumed.push(1);
+      yield consumed.push(2);
+      yield consumed.push(3);
+    }).consume();
     expect(consumed).toStrictEqual(numbers);
   });
 });

@@ -3,23 +3,22 @@ import { chainable } from "../../index.ts";
 
 describe("skipLast", () => {
   test("skip last when array is empty", () => {
-    expect(chainable.from().skipLast(3).toArray()).toStrictEqual([]);
+    expect(chainable().skipLast(3).toArray()).toStrictEqual([]);
   });
 
   test("when count is more than number of inputs", () => {
-    expect(chainable.from(1, 2).skipLast(3).toArray()).toStrictEqual([]);
+    expect(chainable(1, 2).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is same as than number of inputs", () => {
-    expect(chainable.from(1, 2, 3).skipLast(3).toArray()).toStrictEqual([]);
+    expect(chainable(1, 2, 3).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is 1 less than as than number of inputs", () => {
-    expect(chainable.from(1, 2, 3).skipLast(2).toArray()).toStrictEqual([1]);
+    expect(chainable(1, 2, 3).skipLast(2).toArray()).toStrictEqual([1]);
   });
   test("when count less than as than number of inputs", () => {
     let lastEmitted: number | undefined;
     const emittedBySkipLast: Array<{ after?: number; value: number }> = [];
-    chainable
-      .from(1, 2, 3, 4, 5)
+    chainable(1, 2, 3, 4, 5)
       .forEach((n) => {
         lastEmitted = n;
       })
@@ -27,7 +26,7 @@ describe("skipLast", () => {
       .forEach((n) => {
         emittedBySkipLast.push({ after: lastEmitted, value: n });
       })
-      .toConsumer();
+      .consume();
     expect(emittedBySkipLast).toStrictEqual([
       { after: 3, value: 1 },
       { after: 4, value: 2 },

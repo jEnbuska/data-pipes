@@ -1,4 +1,8 @@
-import { type GeneratorProvider, type PipeSource } from "./types.ts";
+import {
+  type GeneratorProvider,
+  type PipeSource,
+  type GeneratorConsumable,
+} from "./types.ts";
 
 function isGeneratorFunction(
   source: unknown,
@@ -9,6 +13,12 @@ function isGeneratorFunction(
   );
 }
 
+function isGeneratorConsumer(
+  source: unknown,
+): source is GeneratorConsumable<unknown> {
+  return source?.toString?.() === "[object GeneratorConsumer]";
+}
+
 export function* createProvider<Input>(
   sources: Array<PipeSource<Input>>,
 ): GeneratorProvider<Input> {
@@ -16,6 +26,8 @@ export function* createProvider<Input>(
     if (isGeneratorFunction(next)) {
       yield* next();
     } else if (Array.isArray(next)) {
+      yield* next;
+    } else if (isGeneratorConsumer(next)) {
       yield* next;
     } else {
       yield next;

@@ -28,20 +28,18 @@ describe("toArray", () => {
   });
 
   test("pipe single to array", () => {
-    expect(chainable.from(1).toArray()).toStrictEqual([1]);
+    expect(chainable(1).toArray()).toStrictEqual([1]);
   });
 
   test("pipe generator array", () => {
     expect(
-      chainable
-        .from(function* () {
-          yield* [1, 2, 3];
-        })
-        .toArray(),
+      chainable(function* () {
+        yield* [1, 2, 3];
+      }).toArray(),
     ).toStrictEqual([1, 2, 3]);
   });
 
   test("pipe array to array", () => {
-    expect(chainable.from(numbers).toArray()).toStrictEqual(numbers);
+    expect(chainable(numbers).toArray()).toStrictEqual(numbers);
   });
 });

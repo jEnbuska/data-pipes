@@ -4,7 +4,7 @@ import { chainable } from "../..";
 describe("unflat", () => {
   test("numbers", () => {
     const numbers = [1, 2, 3];
-    const array = chainable.from(numbers).unflat().toSingle();
+    const array = chainable(numbers).unflat().first();
     expect(array).toStrictEqual(numbers);
   });
 });

@@ -1,28 +1,34 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, reduce } from "../..";
+import { pipe } from "../../pipe/pipe.ts";
 
 describe("reduce", () => {
-  test("sum", () => {
-    const sum = chainable
-      .from(1, 2, 3)
+  test("sum chainable", () => {
+    const sum = chainable(1, 2, 3)
       .reduce((acc, v) => acc + v, 0)
-      .toSingle();
+      .first();
+    expect(sum).toBe(6);
+  });
+
+  test("sum pipe", () => {
+    const sum = pipe(
+      [1, 2, 3],
+      reduce((acc, v) => acc + v, 0),
+    ).first();
     expect(sum).toBe(6);
   });
 
   test("empty sum", () => {
-    const sum = chainable
-      .from<number>()
+    const sum = chainable<number>()
       .reduce((acc, v) => acc + v, 0)
-      .toSingle();
+      .first();
     expect(sum).toBe(0);
   });
 
   test("to array", () => {
-    const array = chainable
-      .from(1, 2, 3)
+    const array = chainable(1, 2, 3)
       .reduce((acc, v) => [...acc, v], [] as number[])
-      .toSingle();
+      .first();
     expect(array).toStrictEqual([1, 2, 3]);
   });
 });

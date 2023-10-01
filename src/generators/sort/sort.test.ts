@@ -4,8 +4,7 @@ import { chainable } from "../..";
 describe("sort", () => {
   test("sort numbers", () => {
     expect(
-      chainable
-        .from(3, 1, 2)
+      chainable(3, 1, 2)
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -13,8 +12,7 @@ describe("sort", () => {
 
   test("sort single", () => {
     expect(
-      chainable
-        .from(1)
+      chainable(1)
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([1]);
@@ -22,8 +20,7 @@ describe("sort", () => {
 
   test("sort empty", () => {
     expect(
-      chainable
-        .from<number>()
+      chainable<number>()
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([]);
