@@ -52,7 +52,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * and yields the items that pass the predicate to the next operation.
    *
    * @example
-   * chainable(1,2,3,"A")
+   * chainable([1,2,3,"A"])
    *   .filter((n): n is number => typeof n === "number")
    *   .toArray() // [1,2,3];
    */
@@ -64,7 +64,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * and yields the items that pass the predicate to the next operation.
    *
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *   .filter(n => n % 2)
    *   .toArray() // [1,3];
    */
@@ -73,7 +73,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Reduces items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *   .reduce((sum, n) => sum + n, 0)
    *   .first() // 6
    * */
@@ -85,7 +85,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Calls the provided consumer function for each item produced by the generator and yields it
    * to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .forEach(n => console.log(n)) // 1, 2, 3
    *  .consume();
    * */
@@ -93,7 +93,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * skips the first `count` items produced by the generator and yields the rest to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .skip(2)
    *  .toArray() // [3]
    */
@@ -101,7 +101,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * skips the last `count` items produced by the generator and yields the rest to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .skipLast(2)
    *  .toArray() // [1]
    */
@@ -109,7 +109,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * skips items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .skipWhile(n => n < 3)
    *  .toArray() // [3,4]
    * */
@@ -117,7 +117,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .take(2)
    *  .toArray() // [1,2]
    */
@@ -125,7 +125,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .takeLast(2)
    *  .toArray() // [2,3]
    */
@@ -133,7 +133,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * counts the number of items produced by the generator and then yields the total to the next operation.
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .count()
    *  .first() // 3
    */
@@ -141,7 +141,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .takeWhile(n => n < 3)
    *  .toArray() // [1,2]
    */
@@ -150,7 +150,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
    *
    * @example
-   * chainable(3,2,1)
+   * chainable([3,2,1])
    *  .sort((a, z) => a - z)
    *  .toArray() // [1,2,3]
    */
@@ -159,17 +159,15 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
 
    * @example
-   * pipe(
-   *  [1,2,3,4],
-   *  groupBy(n => n % 2 ? 'odd' : 'even')
-   * ).toArray() // [{even: [2,4]}, {odd: [1,3]}]
+   * chainable([1,2,3,4])
+   *  .groupBy(n => n % 2 ? 'odd' : 'even')
+   *  .first() // {even: [2,4], odd: [1,3]}
    *
    * If the groups parameter is provided, only the groups specified will be collected.
    * @example
-   * pipe(
-   *  [1,2,3,4],
-   *  groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
-   * ).toArray() // {odd: [1,3]}]
+   * chainable([1,2,3,4])
+   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
+   *  .first() // {odd: [1,3]}
    */
   groupBy<Groups extends PropertyKey, Key extends Groups>(
     keySelector: (next: Input) => Key | PropertyKey,
@@ -179,17 +177,15 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
 
    * @example
-   * pipe(
-   *  [1,2,3,4],
-   *  groupBy(n => n % 2 ? 'odd' : 'even')
-   * ).toArray() // [{even: [2,4]}, {odd: [1,3]}]
+   * chainable([1,2,3,4])
+   *  .groupBy(n => n % 2 ? 'odd' : 'even')
+   *  .first() // {even: [2,4], odd: [1,3]}
    *
    * If the groups parameter is provided, only the groups specified will be collected.
    * @example
-   * pipe(
-   *  [1,2,3,4],
-   *  groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
-   * ).toArray() // {odd: [1,3]}]
+   * chainable([1,2,3,4])
+   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
+   *  .first() // {odd: [1,3]}
    */
   groupBy<Key extends PropertyKey>(
     keySelector: (next: Input) => Key,
@@ -198,7 +194,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
    *
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .distinctBy(n => n % 2)
    *  .toArray() // [1,2]
    */
@@ -208,16 +204,14 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * If no compare function is provided, the strict equality operator is used.
    *
    * @example
-   * pipe(
-   *  [1,2,2,2,3],
-   *  distinctUntilChanged()
-   * ).toArray() // [1,2,3]
+   * chainable([1,2,2,2,3])
+   *  .distinctUntilChanged()
+   *  .toArray() // [1,2,3]
    *
    * @example
-   * pipe(
-   *  [1, 2, 5, 8, 3],
-   *  distinctUntilChanged((previous, current) => previous % 3 === current % 3)
-   * ).toArray() // [1,2,3]
+   * chainable([1, 2, 5, 8, 3])
+   *  .distinctUntilChanged((previous, current) => previous % 3 === current % 3)
+   *  .toArray() // [1,2,3]
    */
   distinctUntilChanged(
     comparator?: (previous: Input, current: Input) => boolean,
@@ -237,8 +231,8 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Finally it yields the item with the highest number to the next operation.
    *
    * @example
-   * chainable(1,2,4,3)
-   *  .min(n => n)
+   * chainable([1,2,4,3])
+   *  .max(n => n)
    *  .first() // 4
    */
   max(selector: (next: Input) => number): Chainable<Input>;
@@ -246,7 +240,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * yields the default value if the generator does not produce any items
    *
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .filter(it => it > 3)
    *  .defaultIfEmpty(0)
    *  .first() // 0
@@ -257,7 +251,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .find(n => n > 2)
    *  .toArray() // [3]
    */
@@ -267,7 +261,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * if the generator is empty yields false
    *
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .some(n => n > 2)
    *  .first() // true
    */
@@ -277,7 +271,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * if the generator is empty yields true
    *
    * @example
-   * chainable(1,2,3,4)
+   * chainable([1,2,3,4])
    *  .every(n => n > 1)
    *  .first() // false
    */
@@ -285,7 +279,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   /**
    * yields the items in reverse order after the generator is consumed
    * @example
-   * chainable(1,2,3)
+   * chainable([1,2,3])
    *  .reverse()
    *  .toArray() // [3,2,1]
    */
@@ -294,7 +288,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    * Accepts a generator middleware and yields the output of the middleware to the next operation.
    *
    * @example
-   * chainable(1, 2, 3)
+   * chainable([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
    *    for (const next of generator) {
    *     yield next * 2;
@@ -303,7 +297,7 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    *   .toArray() // [2, 4, 6]
    *
    * @example
-   * chainable(-2, 1, 2, -3, 4)
+   * chainable([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
    *   for (const next of generator) {
    *    if (next < 0) continue;

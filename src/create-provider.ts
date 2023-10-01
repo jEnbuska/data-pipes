@@ -4,33 +4,29 @@ import {
   type GeneratorConsumable,
 } from "./types.ts";
 
-function isGeneratorFunction(
+function isGeneratorFunction<Input>(
   source: unknown,
-): source is () => Generator<unknown, unknown> {
+): source is () => GeneratorProvider<Input> {
   return (
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "GeneratorFunction"
   );
 }
 
-function isGeneratorConsumer(
+function isGeneratorConsumer<Input>(
   source: unknown,
-): source is GeneratorConsumable<unknown> {
+): source is GeneratorConsumable<Input> {
   return source?.toString?.() === "[object GeneratorConsumer]";
 }
 
 export function* createProvider<Input>(
-  sources: Array<PipeSource<Input>>,
+  source: PipeSource<Input>,
 ): GeneratorProvider<Input> {
-  for (const next of sources) {
-    if (isGeneratorFunction(next)) {
-      yield* next();
-    } else if (Array.isArray(next)) {
-      yield* next;
-    } else if (isGeneratorConsumer(next)) {
-      yield* next;
-    } else {
-      yield next;
-    }
+  if (isGeneratorFunction<Input>(source)) {
+    yield* source();
+  } else if (Array.isArray(source) || isGeneratorConsumer(source)) {
+    yield* source;
+  } else {
+    yield source;
   }
 }

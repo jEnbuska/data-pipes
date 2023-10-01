@@ -10,14 +10,14 @@ import {
  * pipe(
  *  [1,2,3,4],
  *  groupBy(n => n % 2 ? 'odd' : 'even')
- * ).toArray() // [{even: [2,4]}, {odd: [1,3]}]
+ * ).first() // {even: [2,4], odd: [1,3]}
  *
  * If the groups parameter is provided, only the groups specified will be collected.
  * @example
  * pipe(
  *  [1,2,3,4],
  *  groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
- * ).toArray() // {odd: [1,3]}]
+ * ).first() // {odd: [1,3]}
  */
 export function groupBy<Input, Groups extends PropertyKey, Key extends Groups>(
   keySelector: (next: Input) => Key | PropertyKey,
@@ -31,14 +31,14 @@ export function groupBy<Input, Groups extends PropertyKey, Key extends Groups>(
  * pipe(
  *  [1,2,3,4],
  *  groupBy(n => n % 2 ? 'odd' : 'even')
- * ).toArray() // [{even: [2,4]}, {odd: [1,3]}]
+ * ).first() // {even: [2,4], odd: [1,3]}
  *
  * If the groups parameter is provided, only the groups specified will be collected.
  * @example
  * pipe(
  *  [1,2,3,4],
  *  groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
- * ).toArray() // {odd: [1,3]}]
+ * ).first() // {odd: [1,3]}
  */
 export function groupBy<Input, Key extends PropertyKey>(
   keySelector: (next: Input) => Key,

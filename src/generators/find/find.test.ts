@@ -5,7 +5,7 @@ import { pipe } from "../../pipe/pipe.ts";
 describe("find", () => {
   test("find first", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .find((it) => it === 1)
         .toArray(),
     ).toStrictEqual([1]);
@@ -13,7 +13,7 @@ describe("find", () => {
 
   test("find second", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .find((it) => it === 2)
         .toArray(),
     ).toStrictEqual([2]);
@@ -21,7 +21,7 @@ describe("find", () => {
 
   test("find last", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .find((it) => it === 3)
         .toArray(),
     ).toStrictEqual([3]);
@@ -29,7 +29,7 @@ describe("find", () => {
 
   test("find none", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .find((it) => it === 4)
         .toArray(),
     ).toStrictEqual([]);

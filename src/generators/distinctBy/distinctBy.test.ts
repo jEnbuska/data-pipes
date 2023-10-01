@@ -12,7 +12,7 @@ describe("distinctBy", () => {
 
   test("all unique", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -20,7 +20,7 @@ describe("distinctBy", () => {
 
   test("by module 2", () => {
     expect(
-      chainable(1, 2, 3, 4)
+      chainable([1, 2, 3, 4])
         .distinctBy((it) => it % 2)
         .toArray(),
     ).toStrictEqual([1, 2]);

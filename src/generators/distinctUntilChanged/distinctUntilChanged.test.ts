@@ -9,7 +9,7 @@ describe("distinctUntilChanged", () => {
 
   test("all unique", () => {
     expect(
-      chainable(1, 2, 3)
+      chainable([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -17,7 +17,7 @@ describe("distinctUntilChanged", () => {
 
   test("similar consecutive values", () => {
     expect(
-      chainable(1, 1, 2, 3, 3, 4).distinctUntilChanged().toArray(),
+      chainable([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
     ).toStrictEqual([1, 2, 3, 4]);
   });
 

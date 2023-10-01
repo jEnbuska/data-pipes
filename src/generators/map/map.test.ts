@@ -5,7 +5,7 @@ import { pipe } from "../../pipe/pipe.ts";
 describe("map", () => {
   test("chainable", () => {
     expect(
-      chainable(1, 2)
+      chainable([1, 2])
         .map((n) => n * 2)
         .toArray(),
     ).toStrictEqual([2, 4]);

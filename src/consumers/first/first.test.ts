@@ -39,7 +39,7 @@ describe("first", () => {
   });
 
   test("pipe to first", () => {
-    expect(chainable(1, 2).first()).toBe(1);
+    expect(chainable([1, 2]).first()).toBe(1);
   });
 
   test("pipe none first", () => {

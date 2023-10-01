@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("reduce", () => {
   test("sum chainable", () => {
-    const sum = chainable(1, 2, 3)
+    const sum = chainable([1, 2, 3])
       .reduce((acc, v) => acc + v, 0)
       .first();
     expect(sum).toBe(6);
@@ -26,7 +26,7 @@ describe("reduce", () => {
   });
 
   test("to array", () => {
-    const array = chainable(1, 2, 3)
+    const array = chainable([1, 2, 3])
       .reduce((acc, v) => [...acc, v], [] as number[])
       .first();
     expect(array).toStrictEqual([1, 2, 3]);

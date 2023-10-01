@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("skip", () => {
   test("chainable skip 1", () => {
-    expect(chainable(1, 2, 3).skip(1).toArray()).toStrictEqual([2, 3]);
+    expect(chainable([1, 2, 3]).skip(1).toArray()).toStrictEqual([2, 3]);
   });
 
   test("pipe skip 1", () => {
@@ -12,14 +12,14 @@ describe("skip", () => {
   });
 
   test("skip all", () => {
-    expect(chainable(1, 2, 3).skip(5).toArray()).toStrictEqual([]);
+    expect(chainable([1, 2, 3]).skip(5).toArray()).toStrictEqual([]);
   });
 
   test("skip none", () => {
-    expect(chainable(1, 2, 3).skip(0).toArray()).toStrictEqual([1, 2, 3]);
+    expect(chainable([1, 2, 3]).skip(0).toArray()).toStrictEqual([1, 2, 3]);
   });
 
   test("skip negative", () => {
-    expect(chainable(1, 2, 3).skip(-1).toArray()).toStrictEqual([1, 2, 3]);
+    expect(chainable([1, 2, 3]).skip(-1).toArray()).toStrictEqual([1, 2, 3]);
   });
 });

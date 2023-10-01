@@ -132,7 +132,7 @@ function createChainable<Input>(
  * creates a chainable from the given sources
  *
  * @example
- * chainable(1,2,3)
+ * chainable([1,2,3])
  * .map(n => n * 2)
  * .toArray() // [2,4,6]
  *
@@ -143,12 +143,12 @@ function createChainable<Input>(
  *
  * @example
  * chainable(
- *  chainable(1,2,3).map(n => n * 2)
+ *  chainable([1,2,3]).map(n => n * 2)
  * ).map(n => n * 2)
  *  .toArray() // [4,8,12]
  */
 export function chainable<Input>(
-  ...sources: Array<PipeSource<Input>>
+  source: PipeSource<Input> = [],
 ): Chainable<Input> {
-  return createChainable(createProvider(sources));
+  return createChainable(createProvider(source));
 }

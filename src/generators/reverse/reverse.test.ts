@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("reverse", () => {
   test("chainable - numbers", () => {
-    const array = chainable(1, 2, 3).reverse().toArray();
+    const array = chainable([1, 2, 3]).reverse().toArray();
     expect(array).toStrictEqual([3, 2, 1]);
   });
 

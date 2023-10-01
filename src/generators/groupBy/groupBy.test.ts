@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("groupBy", () => {
   test("group by identity", () => {
-    const array = chainable(1, 2, 3)
+    const array = chainable([1, 2, 3])
       .groupBy((x) => x)
       .first();
     expect(array).toStrictEqual({
@@ -15,7 +15,7 @@ describe("groupBy", () => {
   });
 
   test("group by with predefined groups", () => {
-    const array = chainable(1, 2, 3)
+    const array = chainable([1, 2, 3])
       .groupBy((x) => x, [1, 2, 4])
       .first();
     expect(array).toStrictEqual({
@@ -26,7 +26,7 @@ describe("groupBy", () => {
   });
 
   test("group by module 2", () => {
-    const array = chainable(1, 2, 3, 4)
+    const array = chainable([1, 2, 3, 4])
       .groupBy((x) => x % 2)
       .first();
     expect(array).toStrictEqual({
@@ -36,7 +36,7 @@ describe("groupBy", () => {
   });
 
   test("chainable - group by even odd with predefined groups", () => {
-    const array = chainable(1, 2, 3, 4)
+    const array = chainable([1, 2, 3, 4])
       .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "never"])
       .first();
     expect(array).toStrictEqual({
@@ -57,7 +57,7 @@ describe("groupBy", () => {
   });
 
   test("chainable - group by even odd without predefined groups", () => {
-    const array = chainable(1, 2, 3, 4)
+    const array = chainable([1, 2, 3, 4])
       .groupBy((x) => (x % 2 ? "odd" : "even"))
       .first();
     expect(array).toStrictEqual({

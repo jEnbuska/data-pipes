@@ -614,7 +614,7 @@ export function pipe(...args: unknown[]): GeneratorConsumable<unknown> {
   const [source, ...middlewares] = args;
   const generator = middlewares.reduce(
     (acc, next) => (next as any)(acc),
-    createProvider([source]),
+    createProvider(source),
   );
   return createConsumable(generator as any);
 }

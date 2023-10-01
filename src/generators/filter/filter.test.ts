@@ -5,7 +5,7 @@ import { pipe } from "../../pipe/pipe.ts";
 describe("filter", () => {
   test("chainable", () => {
     expect(
-      chainable(1, 2, 3, 4)
+      chainable([1, 2, 3, 4])
         .filter((n) => n % 2)
         .toArray(),
     ).toStrictEqual([1, 3]);

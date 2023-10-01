@@ -4,7 +4,7 @@ import { chainable } from "../..";
 describe("sort", () => {
   test("sort numbers", () => {
     expect(
-      chainable(3, 1, 2)
+      chainable([3, 1, 2])
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
