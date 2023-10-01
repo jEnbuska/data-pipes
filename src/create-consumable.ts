@@ -1,4 +1,4 @@
-import { toArray, toConsumer, first } from "./consumers";
+import { toArray, consume, first } from "./consumers";
 import { type GeneratorProvider, type GeneratorConsumable } from "./types.ts";
 
 export function createConsumable<Input>(
@@ -11,7 +11,7 @@ export function createConsumable<Input>(
       return toArray()(generator);
     },
     consume() {
-      return toConsumer()(generator);
+      return consume()(generator);
     },
     first<Default>(...args: [Default] | []) {
       return first<Default, Input>(...args)(generator);

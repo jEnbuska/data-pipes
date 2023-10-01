@@ -3,25 +3,25 @@ import { first } from "./first.ts";
 import { chainable } from "../..";
 import { type GeneratorProvider } from "../../types";
 
-describe("toSingle", () => {
-  test("iterable to single", () => {
+describe("first", () => {
+  test("iterable to first", () => {
     function* source() {
       yield 1;
     }
     expect(first()(source())).toBe(1);
   });
 
-  test("none to single", () => {
+  test("none to first", () => {
     function* source() {}
     expect(() => first()(source())).toThrow("No items in generator");
   });
 
-  test("none to single defaultValue", () => {
+  test("none to first defaultValue", () => {
     function* source(): GeneratorProvider<number> {}
     const value: string | number = first("default")(source());
     expect(value).toBe("default");
   });
-  test("delegated iterable to single", () => {
+  test("delegated iterable to first", () => {
     function* source() {
       yield* [1, 2, 3];
     }
@@ -38,15 +38,15 @@ describe("toSingle", () => {
     expect(last).toBe(1);
   });
 
-  test("pipe to single", () => {
+  test("pipe to first", () => {
     expect(chainable(1, 2).first()).toBe(1);
   });
 
-  test("pipe none single", () => {
+  test("pipe none first", () => {
     expect(() => chainable([]).first()).toThrow("No items in generator");
   });
 
-  test("pipe none with default to single", () => {
+  test("pipe none with default to first", () => {
     expect(chainable([]).defaultIfEmpty("None").first()).toBe("None");
   });
 });

@@ -70,7 +70,9 @@ function createChainable<Input>(
       keySelector: (next: Input) => Key,
       groups?: Key[],
     ) {
-      return createChainable(groupBy(keySelector, groups)(generator)) as any;
+      return createChainable(
+        (groupBy as any)(keySelector, groups)(generator),
+      ) as any;
     },
     flat<Depth extends number = 1>(depth?: Depth) {
       return createChainable(flat(depth)(generator));

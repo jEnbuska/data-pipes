@@ -1,8 +1,8 @@
 import { expect, test, describe } from "bun:test";
 import { chainable } from "../..";
-import { toConsumer } from "./toConsumer";
+import { consume } from "./consume.ts";
 
-describe("toConsumer", () => {
+describe("consume", () => {
   const numbers = [1, 2, 3];
   test("consume", () => {
     const consumed: number[] = [];
@@ -11,7 +11,7 @@ describe("toConsumer", () => {
       yield consumed.push(2);
       yield consumed.push(3);
     }
-    toConsumer()(source());
+    consume()(source());
     expect(consumed).toStrictEqual(numbers);
   });
 
