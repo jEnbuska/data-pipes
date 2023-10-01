@@ -227,13 +227,15 @@ export function pipe<Input, A>(
   middleware1: GeneratorMiddleware<Input, A>,
 ): GeneratorConsumer<A>;
 
-export function pipe(
-  input: unknown,
-  ...middlewares: Array<GeneratorMiddleware<unknown, unknown>>
-): GeneratorConsumer<unknown> {
+export function pipe<Input>(
+  source: PipeSource<Input>,
+): GeneratorConsumer<Input>;
+
+export function pipe(...args: unknown[]): GeneratorConsumer<unknown> {
+  const [source, ...middlewares] = args;
   const generator = middlewares.reduce(
-    (acc, next) => next(acc),
-    createProvider([input]),
+    (acc, next) => (next as any)(acc),
+    createProvider([source]),
   );
-  return createConsumers(generator);
+  return createConsumers(generator as any);
 }

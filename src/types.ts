@@ -7,15 +7,19 @@ export type GeneratorMiddleware<Input, Output = Input> = (
 export type PipeSource<Input> =
   | Input
   | Input[]
-  | (() => Generator<Input, void, void>);
+  | ((...args: never[]) => Generator<Input, void, void>);
 
-export type GeneratorConsumer<Input> = {
+export type CallableProvider<Input> = (
+  ...inputs: Array<PipeSource<Input>>
+) => Generator<Input, void, void>;
+
+export interface GeneratorConsumer<Input> {
   toGenerator(): Generator<Input>;
   toArray(): Input[];
   toConsumer(): void;
   toSingle<Default = Input>(defaultValue?: Default): Input | Default;
   [Symbol.iterator](): Iterator<Input>;
-};
+}
 export type Chainable<Input> = GeneratorConsumer<Input> & {
   map<Output>(fn: (next: Input) => Output): Chainable<Output>;
   flat<Depth extends number = 1>(
