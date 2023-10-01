@@ -21,6 +21,11 @@ describe("pipe", () => {
       map((n) => n * 2),
     ).first();
     expect(result).toBe(4);
+    pipe(
+      1,
+      map((n) => n + 1),
+      map((n) => n * 2),
+    ).consume();
   });
 
   test("from generator", () => {

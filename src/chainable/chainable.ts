@@ -126,6 +126,25 @@ function createChainable<Input>(
   };
 }
 
+/**
+ * creates a chainable from the given sources
+ *
+ * @example
+ * chainable(1,2,3)
+ * .map(n => n * 2)
+ * .toArray() // [2,4,6]
+ *
+ * @example
+ * chainable([1,2,3])
+ * .map(n => n * 2)
+ * .toArray() // [2,4,6]
+ *
+ * @example
+ * chainable(
+ *  chainable(1,2,3).map(n => n * 2)
+ * ).map(n => n * 2)
+ *  .toArray() // [4,8,12]
+ */
 export function chainable<Input>(
   ...sources: Array<PipeSource<Input>>
 ): Chainable<Input> {
