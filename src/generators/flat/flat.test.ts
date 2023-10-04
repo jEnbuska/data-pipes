@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { chainable } from "../..";
+import { chainable, pipe, flat } from "../..";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {
@@ -127,5 +127,14 @@ describe("flat", () => {
       const result = flatten(input, 4);
       expect(result).toStrictEqual([1, 2, 3, 4, 5]);
     });
+  });
+
+  test("pipe depth 1", () => {
+    const array = pipe([[1], [2], [3]], flat()).toArray();
+    expect(array).toStrictEqual(array);
+  });
+  test("pipe mixed depths", () => {
+    const result = pipe([[1], [[2]], [[[3]]]], flat(2)).toArray();
+    expect(result).toStrictEqual([1, 2, [3]]);
   });
 });

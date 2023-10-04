@@ -40,10 +40,23 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
    *  .toArray() // [2, 4, 6];
    */
   map<Output>(mapper: (next: Input) => Output): Chainable<Output>;
+  /**
+   * Returns a new array with all sub-array elements concatenated into it recursively up to the
+   * specified depth.
+   *
+   * @example
+   * chainable([[1], [2], [3]])
+   *  .flat()
+   *  .toArray() // [1,2,3]
+   *
+   * @example
+   * chainable([[1], [[2]], [[[3]]]])
+   *  .flat(2)
+   *  .toArray() // [1,2,[3]]
+   * */
   flat<Depth extends number = 1>(
     depth?: Depth,
   ): Chainable<FlatArray<Input[], Depth>>;
-  unflat(): Chainable<Input[]>;
   flatMap<Output>(
     callback: (value: Input) => Output | readonly Output[],
   ): Chainable<Output>;

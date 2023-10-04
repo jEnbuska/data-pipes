@@ -1,6 +1,22 @@
 import { type GeneratorProvider } from "../../types";
 
-export function flat<Depth extends number = 1, ImperativeInput = never>(
+/**
+ * Returns a new array with all sub-array elements concatenated into it recursively up to the
+ * specified depth.
+ *
+ * @example
+ * pipe(
+ *  [[1], [2], [3]],
+ *  flat()
+ * ).toArray() // [1,2,3]
+ *
+ * @example
+ * pipe(
+ *  [[1], [[2]], [[[3]]]],
+ *  flat(2)
+ * ).toArray() // [1,2,[3]]
+ * */
+export function flat<const Depth extends number = 1, ImperativeInput = never>(
   depth?: Depth,
 ) {
   return function* flatGenerator<Input = ImperativeInput>(

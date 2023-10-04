@@ -16,7 +16,6 @@ import {
   sort,
   groupBy,
   flat,
-  unflat,
   map,
   flatMap,
   filter,
@@ -76,9 +75,6 @@ function createChainable<Input>(
     },
     flat<Depth extends number = 1>(depth?: Depth) {
       return createChainable(flat(depth)(generator));
-    },
-    unflat() {
-      return createChainable(unflat()(generator));
     },
     map<Output>(mapper: (next: Input) => Output) {
       return createChainable(map(mapper)(generator));

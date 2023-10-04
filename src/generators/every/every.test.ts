@@ -4,14 +4,14 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("every", () => {
   test("has every", () => {
-    expect(chainable(true, true, true).every(Boolean).first()).toBe(true);
+    expect(chainable([true, true, true]).every(Boolean).first()).toBe(true);
   });
   test("has none", () => {
-    expect(chainable(false, false, false).every(Boolean).first()).toBe(false);
+    expect(chainable([false, false, false]).every(Boolean).first()).toBe(false);
   });
 
   test("has some", () => {
-    expect(chainable(false, false, false).every(Boolean).first()).toBe(false);
+    expect(chainable([false, false, false]).every(Boolean).first()).toBe(false);
   });
 
   test("pipe - every", () => {

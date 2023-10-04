@@ -2,8 +2,9 @@
   "name": "data-pipes",
   "module": "./src/index.ts",
   "type": "module",
+  "types": "types",
   "scripts": {
-    "build": "bun build ./src/index.ts --minify --outfile=dist/index.js",
+    "build": "tsc",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "lint": "eslint --ext .ts --max-warnings 0 ./src",
@@ -20,6 +21,6 @@
     "prettier": "^3.0.3"
   },
   "peerDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.2.2"
   }
 }

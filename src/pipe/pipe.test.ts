@@ -4,7 +4,6 @@ import {
   map,
   filter,
   distinctBy,
-  unflat,
   flatMap,
   sort,
   chainable,
@@ -46,7 +45,7 @@ describe("pipe", () => {
       map((n) => ({ n })),
       filter((next) => next.n > 2),
       distinctBy((next) => next.n % 2),
-      unflat(),
+      map((next) => [next]),
       flatMap((next) => next.map(({ n }) => n)),
       sort((a, z) => z - a),
     ).toArray();

@@ -20,7 +20,6 @@ import { every } from "./every/every";
 import { flat } from "./flat/flat";
 import { groupBy } from "./groupBy/groupBy";
 import { reverse } from "./reverse/reverse";
-import { unflat } from "./unflat/unflat";
 
 export {
   min,
@@ -43,7 +42,6 @@ export {
   takeWhile,
   every,
   flat,
-  unflat,
   groupBy,
   reverse,
 };
