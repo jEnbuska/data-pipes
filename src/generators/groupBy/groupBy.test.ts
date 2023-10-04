@@ -95,16 +95,14 @@ describe("groupBy", () => {
       even: [2, 4],
     };
     test("chainable", () => {
-      const groups: Partial<Record<"even" | "odd", number[]>> = chainable([
-        1, 2, 3, 4,
-      ])
+      const groups = chainable([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"))
         .first();
       expect(groups).toStrictEqual(expected);
     });
 
     test("pipe", () => {
-      const groups: Partial<Record<"even" | "odd", number[]>> = pipe(
+      const groups = pipe(
         [1, 2, 3, 4],
         groupBy((x) => (x % 2 ? "odd" : "even")),
       ).first();
