@@ -157,39 +157,28 @@ export type Chainable<Input> = GeneratorConsumable<Input> & {
   sort(compareFn?: (a: Input, b: Input) => number): Chainable<Input>;
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
-
    * @example
    * chainable([1,2,3,4])
    *  .groupBy(n => n % 2 ? 'odd' : 'even')
    *  .first() // {even: [2,4], odd: [1,3]}
-   *
-   * If the groups parameter is provided, only the groups specified will be collected.
-   * @example
-   * chainable([1,2,3,4])
-   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
-   *  .first() // {odd: [1,3]}
-   */
-  groupBy<Groups extends PropertyKey, Key extends Groups>(
-    keySelector: (next: Input) => Key | PropertyKey,
-    groups: Groups[],
-  ): Chainable<Record<Groups, Input[]>>;
-  /**
-   * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
-
-   * @example
-   * chainable([1,2,3,4])
-   *  .groupBy(n => n % 2 ? 'odd' : 'even')
-   *  .first() // {even: [2,4], odd: [1,3]}
-   *
-   * If the groups parameter is provided, only the groups specified will be collected.
-   * @example
-   * chainable([1,2,3,4])
-   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd"])
-   *  .first() // {odd: [1,3]}
    */
   groupBy<Key extends PropertyKey>(
     keySelector: (next: Input) => Key,
-  ): Chainable<Partial<Record<Key, Input[]>>>;
+  ): Chainable<Record<Key, Input[]>>;
+  /**
+   * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
+   * @example
+   * chainable([1,2,3,4])
+   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd", "other"])
+   *  .first() // {odd: [1,3], even: [2,4], other: []}
+   */
+  groupBy<
+    Key extends PropertyKey,
+    Groups extends Array<Key | PropertyKey> = [],
+  >(
+    keySelector: (next: Input) => Key | PropertyKey,
+    groups?: Groups,
+  ): Chainable<Record<Groups[number], Input[]> & Partial<Record<Key, Input[]>>>;
   /**
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
    *

@@ -66,13 +66,13 @@ function createChainable<Input>(
     lift<Output>(middleware: GeneratorMiddleware<Input, Output>) {
       return createChainable(middleware(generator));
     },
-    groupBy<Key extends PropertyKey>(
-      keySelector: (next: Input) => Key,
-      groups?: Key[],
-    ) {
+    groupBy<
+      Key extends PropertyKey,
+      Groups extends Array<Key | PropertyKey> = [],
+    >(keySelector: (next: Input) => Key | PropertyKey, groups?: Groups) {
       return createChainable(
-        (groupBy as any)(keySelector, groups)(generator),
-      ) as any;
+        groupBy<Input, Key, Groups>(keySelector, groups)(generator),
+      );
     },
     flat<Depth extends number = 1>(depth?: Depth) {
       return createChainable(flat(depth)(generator));
