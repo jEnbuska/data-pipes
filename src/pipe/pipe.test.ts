@@ -6,7 +6,7 @@ import {
   distinctBy,
   flatMap,
   sort,
-  chainable,
+  chain,
   reduce,
   forEach,
   takeWhile,
@@ -66,7 +66,7 @@ describe("pipe", () => {
 
   test("Chainable as source", () => {
     const max = pipe(
-      chainable([1, 2, 3]).map((n) => n * 2),
+      chain([1, 2, 3]).map((n) => n * 2),
       reduce((max, next) => (max < next ? next : max), 0),
     ).toArray();
     expect(max).toStrictEqual([6]);

@@ -390,4 +390,8 @@ type BaseChainable<
   ): AnyChainable<TOutput, TAsync>;
 
   countBy(fn: (next: TInput) => number): AnyChainable<number, TAsync>;
+
+  chunkBy<TIdentifier>(
+    fn: (next: TInput) => TIdentifier,
+  ): AnyChainable<ChainableOutput<TInput[], TAsync>, TAsync>;
 };

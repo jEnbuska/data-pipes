@@ -4,9 +4,9 @@ import {
   type GeneratorConsumable,
   type AsyncGeneratorProvider,
 } from "./types.ts";
-import { toArrayAsync } from "./consumers/toArray/toArray.ts";
-import { consumeAsync } from "./consumers/consume/consume.ts";
-import { firstAsync } from "./consumers/first/first.ts";
+import { toArrayAsync } from "./consumers/toArray.ts";
+import { consumeAsync } from "./consumers/consume.ts";
+import { firstAsync } from "./consumers/first.ts";
 
 export function createConsumable<TInput>(
   generator: GeneratorProvider<TInput>,

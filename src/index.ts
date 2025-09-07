@@ -1,7 +1,7 @@
-import { chainable } from "./chainable/chainable";
+import { chain } from "./chainable/chain.ts";
 import { pipe } from "./pipe/pipe";
 
 export * from "./consumers";
 export * from "./generators";
 
-export { chainable, pipe };
+export { chain, pipe };

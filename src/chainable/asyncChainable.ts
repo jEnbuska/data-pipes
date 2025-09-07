@@ -1,58 +1,37 @@
-import type {
-  AsyncChainable,
-  AsyncGeneratorProvider,
-  GeneratorMiddleware,
+import {
+  type AsyncChainable,
+  type AsyncGeneratorProvider,
+  type GeneratorMiddleware,
 } from "../types.ts";
 import { createAsyncConsumable } from "../create-consumable.ts";
 import {
-  reverse,
-  find,
-  defaultIfEmpty,
-  min,
-  max,
-  distinctBy,
-  distinctUntilChanged,
-  sort,
-  groupBy,
-  flat,
-  map,
-  flatMap,
-  filter,
-  reduce,
-  forEach,
-  skipWhile,
-  skip,
-  take,
-  count,
-  takeWhile,
-  every,
-  some,
+  reverseAsync,
+  findAsync,
+  defaultIfEmptyAsync,
+  minAsync,
+  maxAsync,
+  distinctByAsync,
+  distinctUntilChangedAsync,
+  sortAsync,
+  groupByAsync,
+  flatAsync,
+  mapAsync,
+  flatMapAsync,
+  filterAsync,
+  reduceAsync,
+  forEachAsync,
+  skipWhileAsync,
+  skipAsync,
+  takeAsync,
+  countAsync,
+  takeWhileAsync,
+  everyAsync,
+  someAsync,
+  countByAsync,
+  skipLastAsync,
+  takeLastAsync,
+  chunkByAsync,
 } from "../generators";
-import { skipLastAsync } from "../generators/skipLast/skipLast.ts";
-import { takeLastAsync } from "../generators/takeLast/takeLast.ts";
-import { reverseAsync } from "../generators/reverse/reverse.ts";
-import { findAsync } from "../generators/find/find.ts";
-import { defaultIfEmptyAsync } from "../generators/defaultIfEmpty/defaultIfEmpty.ts";
-import { minAsync } from "../generators/min/min.ts";
-import { maxAsync } from "../generators/max/max.ts";
-import { distinctByAsync } from "../generators/distinctBy/distinctBy.ts";
-import { sortAsync } from "../generators/sort/sort.ts";
-import { distinctUntilChangedAsync } from "../generators/distinctUntilChanged/distinctUntilChanged.ts";
-import { groupByAsync } from "../generators/groupBy/groupBy.ts";
-import { flatAsync } from "../generators/flat/flat.ts";
-import { mapAsync } from "../generators/map/map.ts";
-import { flatMapAsync } from "../generators/flatMap/flatMap.ts";
-import { filterAsync } from "../generators/filter/filter.ts";
-import { reduceAsync } from "../generators/reduce/reduce.ts";
-import { forEachAsync } from "../generators/forEach/forEach.ts";
-import { skipWhileAsync } from "../generators/skipWhile/skipWhile.ts";
-import { skipAsync } from "../generators/skip/skip.ts";
-import { takeAsync } from "../generators/take/take.ts";
-import { countAsync } from "../generators/count/count.ts";
-import { takeWhileAsync } from "../generators/takeWhile/takeWhile.ts";
-import { everyAsync } from "../generators/every/every.ts";
-import { someAsync } from "../generators/some/some.ts";
-import { countByAsync } from "../generators/countBy/countBy.ts";
 
 export function createAsyncChainable<TInput = unknown>(
   generator: AsyncGeneratorProvider<TInput>,
@@ -155,6 +134,9 @@ export function createAsyncChainable<TInput = unknown>(
     },
     countBy(fn) {
       return createAsyncChainable(countByAsync(fn)(generator));
+    },
+    chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
+      return createAsyncChainable(chunkByAsync(fn)(generator));
     },
   };
 }

@@ -1,5 +1,5 @@
-import { first } from "./first/first.ts";
-import { toArray } from "./toArray/toArray";
-import { consume } from "./consume/consume.ts";
+import { first } from "./first.ts";
+import { toArray } from "./toArray.ts";
+import { consume } from "./consume.ts";
 
 export { first, toArray, consume };
