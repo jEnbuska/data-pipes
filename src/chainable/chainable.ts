@@ -3,8 +3,8 @@ import {
   type GeneratorMiddleware,
   type SyncPipeSource,
   type AsyncPipeSource,
-  type Chainable,
-  type SyncChainable,
+  type AsyncChainable,
+  type Chainable
 } from "../types.ts";
 import { createConsumable } from "../create-consumable.ts";
 import {
@@ -29,7 +29,7 @@ import {
   count,
   takeWhile,
   every,
-  some,
+  some
 } from "../generators";
 import { skipLast } from "../generators/skipLast/skipLast.ts";
 import { takeLast } from "../generators/takeLast/takeLast.ts";
@@ -40,9 +40,10 @@ import { countBy } from "../generators/countBy/countBy.ts";
 
 function createChainable<TInput = unknown>(
   generator: GeneratorProvider<TInput>,
-): SyncChainable<TInput> {
+): Chainable<TInput> {
   return {
     ...createConsumable(generator),
+    isAsync: false,
     reverse() {
       return createChainable(reverse()(generator));
     },
@@ -107,7 +108,7 @@ function createChainable<TInput = unknown>(
     skip(count) {
       return createChainable(skip(count)(generator));
     },
-    skipLast(count: number): SyncChainable<TInput> {
+    skipLast(count: number): Chainable<TInput> {
       return createChainable(skipLast(count)(generator));
     },
     take(count) {
@@ -159,10 +160,10 @@ function createChainable<TInput = unknown>(
 
 export function chainable<TInput>(
   source: AsyncPipeSource<TInput>,
-): Chainable<TInput>;
+): AsyncChainable<TInput>;
 export function chainable<TInput>(
   source: SyncPipeSource<TInput>,
-): SyncChainable<TInput>;
+): Chainable<TInput>;
 export function chainable(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
     return createAsyncChainable(createAsyncProvider(source));

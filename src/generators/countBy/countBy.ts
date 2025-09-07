@@ -1,6 +1,6 @@
-import type {
-  GeneratorProvider,
-  AsyncGeneratorMiddleware,
+import {
+  type GeneratorProvider,
+  type AsyncGeneratorMiddleware,
 } from "../../types.ts";
 
 /**

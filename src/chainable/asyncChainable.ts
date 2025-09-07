@@ -1,5 +1,5 @@
 import type {
-  Chainable,
+  AsyncChainable,
   AsyncGeneratorProvider,
   GeneratorMiddleware,
 } from "../types.ts";
@@ -56,9 +56,10 @@ import { countByAsync } from "../generators/countBy/countBy.ts";
 
 export function createAsyncChainable<TInput = unknown>(
   generator: AsyncGeneratorProvider<TInput>,
-): Chainable<TInput> {
+): AsyncChainable<TInput> {
   return {
     ...createAsyncConsumable(generator),
+    isAsync: true,
     reverse() {
       return createAsyncChainable(reverseAsync()(generator));
     },
@@ -131,7 +132,7 @@ export function createAsyncChainable<TInput = unknown>(
     skip(count) {
       return createAsyncChainable(skipAsync(count)(generator));
     },
-    skipLast(count: number): Chainable<TInput> {
+    skipLast(count: number): AsyncChainable<TInput> {
       return createAsyncChainable(skipLastAsync(count)(generator));
     },
     take(count) {
