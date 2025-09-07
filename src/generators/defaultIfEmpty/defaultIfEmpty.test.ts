@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("defaultIfEmpty", () => {
   test("default with empty", () => {
-    expect(chainable().defaultIfEmpty(0).first()).toBe(0);
+    expect(chainable([]).defaultIfEmpty(0).first()).toBe(0);
   });
   test("default no empty", () => {
     expect(chainable(1).defaultIfEmpty(0).first()).toBe(1);

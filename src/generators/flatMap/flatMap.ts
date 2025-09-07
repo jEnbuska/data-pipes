@@ -1,15 +1,33 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
-export function flatMap<Input, Output>(
-  flatMapper: (next: Input) => Output | readonly Output[],
-): GeneratorMiddleware<Input, Output> {
+export function flatMap<TInput, TOutput>(
+  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
+): GeneratorMiddleware<TInput, TOutput> {
   return function* flatMapGenerator(generator) {
     for (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
         yield* out as any;
       } else {
-        yield out as Output;
+        yield out as TOutput;
+      }
+    }
+  };
+}
+
+export function flatMapAsync<TInput, TOutput>(
+  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
+): AsyncGeneratorMiddleware<TInput, TOutput> {
+  return async function* flatMapAsyncGenerator(generator) {
+    for await (const next of generator) {
+      const out = flatMapper(next);
+      if (Array.isArray(out)) {
+        yield* out as any;
+      } else {
+        yield out as TOutput;
       }
     }
   };

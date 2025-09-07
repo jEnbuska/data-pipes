@@ -1,4 +1,7 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
 /**
  * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -9,12 +12,27 @@ import { type GeneratorMiddleware } from "../../types";
  *  distinctBy(n => n % 2)
  * ).toArray() // [1,2]
  */
-export function distinctBy<Input, Value>(
-  selector: (next: Input) => Value,
-): GeneratorMiddleware<Input> {
+export function distinctBy<TInput, Value>(
+  selector: (next: TInput) => Value,
+): GeneratorMiddleware<TInput> {
   return function* distinctByGenerator(generator) {
     const set = new Set<Value>();
     for (const next of generator) {
+      const key = selector(next);
+      if (set.has(key)) {
+        continue;
+      }
+      set.add(key);
+      yield next;
+    }
+  };
+}
+export function distinctByAsync<TInput, Value>(
+  selector: (next: TInput) => Value,
+): AsyncGeneratorMiddleware<TInput> {
+  return async function* distinctByAsyncGenerator(generator) {
+    const set = new Set<Value>();
+    for await (const next of generator) {
       const key = selector(next);
       if (set.has(key)) {
         continue;

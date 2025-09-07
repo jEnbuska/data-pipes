@@ -1,6 +1,9 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
-const defaultCompare = <Input>(a: Input, b: Input) => a === b;
+const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 /**
  * filters out items produced by the generator that are equal to the previous item by the compare function.
@@ -17,13 +20,29 @@ const defaultCompare = <Input>(a: Input, b: Input) => a === b;
  *  distinctUntilChanged((previous, current) => previous % 3 === current % 3)
  * ).toArray() // [1,2,3]
  */
-export function distinctUntilChanged<Input>(
-  compare: (previous: Input, current: Input) => boolean = defaultCompare,
-): GeneratorMiddleware<Input> {
+export function distinctUntilChanged<TInput>(
+  compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
+): GeneratorMiddleware<TInput> {
   return function* distinctUntilChangedGenerator(generator) {
     let first = true;
-    let previous: Input;
+    let previous: TInput;
     for (const current of generator) {
+      if (first || !compare(previous!, current)) {
+        previous = current;
+        yield current;
+        first = false;
+      }
+    }
+  };
+}
+
+export function distinctUntilChangedAsync<TInput>(
+  compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
+): AsyncGeneratorMiddleware<TInput> {
+  return async function* distinctUntilChangedAsyncGenerator(generator) {
+    let first = true;
+    let previous: TInput;
+    for await (const current of generator) {
       if (first || !compare(previous!, current)) {
         previous = current;
         yield current;

@@ -1,4 +1,8 @@
-import { type GeneratorProvider } from "../../types";
+import {
+  type GeneratorProvider,
+  type AsyncGeneratorProvider,
+} from "../../types";
+import { toArrayAsync } from "../../consumers/toArray/toArray.ts";
 
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
@@ -8,10 +12,19 @@ import { type GeneratorProvider } from "../../types";
  *  count()
  * ).first() // 3
  */
-export function count<ImperativeInput = never>() {
-  return function* countGenerator<Input = ImperativeInput>(
-    generator: GeneratorProvider<Input>,
+export function count<ImperativeTInput = never>() {
+  return function* countGenerator<TInput = ImperativeTInput>(
+    generator: GeneratorProvider<TInput>,
   ): GeneratorProvider<number> {
     yield [...generator].length;
+  };
+}
+
+export function countAsync<ImperativeTInput = never>() {
+  return async function* countAsyncGenerator<TInput = ImperativeTInput>(
+    generator: AsyncGeneratorProvider<TInput>,
+  ): GeneratorProvider<number, true> {
+    const arr = await toArrayAsync()(generator);
+    yield arr.length;
   };
 }

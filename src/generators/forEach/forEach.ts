@@ -1,4 +1,7 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
 /**
  * Calls the provided consumer function for each item produced by the generator and yields it
@@ -9,11 +12,22 @@ import { type GeneratorMiddleware } from "../../types";
  *  forEach(n => console.log(n)) // 1, 2, 3
  * ).consume();
  * */
-export function forEach<Input>(
-  consumer: (next: Input) => unknown,
-): GeneratorMiddleware<Input> {
+export function forEach<TInput>(
+  consumer: (next: TInput) => unknown,
+): GeneratorMiddleware<TInput> {
   return function* forEachGenerator(generator) {
     for (const next of generator) {
+      consumer(next);
+      yield next;
+    }
+  };
+}
+
+export function forEachAsync<TInput>(
+  consumer: (next: TInput) => unknown,
+): AsyncGeneratorMiddleware<TInput> {
+  return async function* forEachAsyncGenerator(generator) {
+    for await (const next of generator) {
       consumer(next);
       yield next;
     }

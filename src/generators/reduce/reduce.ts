@@ -1,4 +1,7 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
 /**
  * Reduces items produced by the generator using the provided reducer function.
@@ -9,13 +12,26 @@ import { type GeneratorMiddleware } from "../../types";
  *   reduce((sum, n) => sum + n, 0)
  * ).first() // 6
  * */
-export function reduce<Input, Output>(
-  reducer: (acc: Output, next: Input) => Output,
-  initialValue: Output,
-): GeneratorMiddleware<Input, Output> {
+export function reduce<TInput, TOutput>(
+  reducer: (acc: TOutput, next: TInput) => TOutput,
+  initialValue: TOutput,
+): GeneratorMiddleware<TInput, TOutput> {
   return function* reduceGenerator(generator) {
     let acc = initialValue;
     for (const next of generator) {
+      acc = reducer(acc, next);
+    }
+    yield acc;
+  };
+}
+
+export function reduceAsync<TInput, TOutput>(
+  reducer: (acc: TOutput, next: TInput) => TOutput,
+  initialValue: TOutput,
+): AsyncGeneratorMiddleware<TInput, TOutput> {
+  return async function* reduceAsyncGenerator(generator) {
+    let acc = initialValue;
+    for await (const next of generator) {
       acc = reducer(acc, next);
     }
     yield acc;

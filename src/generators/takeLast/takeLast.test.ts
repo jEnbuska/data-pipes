@@ -2,8 +2,8 @@ import { describe, test, expect } from "bun:test";
 import { chainable } from "../../index.ts";
 
 describe("takeLast", () => {
-  test("take last when no input", () => {
-    expect(chainable().takeLast(3).toArray()).toStrictEqual([]);
+  test("take last when empty", () => {
+    expect(chainable([]).takeLast(3).toArray()).toStrictEqual([]);
   });
 
   test("take last when count is 0", () => {

@@ -1,5 +1,5 @@
 import {
-  type PipeSource,
+  type SyncPipeSource,
   type GeneratorMiddleware,
   type GeneratorConsumable,
 } from "../types.ts";
@@ -28,9 +28,9 @@ import { createConsumable } from "../create-consumable.ts";
  * ).toArray() // [4,8,12]
  * */
 
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -70,9 +70,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -111,9 +111,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -151,9 +151,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -190,9 +190,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M, N>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L, M>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -228,9 +228,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L, M>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K, L>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -265,9 +265,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K, L>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J, K>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -301,9 +301,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J, K>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I, J>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I, J>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -336,9 +336,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I, J>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H, I>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H, I>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -370,9 +370,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H, I>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G, H>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G, H>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -403,9 +403,9 @@ export function pipe<Input, A, B, C, D, E, F, G, H>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F, G>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F, G>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -435,9 +435,9 @@ export function pipe<Input, A, B, C, D, E, F, G>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E, F>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E, F>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -466,9 +466,9 @@ export function pipe<Input, A, B, C, D, E, F>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D, E>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D, E>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -496,9 +496,9 @@ export function pipe<Input, A, B, C, D, E>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C, D>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C, D>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
   middleware4: GeneratorMiddleware<C, D>,
@@ -525,9 +525,9 @@ export function pipe<Input, A, B, C, D>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B, C>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B, C>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
   middleware3: GeneratorMiddleware<B, C>,
 ): GeneratorConsumable<C>;
@@ -553,9 +553,9 @@ export function pipe<Input, A, B, C>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A, B>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A, B>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
   middleware2: GeneratorMiddleware<A, B>,
 ): GeneratorConsumable<B>;
 
@@ -580,9 +580,9 @@ export function pipe<Input, A, B>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input, A>(
-  source: PipeSource<Input>,
-  middleware1: GeneratorMiddleware<Input, A>,
+export function pipe<TInput, A>(
+  source: SyncPipeSource<TInput>,
+  middleware1: GeneratorMiddleware<TInput, A>,
 ): GeneratorConsumable<A>;
 
 /**
@@ -606,9 +606,9 @@ export function pipe<Input, A>(
  *  map(n => n * 2),
  * ).toArray() // [4,8,12]
  * */
-export function pipe<Input>(
-  source: PipeSource<Input>,
-): GeneratorConsumable<Input>;
+export function pipe<TInput>(
+  source: SyncPipeSource<TInput>,
+): GeneratorConsumable<TInput>;
 
 export function pipe(...args: unknown[]): GeneratorConsumable<unknown> {
   const [source, ...middlewares] = args;

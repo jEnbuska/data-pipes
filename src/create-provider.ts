@@ -1,28 +1,36 @@
 import {
   type GeneratorProvider,
-  type PipeSource,
+  type SyncPipeSource,
   type GeneratorConsumable,
+  type AsyncPipeSource,
+  type AsyncGeneratorProvider,
 } from "./types.ts";
 
-function isGeneratorFunction<Input>(
+function isGeneratorFunction<TInput>(
   source: unknown,
-): source is () => GeneratorProvider<Input> {
+): source is () => GeneratorProvider<TInput> {
   return (
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "GeneratorFunction"
   );
 }
 
-function isGeneratorConsumer<Input>(
+function isGeneratorConsumer<TInput>(
   source: unknown,
-): source is GeneratorConsumable<Input> {
+): source is GeneratorConsumable<TInput> {
   return source?.toString?.() === "[object GeneratorConsumer]";
 }
 
-export function* createProvider<Input>(
-  source: PipeSource<Input>,
-): GeneratorProvider<Input> {
-  if (isGeneratorFunction<Input>(source)) {
+export async function* createAsyncProvider<TInput>(
+  source: AsyncPipeSource<TInput>,
+): AsyncGeneratorProvider<TInput> {
+  yield* source();
+}
+
+export function* createProvider<TInput>(
+  source: SyncPipeSource<TInput>,
+): GeneratorProvider<TInput> {
+  if (isGeneratorFunction<TInput>(source)) {
     yield* source();
   } else if (Array.isArray(source) || isGeneratorConsumer(source)) {
     yield* source;

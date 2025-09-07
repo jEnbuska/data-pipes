@@ -3,7 +3,7 @@ import { chainable } from "../../index.ts";
 
 describe("skipLast", () => {
   test("skip last when array is empty", () => {
-    expect(chainable().skipLast(3).toArray()).toStrictEqual([]);
+    expect(chainable([]).skipLast(3).toArray()).toStrictEqual([]);
   });
 
   test("when count is more than number of inputs", () => {

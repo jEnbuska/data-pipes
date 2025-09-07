@@ -4,7 +4,7 @@ import { chainable } from "../..";
 describe("distinctBy", () => {
   test("empty", () => {
     expect(
-      chainable()
+      chainable([])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([]);

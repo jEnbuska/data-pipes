@@ -1,9 +1,24 @@
-import { type GeneratorProvider } from "../../types";
+import {
+  type GeneratorProvider,
+  type AsyncGeneratorProvider,
+} from "../../types";
 
-export function toArray<ImperativeInput = never>() {
-  return function toArrayConsumer<Input = ImperativeInput>(
-    generator: GeneratorProvider<Input>,
-  ): Input[] {
+export function toArray<ImperativeTInput = never>() {
+  return function toArrayConsumer<TInput = ImperativeTInput>(
+    generator: GeneratorProvider<TInput>,
+  ): TInput[] {
     return [...generator];
+  };
+}
+
+export function toArrayAsync<ImperativeTInput = never>() {
+  return async function toArrayAsyncConsumer<TInput = ImperativeTInput>(
+    generator: AsyncGeneratorProvider<TInput>,
+  ): Promise<TInput[]> {
+    const acc: TInput[] = [];
+    for await (const next of generator) {
+      acc.push(next);
+    }
+    return acc;
   };
 }

@@ -6,6 +6,6 @@ describe("count", () => {
     expect(chainable(0).count().first()).toBe(1);
   });
   test("count none", () => {
-    expect(chainable().count().first()).toBe(0);
+    expect(chainable([]).count().first()).toBe(0);
   });
 });

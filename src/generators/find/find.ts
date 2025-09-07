@@ -1,4 +1,7 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
 /**
  * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
@@ -8,11 +11,24 @@ import { type GeneratorMiddleware } from "../../types";
  *  find(n => n > 2)
  * ).toArray() // [3]
  */
-export function find<Input>(
-  predicate: (next: Input) => boolean,
-): GeneratorMiddleware<Input> {
+export function find<TInput>(
+  predicate: (next: TInput) => boolean,
+): GeneratorMiddleware<TInput> {
   return function* findGenerator(generator) {
     for (const next of generator) {
+      if (predicate(next)) {
+        yield next;
+        break;
+      }
+    }
+  };
+}
+
+export function findAsync<TInput>(
+  predicate: (next: TInput) => boolean,
+): AsyncGeneratorMiddleware<TInput> {
+  return async function* findAsyncGenerator(generator) {
+    for await (const next of generator) {
       if (predicate(next)) {
         yield next;
         break;

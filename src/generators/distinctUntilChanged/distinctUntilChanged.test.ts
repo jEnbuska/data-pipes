@@ -4,7 +4,7 @@ import { pipe } from "../../pipe/pipe.ts";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(chainable().distinctUntilChanged().toArray()).toStrictEqual([]);
+    expect(chainable([]).distinctUntilChanged().toArray()).toStrictEqual([]);
   });
 
   test("all unique", () => {

@@ -19,7 +19,7 @@ describe("reduce", () => {
   });
 
   test("empty sum", () => {
-    const sum = chainable<number>()
+    const sum = chainable<number>([])
       .reduce((acc, v) => acc + v, 0)
       .first();
     expect(sum).toBe(0);

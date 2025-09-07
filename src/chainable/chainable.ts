@@ -1,8 +1,10 @@
 import {
   type GeneratorProvider,
-  type Chainable,
   type GeneratorMiddleware,
-  type PipeSource,
+  type SyncPipeSource,
+  type AsyncPipeSource,
+  type Chainable,
+  type SyncChainable,
 } from "../types.ts";
 import { createConsumable } from "../create-consumable.ts";
 import {
@@ -31,11 +33,14 @@ import {
 } from "../generators";
 import { skipLast } from "../generators/skipLast/skipLast.ts";
 import { takeLast } from "../generators/takeLast/takeLast.ts";
-import { createProvider } from "../create-provider.ts";
+import { createProvider, createAsyncProvider } from "../create-provider.ts";
+import { resolve } from "../generators/resolve/resolve.ts";
+import { createAsyncChainable } from "./asyncChainable.ts";
+import { countBy } from "../generators/countBy/countBy.ts";
 
-function createChainable<Input>(
-  generator: GeneratorProvider<Input>,
-): Chainable<Input> {
+function createChainable<TInput = unknown>(
+  generator: GeneratorProvider<TInput>,
+): SyncChainable<TInput> {
   return {
     ...createConsumable(generator),
     reverse() {
@@ -53,7 +58,7 @@ function createChainable<Input>(
     max(callback) {
       return createChainable(max(callback)(generator));
     },
-    distinctBy<Value>(selector: (next: Input) => Value) {
+    distinctBy<Value>(selector: (next: TInput) => Value) {
       return createChainable(distinctBy(selector)(generator));
     },
     distinctUntilChanged(isEqual) {
@@ -62,32 +67,34 @@ function createChainable<Input>(
     sort(comparator) {
       return createChainable(sort(comparator)(generator));
     },
-    lift<Output>(middleware: GeneratorMiddleware<Input, Output>) {
+    lift<TOutput>(middleware: GeneratorMiddleware<TInput, TOutput>) {
       return createChainable(middleware(generator));
     },
     groupBy<
       Key extends PropertyKey,
       Groups extends Array<Key | PropertyKey> = [],
-    >(keySelector: (next: Input) => Key | PropertyKey, groups?: Groups) {
+    >(keySelector: (next: TInput) => Key | PropertyKey, groups?: Groups) {
       return createChainable(
-        groupBy<Input, Key, Groups>(keySelector, groups)(generator),
+        groupBy<TInput, Key, Groups>(keySelector, groups)(generator),
       );
     },
     flat<Depth extends number = 1>(depth?: Depth) {
       return createChainable(flat(depth)(generator));
     },
-    map<Output>(mapper: (next: Input) => Output) {
+    map<TOutput>(mapper: (next: TInput) => TOutput) {
       return createChainable(map(mapper)(generator));
     },
-    flatMap<Output>(callback: (next: Input) => Output | readonly Output[]) {
+    flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
       return createChainable(flatMap(callback)(generator));
     },
-    filter<Output extends Input>(predicate: (next: Input) => next is Output) {
-      return createChainable(filter<Input, Output>(predicate)(generator));
+    filter<TOutput extends TInput>(
+      predicate: (next: TInput) => next is TOutput,
+    ) {
+      return createChainable(filter<TInput, TOutput>(predicate)(generator));
     },
-    reduce<Output>(
-      reducer: (acc: Output, next: Input) => Output,
-      initialValue: Output,
+    reduce<TOutput>(
+      reducer: (acc: TOutput, next: TInput) => TOutput,
+      initialValue: TOutput,
     ) {
       return createChainable(reduce(reducer, initialValue)(generator));
     },
@@ -100,7 +107,7 @@ function createChainable<Input>(
     skip(count) {
       return createChainable(skip(count)(generator));
     },
-    skipLast(count: number): Chainable<Input> {
+    skipLast(count: number): SyncChainable<TInput> {
       return createChainable(skipLast(count)(generator));
     },
     take(count) {
@@ -120,6 +127,12 @@ function createChainable<Input>(
     },
     some(predicate) {
       return createChainable(some(predicate)(generator));
+    },
+    resolve() {
+      return createAsyncChainable(resolve<TInput>()(generator));
+    },
+    countBy(fn) {
+      return createChainable(countBy(fn)(generator));
     },
   };
 }
@@ -143,8 +156,25 @@ function createChainable<Input>(
  * ).map(n => n * 2)
  *  .toArray() // [4,8,12]
  */
-export function chainable<Input>(
-  source: PipeSource<Input> = [],
-): Chainable<Input> {
+
+export function chainable<TInput>(
+  source: AsyncPipeSource<TInput>,
+): Chainable<TInput>;
+export function chainable<TInput>(
+  source: SyncPipeSource<TInput>,
+): SyncChainable<TInput>;
+export function chainable(source: any) {
+  if (isAsyncGeneratorFunction<any>(source)) {
+    return createAsyncChainable(createAsyncProvider(source));
+  }
   return createChainable(createProvider(source));
+}
+
+function isAsyncGeneratorFunction<TInput>(
+  source: unknown,
+): source is AsyncPipeSource<TInput> {
+  return (
+    Boolean(source) &&
+    Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
+  );
 }

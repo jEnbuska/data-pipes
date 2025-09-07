@@ -1,4 +1,4 @@
-import { type GeneratorMiddleware } from "../../types";
+import { type GeneratorProvider, type GeneratorMiddleware } from "../../types";
 
 /**
  * takes each item produced by the generator and maps it to a number using the callback.
@@ -10,12 +10,12 @@ import { type GeneratorMiddleware } from "../../types";
  *  max(n => n)
  * ).first() // 4
  * */
-export function max<Input>(
-  callback: (next: Input) => number,
-): GeneratorMiddleware<Input> {
+export function max<TInput>(
+  callback: (next: TInput) => number,
+): GeneratorMiddleware<TInput> {
   return function* maxGenerator(generator) {
     let currentMax: undefined | number;
-    let current: undefined | Input;
+    let current: undefined | TInput;
     for (const next of generator) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
@@ -24,6 +24,24 @@ export function max<Input>(
       }
     }
     if (currentMax === undefined) return;
-    yield current as Input;
+    yield current as TInput;
+  };
+}
+
+export function maxAsync<TInput>(callback: (next: TInput) => number) {
+  return async function* maxGenerator(
+    generator: GeneratorProvider<TInput, true>,
+  ) {
+    let currentMax: undefined | number;
+    let current: undefined | TInput;
+    for await (const next of generator) {
+      const value = callback(next);
+      if (currentMax === undefined || value > currentMax) {
+        current = next;
+        currentMax = value;
+      }
+    }
+    if (currentMax === undefined) return;
+    yield current as TInput;
   };
 }

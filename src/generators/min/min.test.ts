@@ -6,7 +6,7 @@ describe("min", () => {
   const numbers = [2, 1, 3, 5, 4];
   test("empty", () => {
     expect(
-      chainable<number>()
+      chainable<number>([])
         .max((v) => v)
         .first(-1),
     ).toBe(-1);

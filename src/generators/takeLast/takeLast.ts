@@ -1,4 +1,9 @@
-import { type GeneratorProvider } from "../../types";
+import {
+  type GeneratorProvider,
+  type AsyncGeneratorProvider,
+  type AsyncGeneratorMiddlewareReturn,
+} from "../../types";
+import { toArrayAsync } from "../../consumers/toArray/toArray.ts";
 
 /**
  * takes the last `count` items produced by the generator and yields them to the next operation.
@@ -8,11 +13,20 @@ import { type GeneratorProvider } from "../../types";
  *  takeLast(2)
  * ).toArray() // [2,3]
  */
-export function takeLast<ImperativeInput = never>(count: number) {
-  return function* takeLastGenerator<Input = ImperativeInput>(
-    generator: GeneratorProvider<Input>,
-  ): GeneratorProvider<Input> {
+export function takeLast<ImperativeTInput = never>(count: number) {
+  return function* takeLastGenerator<TInput = ImperativeTInput>(
+    generator: GeneratorProvider<TInput>,
+  ): GeneratorProvider<TInput> {
     const array = [...generator];
+    yield* array.slice(Math.max(array.length - count, 0));
+  };
+}
+
+export function takeLastAsync<ImperativeTInput = never>(count: number) {
+  return async function* takeLastAsyncGenerator<TInput = ImperativeTInput>(
+    generator: AsyncGeneratorProvider<TInput>,
+  ): AsyncGeneratorMiddlewareReturn<TInput> {
+    const array = await toArrayAsync()(generator);
     yield* array.slice(Math.max(array.length - count, 0));
   };
 }

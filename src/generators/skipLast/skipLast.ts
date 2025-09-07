@@ -1,4 +1,8 @@
-import { type GeneratorProvider } from "../../types";
+import {
+  type GeneratorProvider,
+  type AsyncGeneratorProvider,
+  type AsyncGeneratorMiddlewareReturn,
+} from "../../types";
 
 /**
  * skips the last `count` items produced by the generator and yields the rest to the next operation.
@@ -8,13 +12,30 @@ import { type GeneratorProvider } from "../../types";
  *  skipLast(2)
  * ).toArray() // [1]
  */
-export function skipLast<ImperativeInput = never>(count: number) {
-  return function* skipLastGenerator<Input = ImperativeInput>(
-    generator: GeneratorProvider<Input>,
-  ): GeneratorProvider<Input> {
-    const buffer: Input[] = [];
+export function skipLast<ImperativeTInput = never>(count: number) {
+  return function* skipLastGenerator<TInput = ImperativeTInput>(
+    generator: GeneratorProvider<TInput>,
+  ): GeneratorProvider<TInput> {
+    const buffer: TInput[] = [];
     let skipped = 0;
     for (const next of generator) {
+      buffer.push(next);
+      if (skipped < count) {
+        skipped++;
+        continue;
+      }
+      yield buffer.shift()!;
+    }
+  };
+}
+
+export function skipLastAsync<ImperativeTInput = never>(count: number) {
+  return async function* skipLastAsyncGenerator<TInput = ImperativeTInput>(
+    generator: AsyncGeneratorProvider<TInput>,
+  ): AsyncGeneratorMiddlewareReturn<TInput> {
+    const buffer: TInput[] = [];
+    let skipped = 0;
+    for await (const next of generator) {
       buffer.push(next);
       if (skipped < count) {
         skipped++;

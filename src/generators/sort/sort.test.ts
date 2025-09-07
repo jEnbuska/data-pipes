@@ -20,7 +20,7 @@ describe("sort", () => {
 
   test("sort empty", () => {
     expect(
-      chainable<number>()
+      chainable<number>([])
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([]);

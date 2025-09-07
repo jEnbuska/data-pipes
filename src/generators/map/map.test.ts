@@ -11,6 +11,26 @@ describe("map", () => {
     ).toStrictEqual([2, 4]);
   });
 
+  test("async chainable", async () => {
+    expect(
+      (await chainable(async function* () {
+        yield 1;
+        yield 2;
+      })
+        .map((n) => n * 2)
+        .toArray()) satisfies number[],
+    ).toStrictEqual([2, 4]);
+  });
+
+  test("chainable resolve", async () => {
+    expect(
+      (await chainable([Promise.resolve(1), Promise.resolve(2)])
+        .resolve()
+        .map((n) => Promise.resolve((n satisfies number) * 2))
+        .toArray()) satisfies number[],
+    ).toStrictEqual([2, 4]);
+  });
+
   test("pipe", () => {
     expect(
       pipe(

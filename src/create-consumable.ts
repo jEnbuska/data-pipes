@@ -1,9 +1,16 @@
 import { toArray, consume, first } from "./consumers";
-import { type GeneratorProvider, type GeneratorConsumable } from "./types.ts";
+import {
+  type GeneratorProvider,
+  type GeneratorConsumable,
+  type AsyncGeneratorProvider,
+} from "./types.ts";
+import { toArrayAsync } from "./consumers/toArray/toArray.ts";
+import { consumeAsync } from "./consumers/consume/consume.ts";
+import { firstAsync } from "./consumers/first/first.ts";
 
-export function createConsumable<Input>(
-  generator: GeneratorProvider<Input>,
-): GeneratorConsumable<Input> {
+export function createConsumable<TInput>(
+  generator: GeneratorProvider<TInput>,
+): GeneratorConsumable<TInput> {
   return {
     [Symbol.iterator]: generator[Symbol.iterator].bind(generator),
     [Symbol.toStringTag]: "GeneratorConsumer",
@@ -14,7 +21,25 @@ export function createConsumable<Input>(
       return consume()(generator);
     },
     first<Default>(...args: [Default] | []) {
-      return first<Default, Input>(...args)(generator);
+      return first<Default, TInput>(...args)(generator);
+    },
+  };
+}
+
+export function createAsyncConsumable<TInput>(
+  generator: AsyncGeneratorProvider<TInput>,
+): GeneratorConsumable<TInput, true> {
+  return {
+    [Symbol.iterator]: undefined,
+    [Symbol.toStringTag]: "GeneratorConsumer",
+    async toArray() {
+      return toArrayAsync()(generator);
+    },
+    async consume() {
+      return consumeAsync()(generator);
+    },
+    async first<Default>(...args: [Default] | []) {
+      return firstAsync<Default, TInput>(...args)(generator);
     },
   };
 }

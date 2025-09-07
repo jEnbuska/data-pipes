@@ -1,4 +1,7 @@
-import { type GeneratorMiddleware } from "../../types";
+import {
+  type GeneratorMiddleware,
+  type AsyncGeneratorMiddleware,
+} from "../../types";
 
 /**
  * takes items produced by the generator while the predicate returns true and yields them to the next operation.
@@ -8,11 +11,25 @@ import { type GeneratorMiddleware } from "../../types";
  *  takeWhile(n => n < 3)
  * ).toArray() // [1,2]
  */
-export function takeWhile<Input>(
-  predicate: (next: Input) => boolean,
-): GeneratorMiddleware<Input> {
+export function takeWhile<TInput>(
+  predicate: (next: TInput) => boolean,
+): GeneratorMiddleware<TInput> {
   return function* takeWhileGenerator(generator) {
     for (const next of generator) {
+      if (predicate(next)) {
+        yield next;
+      } else {
+        break;
+      }
+    }
+  };
+}
+
+export function takeWhileAsync<TInput>(
+  predicate: (next: TInput) => boolean,
+): AsyncGeneratorMiddleware<TInput> {
+  return async function* takeWhileAsyncGenerator(generator) {
+    for await (const next of generator) {
       if (predicate(next)) {
         yield next;
       } else {
