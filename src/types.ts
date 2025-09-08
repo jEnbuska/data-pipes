@@ -236,9 +236,9 @@ type BaseChainable<
    *  .groupBy(n => n % 2 ? 'odd' : 'even')
    *  .first() // {even: [2,4], odd: [1,3]}
    */
-  groupBy<Key extends PropertyKey>(
-    keySelector: (next: TInput) => Key,
-  ): AnyChainable<Record<Key, TInput[]>, TAsync>;
+  groupBy<TKey extends PropertyKey>(
+    keySelector: (next: TInput) => TKey,
+  ): AnyChainable<Record<TKey, TInput[]>, TAsync>;
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
    * @example
@@ -247,13 +247,13 @@ type BaseChainable<
    *  .first() // {odd: [1,3], even: [2,4], other: []}
    */
   groupBy<
-    Key extends PropertyKey,
-    Groups extends Array<Key | PropertyKey> = [],
+    TKey extends PropertyKey,
+    TGroups extends Array<TKey | PropertyKey> = [],
   >(
-    keySelector: (next: TInput) => Key | PropertyKey,
-    groups?: Groups,
+    keySelector: (next: TInput) => TKey | PropertyKey,
+    groups?: TGroups,
   ): AnyChainable<
-    Record<Groups[number], TInput[]> & Partial<Record<Key, TInput[]>>,
+    Record<TGroups[number], TInput[]> & Partial<Record<TKey, TInput[]>>,
     TAsync
   >;
   /**
@@ -313,9 +313,9 @@ type BaseChainable<
    *  .defaultIfEmpty(0)
    *  .first() // 0
    */
-  defaultIfEmpty<Default = TInput>(
-    defaultValue: Default,
-  ): AnyChainable<TInput | Default, TAsync>;
+  defaultIfEmpty<TDefault = TInput>(
+    defaultValue: TDefault,
+  ): AnyChainable<TInput | TDefault, TAsync>;
   /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example

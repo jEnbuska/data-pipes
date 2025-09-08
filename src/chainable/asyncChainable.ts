@@ -45,9 +45,9 @@ export function createAsyncChainable<TInput = unknown>(
     find(predicate) {
       return createAsyncChainable(findAsync(predicate)(generator));
     },
-    defaultIfEmpty<Default>(defaultValue: Default) {
+    defaultIfEmpty<TDefault>(defaultValue: TDefault) {
       return createAsyncChainable(
-        defaultIfEmptyAsync<Default, TInput>(defaultValue)(generator),
+        defaultIfEmptyAsync<TDefault, TInput>(defaultValue)(generator),
       );
     },
     min(callback) {
@@ -56,7 +56,7 @@ export function createAsyncChainable<TInput = unknown>(
     max(callback) {
       return createAsyncChainable(maxAsync(callback)(generator));
     },
-    distinctBy<Value>(selector: (next: TInput) => Value) {
+    distinctBy<TValue>(selector: (next: TInput) => TValue) {
       return createAsyncChainable(distinctByAsync(selector)(generator));
     },
     distinctUntilChanged(isEqual) {
@@ -71,14 +71,14 @@ export function createAsyncChainable<TInput = unknown>(
       return createAsyncChainable<TOutput>(middleware(generator));
     },
     groupBy<
-      Key extends PropertyKey,
-      Groups extends Array<Key | PropertyKey> = [],
-    >(keySelector: (next: TInput) => Key | PropertyKey, groups?: Groups) {
+      TKey extends PropertyKey,
+      TGroups extends Array<TKey | PropertyKey> = [],
+    >(keySelector: (next: TInput) => TKey | PropertyKey, groups?: TGroups) {
       return createAsyncChainable(
-        groupByAsync<TInput, Key, Groups>(keySelector, groups)(generator),
+        groupByAsync<TInput, TKey, TGroups>(keySelector, groups)(generator),
       );
     },
-    flat<Depth extends number = 1>(depth?: Depth) {
+    flat<TDepth extends number = 1>(depth?: TDepth) {
       return createAsyncChainable(flatAsync(depth)(generator));
     },
     map<TOutput>(mapper: (next: TInput) => TOutput) {
