@@ -32,6 +32,7 @@ export function createAsyncConsumable<TInput>(
   return {
     [Symbol.iterator]: undefined,
     [Symbol.toStringTag]: "GeneratorConsumer",
+    [Symbol.asyncIterator]: generator[Symbol.asyncIterator].bind(generator),
     async toArray() {
       return toArrayAsync()(generator);
     },

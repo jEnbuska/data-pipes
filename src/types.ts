@@ -45,6 +45,9 @@ export type GeneratorConsumable<TInput, TAsync extends boolean = false> = {
   [Symbol.iterator]: TAsync extends true
     ? undefined
     : () => Generator<TInput, void, undefined & void>;
+  [Symbol.asyncIterator]: TAsync extends true
+    ? () => AsyncGenerator<TInput, void, undefined & void>
+    : undefined;
   [Symbol.toStringTag]: "GeneratorConsumer";
   /**
    * Triggers the generators to execute and returns their outputs as an array.

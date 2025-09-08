@@ -5,7 +5,10 @@ import { some, someAsync } from "./some.ts";
 import { filter, filterAsync } from "./filter.ts";
 import { defaultIfEmpty, defaultIfEmptyAsync } from "./defaultIfEmpty.ts";
 import { distinctBy, distinctByAsync } from "./distinctBy.ts";
-import { distinctUntilChanged, distinctUntilChangedAsync } from "./distinctUntilChanged.ts";
+import {
+  distinctUntilChanged,
+  distinctUntilChangedAsync,
+} from "./distinctUntilChanged.ts";
 import { sort, sortAsync } from "./sort.ts";
 import { map, mapAsync } from "./map.ts";
 import { flatMap, flatMapAsync } from "./flatMap.ts";

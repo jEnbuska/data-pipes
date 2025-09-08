@@ -39,4 +39,28 @@ describe("chainable", () => {
       .toArray();
     expect(max).toStrictEqual([6]);
   });
+
+  test("iteration", () => {
+    const values = chain(function* () {
+      yield 1;
+      yield 2;
+    });
+    let count = 0;
+    for (const value of values) {
+      expect(value satisfies number).toBe(++count);
+    }
+    expect(count).toBe(2);
+  });
+
+  test("async iteration", async () => {
+    const values = chain(async function* () {
+      yield 1;
+      yield 2;
+    });
+    let count = 0;
+    for await (const value of values) {
+      expect(value satisfies number).toBe(++count);
+    }
+    expect(count).toBe(2);
+  });
 });
