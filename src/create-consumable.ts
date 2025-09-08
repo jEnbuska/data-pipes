@@ -12,6 +12,7 @@ export function createConsumable<TInput>(
   generator: GeneratorProvider<TInput>,
 ): GeneratorConsumable<TInput> {
   return {
+    [Symbol.asyncIterator]: undefined,
     [Symbol.iterator]: generator[Symbol.iterator].bind(generator),
     [Symbol.toStringTag]: "GeneratorConsumer",
     toArray() {

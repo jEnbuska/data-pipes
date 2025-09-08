@@ -16,12 +16,10 @@ export function take<ImperativeTInput = never>(count: number) {
   return function* takeGenerator<TInput = ImperativeTInput>(
     generator: GeneratorProvider<TInput>,
   ): GeneratorProvider<TInput> {
+    if (count <= 0) return;
     for (const next of generator) {
-      if (count <= 0) {
-        break;
-      }
-      count--;
       yield next;
+      if (!--count) break;
     }
   };
 }
@@ -30,12 +28,10 @@ export function takeAsync<ImperativeTInput = never>(count: number) {
   return async function* takeAsyncGenerator<TInput = ImperativeTInput>(
     generator: AsyncGeneratorProvider<TInput>,
   ): AsyncGeneratorMiddlewareReturn<TInput> {
+    if (count <= 0) return;
     for await (const next of generator) {
-      if (count <= 0) {
-        break;
-      }
-      count--;
       yield next;
+      if (!--count) break;
     }
   };
 }

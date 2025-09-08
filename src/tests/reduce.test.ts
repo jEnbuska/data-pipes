@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { chain, reduce } from "../index.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 
 describe("reduce", () => {
   test("sum chainable", () => {

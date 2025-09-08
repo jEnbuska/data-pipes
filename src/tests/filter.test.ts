@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { chain, filter } from "../index.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("filter", () => {

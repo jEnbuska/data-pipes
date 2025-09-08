@@ -4,7 +4,7 @@ import {
   type AsyncChainable,
   type Chainable,
 } from "../types.ts";
-import { createProvider, createAsyncProvider } from "../create-provider.ts";
+import { createGenerator, createAsyncProvider } from "../create-generator.ts";
 import { createAsyncChainable } from "./asyncChainable.ts";
 import { createChainable } from "./chainable.ts";
 import { isAsyncGeneratorFunction } from "./utils.ts";
@@ -39,5 +39,5 @@ export function chain(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
     return createAsyncChainable(createAsyncProvider(source));
   }
-  return createChainable(createProvider(source));
+  return createChainable(createGenerator(source));
 }

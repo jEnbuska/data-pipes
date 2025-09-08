@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { chain } from "../chainable/chain.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 import { countBy } from "../generators/countBy.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 

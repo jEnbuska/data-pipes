@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { chain, min } from "../index.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 
 describe("min", () => {
   const numbers = [2, 1, 3, 5, 4];

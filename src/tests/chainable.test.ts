@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 import { chain } from "../chainable/chain.ts";
 import { map } from "../generators";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 
 describe("chainable", () => {
   const numbers = [1, 2, 3];

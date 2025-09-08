@@ -1,6 +1,6 @@
 import { describe, test, mock, expect } from "bun:test";
 import { chain, forEach } from "../index.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("forEach", () => {

@@ -2,9 +2,9 @@ import {
   type SyncPipeSource,
   type GeneratorMiddleware,
   type GeneratorConsumable,
-} from "../types.ts";
-import { createProvider } from "../create-provider.ts";
-import { createConsumable } from "../create-consumable.ts";
+} from "./types.ts";
+import { createGenerator } from "./create-generator.ts";
+import { createConsumable } from "./create-consumable.ts";
 
 /**
  * Creates a pipe that can be used for composing generators
@@ -614,7 +614,7 @@ export function pipe(...args: unknown[]): GeneratorConsumable<unknown> {
   const [source, ...middlewares] = args;
   const generator = middlewares.reduce(
     (acc, next) => (next as any)(acc),
-    createProvider(source),
+    createGenerator(source),
   );
   return createConsumable(generator as any);
 }

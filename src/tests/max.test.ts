@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
 import { chain, max } from "../index.ts";
-import { pipe } from "../pipe/pipe.ts";
+import { pipe } from "../pipe.ts";
 
 describe("max", () => {
   const numbers = [1, 2, 3, 5, 4];

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { pipe } from "./pipe.ts";
+import { pipe } from "../pipe.ts";
 import {
   map,
   filter,
@@ -10,7 +10,7 @@ import {
   reduce,
   forEach,
   takeWhile,
-} from "../";
+} from "../index.ts";
 
 describe("pipe", () => {
   test("map single", () => {

@@ -27,7 +27,7 @@ export async function* createAsyncProvider<TInput>(
   yield* source();
 }
 
-export function* createProvider<TInput>(
+export function* createGenerator<TInput>(
   source: SyncPipeSource<TInput>,
 ): GeneratorProvider<TInput> {
   if (isGeneratorFunction<TInput>(source)) {
