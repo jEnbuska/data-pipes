@@ -31,6 +31,7 @@ import {
   skipLastAsync,
   takeLastAsync,
   chunkByAsync,
+  batchAsync,
 } from "../generators";
 
 export function createAsyncChainable<TInput = unknown>(
@@ -137,6 +138,9 @@ export function createAsyncChainable<TInput = unknown>(
     },
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
       return createAsyncChainable(chunkByAsync(fn)(generator));
+    },
+    batch(predicate) {
+      return createAsyncChainable(batchAsync(predicate)(generator));
     },
   };
 }

@@ -1,42 +1,70 @@
 import { describe, test, expect } from "bun:test";
-import { chain, map } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("map", () => {
-  test("chainable", () => {
+  const {
+    fromResolvedPromises,
+    fromSingle,
+    fromAsyncGenerator,
+    fromGenerator,
+    fromPromises,
+    fromArray,
+    fromEmpty,
+    fromEmptyAsync,
+  } = createTestSets([2, 1, 3, 5, 4]);
+  const expected = [2, 1, 3, 1, 0];
+  const modulo4 = (n: number) => n % 4;
+  test("from resolver promises", async () => {
     expect(
-      chain([1, 2])
-        .map((n) => n * 2)
-        .toArray(),
-    ).toStrictEqual([2, 4]);
+      await (fromResolvedPromises.map(modulo4).toArray() satisfies Promise<
+        number[]
+      >),
+    ).toStrictEqual(expected);
   });
 
-  test("async chainable", async () => {
-    expect(
-      (await chain(async function* () {
-        yield 1;
-        yield 2;
-      })
-        .map((n) => n * 2)
-        .toArray()) satisfies number[],
-    ).toStrictEqual([2, 4]);
+  test("from single", () => {
+    expect(fromSingle.map(modulo4).toArray() satisfies number[]).toEqual(
+      expected.slice(0, 1),
+    );
   });
 
-  test("chainable resolve", async () => {
+  test("from async generator", async () => {
     expect(
-      (await chain([Promise.resolve(1), Promise.resolve(2)])
-        .resolve()
-        .map((n) => Promise.resolve((n satisfies number) * 2))
-        .toArray()) satisfies number[],
-    ).toStrictEqual([2, 4]);
+      await (fromAsyncGenerator.map(modulo4).toArray() satisfies Promise<
+        number[]
+      >),
+    ).toStrictEqual(expected);
   });
 
-  test("pipe", () => {
+  test("from promises", async () => {
+    const first = fromPromises
+      .resolve()
+      .map(modulo4)
+      .toArray() satisfies Promise<number[]>;
+    expect(await first).toStrictEqual(expected);
+  });
+
+  test("from generator", async () => {
     expect(
-      pipe(
-        [1, 2],
-        map((n) => n * 2),
-      ).toArray(),
-    ).toStrictEqual([2, 4]);
+      fromGenerator.map(modulo4).toArray() satisfies number[],
+    ).toStrictEqual(expected);
+  });
+
+  test("from array", () => {
+    expect(fromArray.map(modulo4).toArray() satisfies number[]).toStrictEqual(
+      expected,
+    );
+  });
+
+  test("from empty", () => {
+    expect(fromEmpty.map(modulo4).toArray() satisfies number[]).toStrictEqual(
+      [],
+    );
+  });
+
+  test("from empty async", async () => {
+    expect(
+      await (fromEmptyAsync.map(modulo4).toArray() satisfies Promise<number[]>),
+    ).toStrictEqual([]);
   });
 });

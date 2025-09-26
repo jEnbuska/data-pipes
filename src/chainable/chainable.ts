@@ -1,7 +1,7 @@
-import type {
-  GeneratorProvider,
-  Chainable,
-  GeneratorMiddleware,
+import {
+  type GeneratorProvider,
+  type Chainable,
+  type GeneratorMiddleware,
 } from "../types.ts";
 import { createConsumable } from "../create-consumable.ts";
 import {
@@ -32,6 +32,7 @@ import {
   skipLast,
   takeLast,
   chunkBy,
+  batch,
 } from "../generators";
 import { createAsyncChainable } from "./asyncChainable.ts";
 
@@ -128,6 +129,9 @@ export function createChainable<TInput = unknown>(
     },
     resolve() {
       return createAsyncChainable(resolve<TInput>()(generator));
+    },
+    batch(predicate) {
+      return createChainable(batch(predicate)(generator));
     },
     countBy(fn) {
       return createChainable(countBy(fn)(generator));

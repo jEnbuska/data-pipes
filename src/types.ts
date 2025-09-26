@@ -74,7 +74,7 @@ type ChainableOutput<TOutput, TAsync> = TAsync extends true
 
 export type Chainable<TInput> = {
   isAsync: false;
-  resolve(): AsyncChainable<Awaited<TInput>>;
+  resolve(): AsyncChainable<TInput extends Promise<infer U> ? U : TInput>;
 } & BaseChainable<TInput>;
 
 export type AsyncChainable<TInput> = {
@@ -102,6 +102,16 @@ type BaseChainable<
   map<TOutput = unknown>(
     mapper: (next: TInput) => TOutput,
   ): AnyChainable<ChainableOutput<TOutput, TAsync>, TAsync>;
+  /**
+   * Batch values into groups   *
+   * @example
+   * chainable([1,2,3,4,5])
+   *  .batch(acc => acc.length < 3)
+   *  .toArray() // [[1,2], [3,4] [5]];
+   */
+  batch(
+    predicate: (acc: TInput[]) => boolean,
+  ): AnyChainable<ChainableOutput<TInput[], TAsync>, TAsync>;
   /**
    * Returns a new array with all sub-array elements concatenated into it recursively up to the
    * specified depth.

@@ -1,39 +1,65 @@
 import { describe, test, expect } from "bun:test";
-import { chain, min } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("min", () => {
   const numbers = [2, 1, 3, 5, 4];
-  test("empty", () => {
+  const {
+    fromResolvedPromises,
+    fromSingle,
+    fromAsyncGenerator,
+    fromGenerator,
+    fromPromises,
+    fromArray,
+    fromEmpty,
+    fromEmptyAsync,
+  } = createTestSets(numbers);
+  const modulo4 = (n: number) => n % 4;
+
+  test("from resolver promises", async () => {
     expect(
-      chain<number>([])
-        .max((v) => v)
-        .first(-1),
-    ).toBe(-1);
+      await (fromResolvedPromises
+        .min(modulo4)
+        .first() satisfies Promise<number>),
+    ).toStrictEqual(4);
   });
 
-  test("by value", () => {
-    expect(
-      chain<number>(numbers)
-        .min((v) => v)
-        .first(),
-    ).toBe(1);
+  test("from single", () => {
+    expect(fromSingle.min(modulo4).first() satisfies number).toEqual(
+      numbers[0],
+    );
   });
 
-  test("by module 4", () => {
+  test("from async generator", async () => {
     expect(
-      chain<number>(numbers)
-        .min((v) => v % 4)
-        .first(),
-    ).toBe(4);
+      await (fromAsyncGenerator.min(modulo4).first() satisfies Promise<number>),
+    ).toStrictEqual(4);
   });
 
-  test("pipe - min", () => {
+  test("from promises", async () => {
+    const first = fromPromises
+      .resolve()
+      .min(modulo4)
+      .first() satisfies Promise<number>;
+    expect(await first).toStrictEqual(4);
+  });
+
+  test("from generator", async () => {
+    expect(fromGenerator.min(modulo4).first() satisfies number).toStrictEqual(
+      4,
+    );
+  });
+
+  test("from array", () => {
+    expect(fromArray.min(modulo4).first() satisfies number).toStrictEqual(4);
+  });
+
+  test("from empty", () => {
+    expect(fromEmpty.min(modulo4).first(-1) satisfies number).toStrictEqual(-1);
+  });
+
+  test("from empty async", async () => {
     expect(
-      pipe(
-        [2, 1, 3, 4],
-        min((v) => v),
-      ).first(),
-    ).toBe(1);
+      await (fromEmptyAsync.min(modulo4).first(-1) satisfies Promise<number>),
+    ).toStrictEqual(-1);
   });
 });

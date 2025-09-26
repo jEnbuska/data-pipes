@@ -6,9 +6,9 @@ import {
 export function resolve<TInput>() {
   return async function* resolveGenerator(
     generator: GeneratorProvider<TInput> | AsyncGeneratorProvider<TInput>,
-  ): AsyncGeneratorProvider<Awaited<TInput>> {
+  ): AsyncGeneratorProvider<TInput extends Promise<infer U> ? U : TInput> {
     for await (const next of generator) {
-      yield next;
+      yield next as any;
     }
   };
 }

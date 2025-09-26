@@ -5,10 +5,7 @@ import { some, someAsync } from "./some.ts";
 import { filter, filterAsync } from "./filter.ts";
 import { defaultIfEmpty, defaultIfEmptyAsync } from "./defaultIfEmpty.ts";
 import { distinctBy, distinctByAsync } from "./distinctBy.ts";
-import {
-  distinctUntilChanged,
-  distinctUntilChangedAsync,
-} from "./distinctUntilChanged.ts";
+import { distinctUntilChanged, distinctUntilChangedAsync } from "./distinctUntilChanged.ts";
 import { sort, sortAsync } from "./sort.ts";
 import { map, mapAsync } from "./map.ts";
 import { flatMap, flatMapAsync } from "./flatMap.ts";
@@ -28,6 +25,7 @@ import { takeLast, takeLastAsync } from "./takeLast.ts";
 import { resolve } from "./resolve.ts";
 import { countBy, countByAsync } from "./countBy.ts";
 import { chunkBy, chunkByAsync } from "./chunkBy.ts";
+import { batch, batchAsync } from "./batch.ts";
 
 export {
   min,
@@ -83,4 +81,6 @@ export {
   countByAsync,
   chunkBy,
   chunkByAsync,
+  batch,
+  batchAsync,
 };
