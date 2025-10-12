@@ -1,9 +1,9 @@
 import { describe, test, expect } from "bun:test";
-import { chain } from "../chainable/chain.ts";
+import source from "../index.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
-    const array = chain([1, 2, 3])
+    const array = source([1, 2, 3])
       .lift(function* multiplyByTwo(generator) {
         for (const next of generator) {
           yield next * 2;
@@ -14,7 +14,7 @@ describe("lift", () => {
   });
 
   test("lift filter", () => {
-    const array = chain([-2, 1, 2, -3, 4])
+    const array = source([-2, 1, 2, -3, 4])
       .lift(function* filterNegatives(generator) {
         for (const next of generator) {
           if (next < 0) continue;
@@ -26,7 +26,7 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = chain(["a", "b", "c"])
+    const text = source(["a", "b", "c"])
       .lift(function* joinStrings(generator) {
         const acc: string[] = [];
         for (const next of generator) {

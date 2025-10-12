@@ -1,20 +1,19 @@
 import { describe, test, expect } from "bun:test";
-import { chain } from "../chainable/chain.ts";
-import { pipe } from "../pipe.ts";
-import { countBy } from "../generators/countBy.ts";
+import source from "../index.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
     expect(
-      chain<number>([])
+      source<number>([])
         .countBy((next) => next)
         .first(),
     ).toBe(0);
   });
   test("countBy with identity", () => {
     expect(
-      chain(1)
+      source(1)
         .countBy((next) => next)
         .first(),
     ).toBe(1);
@@ -22,18 +21,10 @@ describe("countBy", () => {
 
   test("countBy by with selector identity", () => {
     expect(
-      chain({ value: 5 })
+      source({ value: 5 })
         .countBy((next) => next.value)
         .first(),
     ).toBe(5);
-  });
-
-  test("pipe - countBy", () => {
-    const value = pipe(
-      [1, 2, 3],
-      countBy((next) => next),
-    ).first();
-    expect(value).toBe(6);
   });
 
   const objects = [{ value: 1 }, { value: 2 }, { value: 3 }];
@@ -58,7 +49,7 @@ describe("countBy", () => {
       await (fromResolvedPromises
         .countBy((next) => next.value)
         .first() satisfies Promise<number>),
-    ).toStrictEqual(6);
+    ).toBe(6);
   });
 
   test("from async generator", async () => {
@@ -66,7 +57,7 @@ describe("countBy", () => {
       await (fromAsyncGenerator
         .countBy((next) => next.value)
         .first() satisfies Promise<number>),
-    ).toStrictEqual(6);
+    ).toBe(6);
   });
 
   test("from promises", async () => {
@@ -76,32 +67,32 @@ describe("countBy", () => {
         .resolve()
         .countBy((next) => next.value)
         .first()) satisfies number | Promise<number>,
-    ).toStrictEqual(6);
+    ).toBe(6);
   });
 
   test("from generator", async () => {
     expect(
       fromGenerator.countBy((next) => next.value).first() satisfies number,
-    ).toStrictEqual(6);
+    ).toBe(6);
   });
 
   test("from array", () => {
     expect(
-      fromArray.countBy((next) => next.value).first() satisfies number,
-    ).toStrictEqual(6);
+      fromArray.countBy((next) => next.value).first() satisfies number | void,
+    ).toBe(6);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.countBy((next) => next.value).first() satisfies number,
-    ).toStrictEqual(0);
+      fromEmpty.countBy((next) => next.value).first() satisfies number | void,
+    ).toBe(0);
   });
 
   test("from empty async", async () => {
     expect(
       await (fromEmptyAsync
         .countBy((next) => next.value)
-        .first() satisfies Promise<number>),
-    ).toStrictEqual(0);
+        .first() satisfies Promise<number | void>),
+    ).toBe(0);
   });
 });

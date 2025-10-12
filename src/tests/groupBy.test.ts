@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { chain, groupBy } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import source from "../index.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("groupBy", () => {
@@ -10,16 +10,9 @@ describe("groupBy", () => {
       2: [2],
       3: [3],
     };
-    test("pipe", () => {
-      const groups = pipe(
-        [1, 2, 3],
-        groupBy((x) => x),
-      ).first();
-      expect(groups).toStrictEqual(expected);
-    });
 
     test("chainable", () => {
-      const groups = chain([1, 2, 3])
+      const groups = source([1, 2, 3])
         .groupBy((x) => x)
         .first();
       expect(groups).toStrictEqual(expected);
@@ -34,17 +27,9 @@ describe("groupBy", () => {
       4: [],
     };
     test("chainable", () => {
-      const groups = chain([1, 2, 3])
+      const groups = source([1, 2, 3])
         .groupBy((x) => x, [1, 2, 4])
         .first();
-      expect(groups).toStrictEqual(expected);
-    });
-
-    test("pipe", () => {
-      const groups = pipe(
-        [1, 2, 3],
-        groupBy((x) => x, [1, 2, 4]),
-      ).first();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -55,16 +40,9 @@ describe("groupBy", () => {
       0: [2, 4],
     };
     test("chainable", () => {
-      const groups = chain([1, 2, 3, 4])
+      const groups = source([1, 2, 3, 4])
         .groupBy((x) => x % 2)
         .first();
-      expect(groups).toStrictEqual(expected);
-    });
-    test("pipe", () => {
-      const groups = pipe(
-        [1, 2, 3, 4],
-        groupBy((x) => x % 2),
-      ).first();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -76,16 +54,9 @@ describe("groupBy", () => {
       other: [],
     };
     test("chainable", () => {
-      const groups = chain([1, 2, 3, 4])
+      const groups = source([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"])
         .first();
-      expect(groups).toStrictEqual(expected);
-    });
-    test("pipe", () => {
-      const groups = pipe(
-        [1, 2, 3, 4],
-        groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"]),
-      ).first();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -96,17 +67,9 @@ describe("groupBy", () => {
       even: [2, 4],
     };
     test("chainable", () => {
-      const groups = chain([1, 2, 3, 4])
+      const groups = source([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"))
         .first();
-      expect(groups).toStrictEqual(expected);
-    });
-
-    test("pipe", () => {
-      const groups = pipe(
-        [1, 2, 3, 4],
-        groupBy((x) => (x % 2 ? "odd" : "even")),
-      ).first();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -135,17 +98,17 @@ describe("groupBy", () => {
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises
-        .groupBy(getKey)
-        .first() satisfies Promise<ExpectedReturnType>),
+      await (fromResolvedPromises.groupBy(getKey).first() satisfies Promise<
+        ExpectedReturnType | undefined
+      >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator
-        .groupBy(getKey)
-        .first() satisfies Promise<ExpectedReturnType>),
+      await (fromAsyncGenerator.groupBy(getKey).first() satisfies Promise<
+        ExpectedReturnType | undefined
+      >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
@@ -153,26 +116,27 @@ describe("groupBy", () => {
     expect(
       // TODO fix this
       (await fromPromises.resolve().groupBy(getKey).first()) satisfies
+        | void
         | ExpectedReturnType
-        | Promise<ExpectedReturnType>,
+        | Promise<ExpectedReturnType | undefined>,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.groupBy(getKey).first() satisfies ExpectedReturnType,
+      fromGenerator.groupBy(getKey).first() satisfies ExpectedReturnType | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from array", () => {
     expect(
-      fromArray.groupBy(getKey).first() satisfies ExpectedReturnType,
+      fromArray.groupBy(getKey).first() satisfies ExpectedReturnType | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.groupBy(getKey).first() satisfies ExpectedReturnType,
+      fromEmpty.groupBy(getKey).first() satisfies ExpectedReturnType | void,
     ).toStrictEqual({});
   });
 
@@ -180,7 +144,7 @@ describe("groupBy", () => {
     expect(
       await (fromEmptyAsync
         .groupBy(getKey)
-        .first() satisfies Promise<ExpectedReturnType>),
+        .first() satisfies Promise<ExpectedReturnType | void>),
     ).toStrictEqual({});
   });
 });

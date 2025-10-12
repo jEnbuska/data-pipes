@@ -20,41 +20,37 @@ describe("count", () => {
   test("from resolver promises", async () => {
     expect(
       await (fromResolvedPromises.count().first() satisfies Promise<number>),
-    ).toStrictEqual(numbers.length);
+    ).toBe(numbers.length);
   });
 
   test("from async generator", async () => {
     expect(
       await (fromAsyncGenerator.count().first() satisfies Promise<number>),
-    ).toStrictEqual(numbers.length);
+    ).toBe(numbers.length);
   });
 
   test("from promises", async () => {
     expect(
       // TODO fix this
       (await fromPromises.count().first()) satisfies number | Promise<number>,
-    ).toStrictEqual(numbers.length);
+    ).toBe(numbers.length);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.count().first() satisfies number).toStrictEqual(
-      numbers.length,
-    );
+    expect(fromGenerator.count().first() satisfies number).toBe(numbers.length);
   });
 
   test("from array", () => {
-    expect(fromArray.count().first() satisfies number).toStrictEqual(
-      numbers.length,
-    );
+    expect(fromArray.count().first() satisfies number).toBe(numbers.length);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.count().first() satisfies number).toStrictEqual(0);
+    expect(fromEmpty.count().first() satisfies number).toBe(0);
   });
 
   test("from empty async", async () => {
     expect(
       await (fromEmptyAsync.count().first() satisfies Promise<number>),
-    ).toStrictEqual(0);
+    ).toBe(0);
   });
 });

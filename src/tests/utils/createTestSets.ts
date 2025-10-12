@@ -1,21 +1,21 @@
-import { chain } from "../../chainable/chain.ts";
+import { source } from "../../chainable/source.ts";
 
 export function createTestSets<T>(array: T[]) {
   return {
-    fromEmpty: chain<T>([]),
-    fromEmptyAsync: chain<T>(async function* () {}),
-    fromAsyncGenerator: chain(async function* () {
+    fromEmpty: source<T>([]),
+    fromEmptyAsync: source<T>(async function* () {}),
+    fromAsyncGenerator: source(async function* () {
       for await (const value of array) {
         yield value;
       }
     }),
-    fromGenerator: chain(function* () {
+    fromGenerator: source(function* () {
       yield* array;
     }),
-    fromArray: chain(array),
-    fromSingle: chain(array[0]),
-    fromPromises: chain(array).map((next) => Promise.resolve(next)),
-    fromResolvedPromises: chain(array)
+    fromArray: source(array),
+    fromSingle: source(array[0]),
+    fromPromises: source(array).map((next) => Promise.resolve(next)),
+    fromResolvedPromises: source(array)
       .map((next) => Promise.resolve(next))
       .resolve()
       .map((next) => Promise.resolve(next)),

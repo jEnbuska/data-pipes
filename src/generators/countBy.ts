@@ -1,15 +1,12 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorMiddleware,
+  type GeneratorProvider,
 } from "../types.ts";
 
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
  * @example
- * pipe(
- *  [{age: 5, age: 59}],
- *  countBy((next) => next.age)
- * ).first() // 64
+ * source([{age: 5, age: 59}]).countBy((next) => next.age).first() // 64
  */
 export function countBy<TInput>(mapper: (next: TInput) => number) {
   return function* countByGenerator(

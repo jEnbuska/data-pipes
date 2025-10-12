@@ -1,6 +1,6 @@
 import type {
-  GeneratorMiddleware,
   AsyncGeneratorMiddleware,
+  GeneratorMiddleware,
 } from "../types.ts";
 
 export function chunkBy<TInput, TIdentifier = any>(

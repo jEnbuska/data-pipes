@@ -1,25 +1,10 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
-/**
- * filters out items produced by the generator that are equal to the previous item by the compare function.
- * If no compare function is provided, the strict equality operator is used.
- * @example
- * pipe(
- *  [1,2,2,2,3],
- *  distinctUntilChanged()
- * ).toArray() // [1,2,3]
- *
- * @example
- * pipe(
- *  [1, 2, 5, 8, 3],
- *  distinctUntilChanged((previous, current) => previous % 3 === current % 3)
- * ).toArray() // [1,2,3]
- */
 export function distinctUntilChanged<TInput>(
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
 ): GeneratorMiddleware<TInput> {

@@ -1,6 +1,6 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
@@ -8,10 +8,7 @@ import {
  * to the next operation.
  *
  * @example
- * pipe(
- *   [1,2,3],
- *   map(n => n * 2)
- * ).toArray() // [2, 4, 6];
+ * source([1,2,3]).map(n => n * 2).toArray() // [2, 4, 6];
  */
 export function map<TInput, TOutput>(
   mapper: (next: TInput) => TOutput,

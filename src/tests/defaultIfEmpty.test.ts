@@ -1,18 +1,8 @@
 import { describe, test, expect } from "bun:test";
-import { filter, defaultIfEmpty } from "../index.ts";
-import { pipe } from "../pipe.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("defaultIfEmpty", () => {
-  test("pipe - defaultIfEmpty", () => {
-    const value = pipe(
-      [1, 2, 3],
-      filter((it) => it > 3),
-      defaultIfEmpty(0),
-    ).first();
-    expect(value).toBe(0);
-  });
-
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
@@ -75,9 +65,9 @@ describe("defaultIfEmpty", () => {
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync
-        .defaultIfEmpty(0)
-        .first() satisfies Promise<number>),
+      await (fromEmptyAsync.defaultIfEmpty(0).first() satisfies Promise<
+        number | void
+      >),
     ).toStrictEqual(0);
   });
 });

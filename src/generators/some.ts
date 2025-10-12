@@ -1,6 +1,6 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
 
 /**
@@ -8,10 +8,7 @@ import {
  * if the generator is empty yields false
  *
  * @example
- * pipe(
- *  [1,2,3,4],
- *  some(n => n > 2)
- * ).first() // true
+ * source([1,2,3,4].some(n => n > 2).first() // true
  */
 export function some<TInput>(predicate: (next: TInput) => boolean) {
   return function* someGenerator(generator: GeneratorProvider<TInput>) {

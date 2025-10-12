@@ -1,7 +1,7 @@
 import {
-  type GeneratorProvider,
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
+  type GeneratorProvider,
 } from "../types.ts";
 
 /**
@@ -9,10 +9,7 @@ import {
  * Finally it yields the item with the lowest number to the next operation.
  *
  * @example
- * pipe(
- *  [2,1,3,4],
- *  min(n => n)
- * ).first() // 1
+ * source([2,1,3,4]).min(n => n).first() // 1
  */
 export function min<TInput>(
   callback: (next: TInput) => number,
@@ -27,7 +24,9 @@ export function min<TInput>(
         currentMin = value;
       }
     }
-    if (currentMin === undefined) return;
+    if (currentMin === undefined) {
+      return;
+    }
     yield current as TInput;
   };
 }
@@ -44,7 +43,9 @@ export function minAsync<TInput>(
         currentMin = value;
       }
     }
-    if (currentMin === undefined) return;
+    if (currentMin === undefined) {
+      return;
+    }
     yield current as TInput;
   };
 }

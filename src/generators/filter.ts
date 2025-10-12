@@ -1,6 +1,6 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
@@ -8,10 +8,7 @@ import {
  * and yields the items that pass the predicate to the next operation.
  *
  * @example
- * pipe(
- *   [1,2,3, "A"],
- *   filter((n): n is number => typeof n === "number")
- * ).toArray() // [1,2,3];
+ * source([1,2,3, "A"]).filter((n): n is number => typeof n === "number").toArray() // [1,2,3];
  */
 export function filter<TInput, TOutput extends TInput = TInput>(
   predicate: (next: TInput) => next is TOutput,
@@ -21,10 +18,7 @@ export function filter<TInput, TOutput extends TInput = TInput>(
  * and yields the items that pass the predicate to the next operation.
  *
  * @example
- * pipe(
- *   [1,2,3],
- *   filter((n) => n % 2)
- * ).toArray() // [1,3];
+ * source([1,2,3]).filter((n) => n % 2).toArray() // [1,3];
  */
 export function filter<TInput>(
   predicate: (next: TInput) => unknown,

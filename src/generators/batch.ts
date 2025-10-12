@@ -1,6 +1,6 @@
 import type {
-  GeneratorMiddleware,
   AsyncGeneratorMiddleware,
+  GeneratorMiddleware,
 } from "../types.ts";
 
 export function batch<TInput>(
@@ -10,7 +10,7 @@ export function batch<TInput>(
     let acc: TInput[] = [];
     for (const next of generator) {
       acc.push(next);
-      if (predicate(acc)) {
+      if (!predicate(acc)) {
         continue;
       }
       yield acc;
@@ -29,7 +29,7 @@ export function batchAsync<TInput>(
     let acc: TInput[] = [];
     for await (const next of generator) {
       acc.push(next);
-      if (predicate(acc)) {
+      if (!predicate(acc)) {
         continue;
       }
       yield acc;

@@ -1,16 +1,13 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
  * sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
  *
  * @example
- * pipe(
- *  [3,2,1],
- *  sort((a, z) => a - z)
- * ).toArray() // [1,2,3]
+ * source([3,2,1].sort((a, z) => a - z).toArray() // [1,2,3]
  */
 export function sort<TInput = never>(
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
@@ -43,8 +40,12 @@ export function sortAsync<TInput = never>(
 export function defaultCompare(a: unknown, b: unknown): number {
   // Numbers: handle NaN, undefined, null last
   if (typeof a === "number" && typeof b === "number") {
-    if (Number.isNaN(a)) return 1;
-    if (Number.isNaN(b)) return -1;
+    if (Number.isNaN(a)) {
+      return 1;
+    }
+    if (Number.isNaN(b)) {
+      return -1;
+    }
     return a - b;
   }
   // Strings
@@ -67,7 +68,9 @@ function createIndexFinder<TInput>(
     high = arr.length - 1,
     cursor = Math.floor((low + high) / 2),
   ) {
-    if (low >= high) return low;
+    if (low >= high) {
+      return low;
+    }
     const mid = Math.floor((high + low) / 2);
     const diff = comparator(next, arr[cursor]);
     if (diff < 0) {

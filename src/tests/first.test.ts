@@ -1,7 +1,6 @@
 import { expect, test, describe } from "bun:test";
 import { first } from "../consumers/first.ts";
-import { chain } from "../index.ts";
-import { type GeneratorProvider } from "../types.ts";
+import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("first", () => {
@@ -10,17 +9,6 @@ describe("first", () => {
       yield 1;
     }
     expect(first()(source())).toBe(1);
-  });
-
-  test("none to first", () => {
-    function* source() {}
-    expect(() => first()(source())).toThrow("No items in generator");
-  });
-
-  test("none to first defaultValue", () => {
-    function* source(): GeneratorProvider<number> {}
-    const value: string | number = first("default")(source());
-    expect(value).toBe("default");
   });
 
   test("delegated iterable to first", () => {
@@ -41,23 +29,19 @@ describe("first", () => {
   });
 
   test("chain to first", () => {
-    expect(chain([1, 2]).first()).toBe(1);
+    expect(source([1, 2]).first()).toBe(1);
   });
 
-  test("pipe none first", () => {
-    expect(() => chain([]).first()).toThrow("No items in generator");
-  });
-
-  test("pipe none with default to first", () => {
-    expect(chain([]).defaultIfEmpty("None").first()).toBe("None");
+  test("none with default to first", () => {
+    expect(source([]).defaultIfEmpty("None").first()).toBe("None");
   });
 
   test("get first from async generator", async () => {
     expect(
-      (await chain(async function* () {
+      (await source(async function* () {
         yield 1;
         yield 2;
-      }).first()) satisfies number,
+      }).first()) satisfies number | void,
     ).toBe(1);
   });
 
@@ -73,43 +57,42 @@ describe("first", () => {
     fromEmptyAsync,
   } = createTestSets(numbers);
   test("from single", () => {
-    expect(fromSingle.first() satisfies number).toEqual(numbers[0]);
+    expect(fromSingle.first() satisfies number | void).toEqual(numbers[0]);
   });
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises.first() satisfies Promise<number>),
-    ).toStrictEqual(numbers[0]);
+      await (fromResolvedPromises.first() satisfies Promise<number | void>),
+    ).toBe(numbers[0]);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.first() satisfies Promise<number>),
-    ).toStrictEqual(numbers[0]);
+      await (fromAsyncGenerator.first() satisfies Promise<number | void>),
+    ).toBe(numbers[0]);
   });
 
   test("from promises", async () => {
-    expect(
-      // TODO fix this
-      (await fromPromises.first()) satisfies number | Promise<number>,
-    ).toStrictEqual(numbers[0]);
+    expect((await fromPromises.first()) satisfies number | void).toBe(
+      numbers[0],
+    );
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.first() satisfies number).toStrictEqual(numbers[0]);
+    expect(fromGenerator.first() satisfies number | void).toBe(numbers[0]);
   });
 
   test("from array", () => {
-    expect(fromArray.first() satisfies number).toStrictEqual(numbers[0]);
+    expect(fromArray.first() satisfies number | void).toBe(numbers[0]);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.first(-1) satisfies number).toStrictEqual(-1);
+    expect(fromEmpty.first() satisfies number | void).toBe(undefined);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.first(-1) satisfies Promise<number>),
-    ).toStrictEqual(-1);
+      await (fromEmptyAsync.first() satisfies Promise<number | void>),
+    ).toBe(undefined);
   });
 });

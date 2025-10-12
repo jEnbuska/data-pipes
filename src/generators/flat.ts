@@ -1,6 +1,6 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
 
 /**
@@ -8,21 +8,13 @@ import {
  * specified depth.
  *
  * @example
- * pipe(
- *  [[1], [2], [3]],
- *  flat()
- * ).toArray() // [1,2,3]
+ * source([[1], [2], [3]]).flat().toArray() // [1,2,3]
  *
  * @example
- * pipe(
- *  [[1], [[2]], [[[3]]]],
- *  flat(2)
- * ).toArray() // [1,2,[3]]
+ * source([[1], [[2]], [[[3]]]]).flat(2).toArray() // [1,2,[3]]
  * */
-export function flat<const Depth extends number = 1, ImperativeTInput = never>(
-  depth?: Depth,
-) {
-  return function* flatGenerator<TInput = ImperativeTInput>(
+export function flat<const Depth extends number = 1>(depth?: Depth) {
+  return function* flatGenerator<TInput>(
     generator: GeneratorProvider<TInput>,
   ): GeneratorProvider<FlatArray<TInput[], Depth>> {
     depth = depth ?? (1 as Depth);
@@ -36,11 +28,8 @@ export function flat<const Depth extends number = 1, ImperativeTInput = never>(
   };
 }
 
-export function flatAsync<
-  const Depth extends number = 1,
-  ImperativeTInput = never,
->(depth?: Depth) {
-  return async function* flatGenerator<TInput = ImperativeTInput>(
+export function flatAsync<const Depth extends number = 1>(depth?: Depth) {
+  return async function* flatGenerator<TInput>(
     generator: AsyncGeneratorProvider<TInput>,
   ): AsyncGeneratorProvider<FlatArray<TInput[], Depth>> {
     depth = depth ?? (1 as Depth);

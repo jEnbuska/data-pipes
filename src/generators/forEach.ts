@@ -1,16 +1,13 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
  * Calls the provided consumer function for each item produced by the generator and yields it
  * to the next operation.
  * @example
- * pipe(
- *  [1,2,3],
- *  forEach(n => console.log(n)) // 1, 2, 3
- * ).consume();
+ * source([1,2,3]).forEach(n => console.log(n)).consume();
  * */
 export function forEach<TInput>(
   consumer: (next: TInput) => unknown,

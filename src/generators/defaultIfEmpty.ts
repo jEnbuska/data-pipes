@@ -1,21 +1,15 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
 
 /**
  * yields the default value if the generator does not produce any items
  * @example
- * pipe(
- *  [1,2,3],
- *  filter(it => it > 3)
- *  defaultIfEmpty(0)
- * ).first() // 0
+ * source([1,2,3].filter(it => it > 3).defaultIfEmpty(0).first() // 0
  */
-export function defaultIfEmpty<Default, ImperativeTInput = never>(
-  defaultValue: Default,
-) {
-  return function* defaultIfEmptyGenerator<TInput = ImperativeTInput>(
+export function defaultIfEmpty<Default>(defaultValue: Default) {
+  return function* defaultIfEmptyGenerator<TInput>(
     generator: GeneratorProvider<TInput>,
   ) {
     let empty = true;
@@ -29,12 +23,8 @@ export function defaultIfEmpty<Default, ImperativeTInput = never>(
   };
 }
 
-export function defaultIfEmptyAsync<Default, ImperativeTInput = never>(
-  defaultValue: Default,
-) {
-  return async function* defaultIfEmptyAsyncGenerator<
-    TInput = ImperativeTInput,
-  >(
+export function defaultIfEmptyAsync<Default>(defaultValue: Default) {
+  return async function* defaultIfEmptyAsyncGenerator<TInput>(
     generator: AsyncGeneratorProvider<TInput>,
   ): AsyncGeneratorProvider<TInput | Default> {
     let empty = true;

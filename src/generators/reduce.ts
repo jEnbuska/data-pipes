@@ -1,16 +1,13 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
  * Reduces items produced by the generator using the provided reducer function.
  * The final result of the reduction is yielded to the next operation.
  * @example
- * pipe(
- *   [1,2,3],
- *   reduce((sum, n) => sum + n, 0)
- * ).first() // 6
+ * source([1,2,3].reduce((sum, n) => sum + n, 0).first() // 6
  * */
 export function reduce<TInput, TOutput>(
   reducer: (acc: TOutput, next: TInput) => TOutput,

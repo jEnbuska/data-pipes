@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import { chain } from "../index.ts";
+import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("flatMap", () => {
   test("flatten non array", () => {
     expect(
-      chain([1, 2, 3])
+      source([1, 2, 3])
         .flatMap((it) => it)
         .toArray() satisfies number[],
     ).toStrictEqual([1, 2, 3]);

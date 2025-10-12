@@ -1,6 +1,6 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 export function flatMap<TInput, TOutput>(

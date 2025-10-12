@@ -1,24 +1,24 @@
 import { describe, test, expect } from "bun:test";
-import { chain } from "../index.ts";
+import source from "../index.ts";
 
 describe("skipLast", () => {
   test("skip last when array is empty", () => {
-    expect(chain([]).skipLast(3).toArray()).toStrictEqual([]);
+    expect(source([]).skipLast(3).toArray()).toStrictEqual([]);
   });
 
   test("when count is more than number of inputs", () => {
-    expect(chain([1, 2]).skipLast(3).toArray()).toStrictEqual([]);
+    expect(source([1, 2]).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is same as than number of inputs", () => {
-    expect(chain([1, 2, 3]).skipLast(3).toArray()).toStrictEqual([]);
+    expect(source([1, 2, 3]).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is 1 less than as than number of inputs", () => {
-    expect(chain([1, 2, 3]).skipLast(2).toArray()).toStrictEqual([1]);
+    expect(source([1, 2, 3]).skipLast(2).toArray()).toStrictEqual([1]);
   });
   test("when count less than as than number of inputs", () => {
     let lastEmitted: number | undefined;
     const emittedBySkipLast: Array<{ after?: number; value: number }> = [];
-    chain([1, 2, 3, 4, 5])
+    source([1, 2, 3, 4, 5])
       .forEach((n) => {
         lastEmitted = n;
       })

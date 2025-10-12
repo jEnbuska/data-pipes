@@ -1,7 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { chain } from "../chainable/chain.ts";
-import { map } from "../generators";
-import { pipe } from "../pipe.ts";
+import source from "../index";
 
 describe("chainable", () => {
   const numbers = [1, 2, 3];
@@ -9,39 +7,27 @@ describe("chainable", () => {
     yield* numbers;
   }
   test("single", () => {
-    const array = chain(numbers[0]).toArray();
+    const array = source(numbers[0]).toArray();
     expect(array).toStrictEqual([numbers[0]]);
   });
 
   test("array", () => {
-    expect(chain(numbers).toArray()).toStrictEqual([1, 2, 3]);
+    expect(source(numbers).toArray()).toStrictEqual([1, 2, 3]);
   });
 
   test("generator", () => {
-    expect(chain(generator).toArray()).toStrictEqual(numbers);
+    expect(source(generator).toArray()).toStrictEqual(numbers);
   });
 
   test("chainable as source", () => {
-    const max = chain(chain([1, 2, 3]).map((n) => n * 2))
-      .reduce((max, next) => (max < next ? next : max), 0)
-      .toArray();
-    expect(max).toStrictEqual([6]);
-  });
-
-  test("pipe as source", () => {
-    const max = chain(
-      pipe(
-        [1, 2, 3],
-        map((n) => n * 2),
-      ),
-    )
+    const max = source(source([1, 2, 3]).map((n) => n * 2))
       .reduce((max, next) => (max < next ? next : max), 0)
       .toArray();
     expect(max).toStrictEqual([6]);
   });
 
   test("iteration", () => {
-    const values = chain(function* () {
+    const values = source(function* () {
       yield 1;
       yield 2;
     });
@@ -53,7 +39,7 @@ describe("chainable", () => {
   });
 
   test("async iteration", async () => {
-    const values = chain(async function* () {
+    const values = source(async function* () {
       yield 1;
       yield 2;
     });

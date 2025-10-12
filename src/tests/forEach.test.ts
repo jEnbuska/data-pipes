@@ -1,17 +1,12 @@
 import { describe, test, mock, expect } from "bun:test";
-import { chain, forEach } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import source from "../index.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("forEach", () => {
   test("chainable single value", () => {
     const callback = mock((n: number) => expect(n).toBe(1));
-    chain(1).forEach(callback).consume();
-    expect(callback).toHaveBeenCalledTimes(1);
-  });
-  test("pipe single value", () => {
-    const callback = mock((n: number) => expect(n).toBe(1));
-    pipe(1, forEach(callback)).consume();
+    source(1).forEach(callback).consume();
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
@@ -25,7 +20,7 @@ describe("forEach", () => {
   test("with multiple", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    chain(args).forEach(callback).consume();
+    source(args).forEach(callback).consume();
     expect(callback).toHaveBeenCalledTimes(2);
   });
 

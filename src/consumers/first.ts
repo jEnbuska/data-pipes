@@ -1,37 +1,34 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
+import { addReturnRootOnAbortListener } from "../utils.ts";
+import { createResolvable } from "../resolvable.ts";
 
-export function first<Default, ImperativeTInput = never>(
-  ...args: [Default] | []
-) {
-  return function firstConsumer<TInput = ImperativeTInput>(
+export function first() {
+  return function firstConsumer<TInput>(
     generator: GeneratorProvider<TInput>,
-  ): Default | TInput {
+  ): TInput | void {
     const result = generator.next();
-    if (result.done) {
-      if (args.length) {
-        return args[0];
-      }
-      throw new Error("No items in generator");
-    }
     return result.value;
   };
 }
-export function firstAsync<Default, ImperativeTInput = never>(
-  ...args: [Default] | []
+export function firstAsync(
+  source: GeneratorProvider<unknown> | AsyncGeneratorProvider<unknown>,
+  signal?: AbortSignal,
 ) {
-  return async function firstAsyncConsumer<TInput = ImperativeTInput>(
+  return async function firstAsyncConsumer<TInput>(
     generator: AsyncGeneratorProvider<TInput>,
-  ): Promise<Default | TInput> {
-    const result = await generator.next();
-    if (result.done) {
-      if (args.length) {
-        return args[0];
-      }
-      throw new Error("No items in generator");
+  ): Promise<TInput | void> {
+    const resolvable = await createResolvable<TInput | void>();
+    if (signal?.aborted) {
+      void source.return();
     }
-    return result.value;
+    addReturnRootOnAbortListener(signal, source);
+    signal?.addEventListener("abort", () => resolvable.resolve());
+    return Promise.race([
+      resolvable.promise,
+      generator.next().then((result) => result.value),
+    ]);
   };
 }

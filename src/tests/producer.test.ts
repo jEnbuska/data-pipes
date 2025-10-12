@@ -1,12 +1,12 @@
 import { describe, test, expect } from "bun:test";
 import { createProducer } from "../producer.ts";
-import { chain } from "../chainable/chain.ts";
+import source from "../index.ts";
 
 describe.only("producer", () => {
   test.skip("producer test", async () => {
     const producer = await createProducer<number>();
     const received: number[] = [];
-    const promise = chain(producer)
+    const promise = source(producer)
       .forEach((value) => {
         received.push(value);
       })
@@ -20,7 +20,7 @@ describe.only("producer", () => {
   test("producer test with initial", async () => {
     const producer = await createProducer<number>(0);
     const received: number[] = [];
-    const promise = chain(producer)
+    const promise = source(producer)
       .forEach((value) => received.push(value))
       .take(3)
       .consume();

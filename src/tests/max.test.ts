@@ -17,49 +17,56 @@ describe("max", () => {
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises
-        .max(modulo4)
-        .first() satisfies Promise<number>),
+      await (fromResolvedPromises.max(modulo4).first() satisfies Promise<
+        number | void
+      >),
     ).toStrictEqual(3);
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4).first() satisfies number).toEqual(
+    expect(fromSingle.map(modulo4).first() satisfies number | void).toEqual(
       numbers[0],
     );
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.max(modulo4).first() satisfies Promise<number>),
+      await (fromAsyncGenerator.max(modulo4).first() satisfies Promise<
+        number | void
+      >),
     ).toStrictEqual(3);
   });
 
   test("from promises", async () => {
-    const first = fromPromises
-      .resolve()
-      .max(modulo4)
-      .first() satisfies Promise<number>;
+    const first = fromPromises.resolve().max(modulo4).first() satisfies Promise<
+      number | void
+    >;
     expect(await first).toStrictEqual(3);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.max(modulo4).first() satisfies number).toStrictEqual(
-      3,
-    );
+    expect(
+      fromGenerator.max(modulo4).first() satisfies number | void,
+    ).toStrictEqual(3);
   });
 
   test("from array", () => {
-    expect(fromArray.max(modulo4).first() satisfies number).toStrictEqual(3);
+    expect(
+      fromArray.max(modulo4).first() satisfies number | void,
+    ).toStrictEqual(3);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.max(modulo4).first(-1) satisfies number).toStrictEqual(-1);
+    expect(
+      fromEmpty.max(modulo4).first() satisfies number | void,
+    ).toStrictEqual(undefined);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.max(modulo4).first(-1) satisfies Promise<number>),
-    ).toStrictEqual(-1);
+      await (fromEmptyAsync.max(modulo4).first() satisfies Promise<
+        number | void
+      >),
+    ).toStrictEqual(undefined);
   });
 });

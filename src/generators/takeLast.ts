@@ -1,20 +1,11 @@
 import {
-  type GeneratorProvider,
-  type AsyncGeneratorProvider,
   type AsyncGeneratorMiddlewareReturn,
+  type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
-import { toArrayAsync } from "../consumers/toArray.ts";
 
-/**
- * takes the last `count` items produced by the generator and yields them to the next operation.
- * @example
- * pipe(
- *  [1,2,3],
- *  takeLast(2)
- * ).toArray() // [2,3]
- */
-export function takeLast<ImperativeTInput = never>(count: number) {
-  return function* takeLastGenerator<TInput = ImperativeTInput>(
+export function takeLast(count: number) {
+  return function* takeLastGenerator<TInput>(
     generator: GeneratorProvider<TInput>,
   ): GeneratorProvider<TInput> {
     const array = [...generator];
@@ -22,11 +13,14 @@ export function takeLast<ImperativeTInput = never>(count: number) {
   };
 }
 
-export function takeLastAsync<ImperativeTInput = never>(count: number) {
-  return async function* takeLastAsyncGenerator<TInput = ImperativeTInput>(
+export function takeLastAsync(count: number) {
+  return async function* takeLastAsyncGenerator<TInput>(
     generator: AsyncGeneratorProvider<TInput>,
   ): AsyncGeneratorMiddlewareReturn<TInput> {
-    const array = await toArrayAsync()(generator);
-    yield* array.slice(Math.max(array.length - count, 0));
+    const acc: TInput[] = [];
+    for await (const next of generator) {
+      acc.push(next);
+    }
+    yield* acc.slice(Math.max(acc.length - count, 0));
   };
 }

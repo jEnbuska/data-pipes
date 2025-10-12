@@ -1,14 +1,15 @@
 import {
+  type AsyncGeneratorProvider,
+  type AsyncPipeSource,
+  type GeneratorConsumable,
   type GeneratorProvider,
   type SyncPipeSource,
-  type GeneratorConsumable,
-  type AsyncPipeSource,
-  type AsyncGeneratorProvider,
 } from "./types.ts";
 
 function isGeneratorFunction<TInput>(
   source: unknown,
 ): source is () => GeneratorProvider<TInput> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
   return (
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "GeneratorFunction"

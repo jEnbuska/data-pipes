@@ -1,6 +1,6 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
 
 export function resolve<TInput>() {

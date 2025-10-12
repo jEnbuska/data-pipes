@@ -1,14 +1,11 @@
-import { type GeneratorProvider, type GeneratorMiddleware } from "../types.ts";
+import { type GeneratorMiddleware, type GeneratorProvider } from "../types.ts";
 
 /**
  * takes each item produced by the generator and maps it to a number using the callback.
  * Finally it yields the item with the highest number to the next operation.
  *
  * @example
- * pipe(
- *  [1,2,4,3],
- *  max(n => n)
- * ).first() // 4
+ * source([1,2,4,3]).max(n => n).first() // 4
  * */
 export function max<TInput>(
   callback: (next: TInput) => number,
@@ -23,7 +20,9 @@ export function max<TInput>(
         currentMax = value;
       }
     }
-    if (currentMax === undefined) return;
+    if (currentMax === undefined) {
+      return;
+    }
     yield current as TInput;
   };
 }
@@ -41,7 +40,9 @@ export function maxAsync<TInput>(callback: (next: TInput) => number) {
         currentMax = value;
       }
     }
-    if (currentMax === undefined) return;
+    if (currentMax === undefined) {
+      return;
+    }
     yield current as TInput;
   };
 }

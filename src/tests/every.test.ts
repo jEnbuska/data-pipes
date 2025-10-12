@@ -1,27 +1,18 @@
 import { describe, test, expect } from "bun:test";
-import { chain, every } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import source from "../index.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("every", () => {
   test("has every", () => {
-    expect(chain([true, true, true]).every(Boolean).first()).toBe(true);
+    expect(source([true, true, true]).every(Boolean).first()).toBe(true);
   });
   test("has none", () => {
-    expect(chain([false, false, false]).every(Boolean).first()).toBe(false);
+    expect(source([false, false, false]).every(Boolean).first()).toBe(false);
   });
 
   test("has some", () => {
-    expect(chain([false, false, false]).every(Boolean).first()).toBe(false);
-  });
-
-  test("pipe - every", () => {
-    expect(
-      pipe(
-        [1, 2, 3, 4],
-        every((n) => n > 1),
-      ).first(),
-    ).toBe(false);
+    expect(source([false, false, false]).every(Boolean).first()).toBe(false);
   });
 
   const numbers = [1, 2, 3, 4];
@@ -86,15 +77,15 @@ describe("every", () => {
   }
   test("from empty", () => {
     expect(
-      fromEmpty.every(isGreaterThan100).first() satisfies boolean,
+      fromEmpty.every(isGreaterThan100).first() satisfies boolean | void,
     ).toStrictEqual(true);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync
-        .every(isGreaterThan100)
-        .first() satisfies Promise<boolean>),
+      await (fromEmptyAsync.every(isGreaterThan100).first() satisfies Promise<
+        boolean | void
+      >),
     ).toStrictEqual(true);
   });
 });

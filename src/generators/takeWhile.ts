@@ -1,16 +1,8 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
-/**
- * takes items produced by the generator while the predicate returns true and yields them to the next operation.
- * @example
- * pipe(
- *  [1,2,3,4],
- *  takeWhile(n => n < 3)
- * ).toArray() // [1,2]
- */
 export function takeWhile<TInput>(
   predicate: (next: TInput) => boolean,
 ): GeneratorMiddleware<TInput> {

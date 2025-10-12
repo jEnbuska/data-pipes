@@ -1,12 +1,12 @@
 import { describe, test, expect } from "bun:test";
-import { chain } from "../index.ts";
+import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctBy", () => {
   const module2Predicate = (it: number) => it % 2;
   test("empty", () => {
     expect(
-      chain([])
+      source([])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([]);
@@ -14,7 +14,7 @@ describe("distinctBy", () => {
 
   test("all unique", () => {
     expect(
-      chain([1, 2, 3])
+      source([1, 2, 3])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -22,7 +22,7 @@ describe("distinctBy", () => {
 
   test("by module 2", () => {
     expect(
-      chain([1, 2, 3, 4])
+      source([1, 2, 3, 4])
         .distinctBy((it) => it % 2)
         .toArray(),
     ).toStrictEqual([1, 2]);

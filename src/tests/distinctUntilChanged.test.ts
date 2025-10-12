@@ -1,16 +1,16 @@
 import { describe, test, expect } from "bun:test";
-import { chain, distinctUntilChanged } from "../index.ts";
-import { pipe } from "../pipe.ts";
+import source from "../index.ts";
+
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(chain([]).distinctUntilChanged().toArray()).toStrictEqual([]);
+    expect(source([]).distinctUntilChanged().toArray()).toStrictEqual([]);
   });
 
   test("all unique", () => {
     expect(
-      chain([1, 2, 3])
+      source([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -18,17 +18,8 @@ describe("distinctUntilChanged", () => {
 
   test("similar consecutive values", () => {
     expect(
-      chain([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
+      source([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
     ).toStrictEqual([1, 2, 3, 4]);
-  });
-
-  test("pipe - distinctUntilChanged using modulo 3", () => {
-    expect(
-      pipe(
-        [1, 2, 5, 8, 3],
-        distinctUntilChanged((a, b) => a % 3 === b % 3),
-      ).toArray(),
-    ).toStrictEqual([1, 2, 3]);
   });
 
   const fullTwosPredicate = (previous: number, current: number) =>

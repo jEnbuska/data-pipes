@@ -1,18 +1,10 @@
 import {
-  type GeneratorProvider,
   type AsyncGeneratorProvider,
+  type GeneratorProvider,
 } from "../types.ts";
 
-/**
- * yields the items in reverse order after the generator is consumed
- * @example
- * pipe(
- *  [1,2,3],
- *  reverse()
- * ).toArray() // [3,2,1]
- */
-export function reverse<ImperativeTInput = never>() {
-  return function* reverseGenerator<TInput = ImperativeTInput>(
+export function reverse<ImperativeTInput>() {
+  return function* reverseGenerator<TInput>(
     generator: GeneratorProvider<TInput>,
   ): GeneratorProvider<TInput> {
     const acc: TInput[] = [];
@@ -23,8 +15,8 @@ export function reverse<ImperativeTInput = never>() {
   };
 }
 
-export function reverseAsync<ImperativeTInput = never>() {
-  return async function* reverseAsyncGenerator<TInput = ImperativeTInput>(
+export function reverseAsync() {
+  return async function* reverseAsyncGenerator<TInput>(
     generator: AsyncGeneratorProvider<TInput>,
   ): AsyncGenerator<TInput, void, undefined & void> {
     const acc: TInput[] = [];

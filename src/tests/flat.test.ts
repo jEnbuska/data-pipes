@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { chain, pipe, flat } from "../index.ts";
+import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 /* Verify typing after flatmap is expected */
@@ -11,7 +11,7 @@ describe("flat", () => {
     const numbers = [1, 2, 3];
     function flatten<T, const D extends number>(input: T[], depth: D) {
       return (
-        chain(input)
+        source(input)
           .forEach(verify<FlatArray<T[], 0>>())
           .flat(depth)
           // Verify typing works correctly
@@ -135,18 +135,6 @@ describe("flat", () => {
         const result = flatten(input, 4) satisfies number[];
         expect(result).toStrictEqual([1, 2, 3, 4, 5]);
       });
-    });
-
-    test("pipe depth 1", () => {
-      const array = pipe([[1], [2], [3]], flat()).toArray() satisfies number[];
-      expect(array).toStrictEqual(array);
-    });
-    test("pipe mixed depths", () => {
-      const result = pipe(
-        [[1], [[2]], [[[3]]]],
-        flat(2),
-      ).toArray() satisfies Array<number | number[]>;
-      expect(result).toStrictEqual([1, 2, [3]]);
     });
   }
   const numbers = [[[1, 2]], [], [3, [4, 5]]];

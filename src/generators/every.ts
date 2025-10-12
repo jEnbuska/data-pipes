@@ -1,6 +1,6 @@
 import {
-  type GeneratorMiddleware,
   type AsyncGeneratorMiddleware,
+  type GeneratorMiddleware,
 } from "../types.ts";
 
 /**
@@ -8,10 +8,7 @@ import {
  * if the generator is empty yields true
  *
  * @example
- * pipe(
- *  [1,2,3,4],
- *  every(n => n > 1)
- * ).first() // false
+ * source([1,2,3,4].every(n => n > 1).first() // false
  */
 export function every<TInput>(
   predicate: (next: TInput) => boolean,

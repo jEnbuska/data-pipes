@@ -1,28 +1,12 @@
 import {
+  type AsyncGeneratorMiddleware,
   type GeneratorMiddleware,
   type GeneratorProvider,
-  type AsyncGeneratorMiddleware,
 } from "../types.ts";
 
-/**
- * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
- * @example
- * pipe(
- *  [1,2,3,4],
- *  groupBy(n => n % 2 ? 'odd' : 'even')
- * ).first() // {even: [2,4], odd: [1,3]}
- */
 export function groupBy<TInput, Key extends PropertyKey>(
   keySelector: (next: TInput) => Key | PropertyKey,
 ): GeneratorMiddleware<TInput, Partial<Record<Key, TInput[]>>>;
-/**
- * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
- * @example
- * pipe(
- *  [1,2,3,4],
- *  groupBy(n => n % 2 ? 'odd' : 'even', ["odd", "other"])
- * ).first() // {odd: [1,3], even: [2,4], other: []}
- */
 export function groupBy<
   TInput,
   Key extends PropertyKey,

@@ -17,49 +17,52 @@ describe("min", () => {
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises
-        .min(modulo4)
-        .first() satisfies Promise<number>),
-    ).toStrictEqual(4);
+      await (fromResolvedPromises.min(modulo4).first() satisfies Promise<
+        number | void
+      >),
+    ).toBe(4);
   });
 
   test("from single", () => {
-    expect(fromSingle.min(modulo4).first() satisfies number).toEqual(
+    expect(fromSingle.min(modulo4).first() satisfies number | void).toEqual(
       numbers[0],
     );
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.min(modulo4).first() satisfies Promise<number>),
-    ).toStrictEqual(4);
+      await (fromAsyncGenerator.min(modulo4).first() satisfies Promise<
+        number | void
+      >),
+    ).toBe(4);
   });
 
   test("from promises", async () => {
-    const first = fromPromises
-      .resolve()
-      .min(modulo4)
-      .first() satisfies Promise<number>;
-    expect(await first).toStrictEqual(4);
+    const first = fromPromises.resolve().min(modulo4).first() satisfies Promise<
+      number | void
+    >;
+    expect(await first).toBe(4);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.min(modulo4).first() satisfies number).toStrictEqual(
-      4,
-    );
+    expect(fromGenerator.min(modulo4).first() satisfies number | void).toBe(4);
   });
 
   test("from array", () => {
-    expect(fromArray.min(modulo4).first() satisfies number).toStrictEqual(4);
+    expect(fromArray.min(modulo4).first() satisfies number | void).toBe(4);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.min(modulo4).first(-1) satisfies number).toStrictEqual(-1);
+    expect(fromEmpty.min(modulo4).first() satisfies number | void).toBe(
+      undefined,
+    );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.min(modulo4).first(-1) satisfies Promise<number>),
-    ).toStrictEqual(-1);
+      await (fromEmptyAsync.min(modulo4).first() satisfies Promise<
+        number | void
+      >),
+    ).toBe(undefined);
   });
 });
