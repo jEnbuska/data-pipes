@@ -14,43 +14,50 @@ describe("count", () => {
     fromEmptyAsync,
   } = createTestSets(numbers);
   test("from single", () => {
-    expect(fromSingle.count().first() satisfies number).toEqual(numbers[0]);
+    expect(fromSingle.count().first() satisfies number | void).toEqual(
+      numbers[0],
+    );
   });
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises.count().first() satisfies Promise<number>),
+      await (fromResolvedPromises.count().first() satisfies Promise<
+        number | void
+      >),
     ).toBe(numbers.length);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.count().first() satisfies Promise<number>),
+      (await fromAsyncGenerator.count().first()) satisfies number | void,
     ).toBe(numbers.length);
   });
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
-      (await fromPromises.count().first()) satisfies number | Promise<number>,
+      (await fromPromises.resolve().count().first()) satisfies number | void,
     ).toBe(numbers.length);
   });
 
-  test("from generator", async () => {
-    expect(fromGenerator.count().first() satisfies number).toBe(numbers.length);
+  test("from generator", () => {
+    expect(fromGenerator.count().first() satisfies number | void).toBe(
+      numbers.length,
+    );
   });
 
   test("from array", () => {
-    expect(fromArray.count().first() satisfies number).toBe(numbers.length);
+    expect(fromArray.count().first() satisfies number | void).toBe(
+      numbers.length,
+    );
   });
 
   test("from empty", () => {
-    expect(fromEmpty.count().first() satisfies number).toBe(0);
+    expect(fromEmpty.count().first() satisfies number | void).toBe(0);
   });
 
   test("from empty async", async () => {
-    expect(
-      await (fromEmptyAsync.count().first() satisfies Promise<number>),
-    ).toBe(0);
+    expect((await fromEmptyAsync.count().first()) satisfies number | void).toBe(
+      0,
+    );
   });
 });

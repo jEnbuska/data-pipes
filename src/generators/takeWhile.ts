@@ -1,13 +1,11 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type AsyncPipeSource, type PipeSource } from "../types.ts";
 
 export function takeWhile<TInput>(
+  source: PipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): GeneratorMiddleware<TInput> {
-  return function* takeWhileGenerator(generator) {
-    for (const next of generator) {
+): PipeSource<TInput> {
+  return function* takeWhileAsyncGenerator(signal) {
+    for (const next of source(signal)) {
       if (predicate(next)) {
         yield next;
       } else {
@@ -16,12 +14,12 @@ export function takeWhile<TInput>(
     }
   };
 }
-
 export function takeWhileAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* takeWhileAsyncGenerator(generator) {
-    for await (const next of generator) {
+): AsyncPipeSource<TInput> {
+  return async function* takeWhileAsyncGenerator(signal) {
+    for await (const next of source(signal)) {
       if (predicate(next)) {
         yield next;
       } else {

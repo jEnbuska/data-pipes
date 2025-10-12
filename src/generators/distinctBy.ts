@@ -1,7 +1,4 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
 /**
  * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -10,11 +7,12 @@ import {
  * source([1,2,3,4].distinctBy(n => n % 2).toArray() // [1,2]
  */
 export function distinctBy<TInput, Value>(
+  source: PipeSource<TInput>,
   selector: (next: TInput) => Value,
-): GeneratorMiddleware<TInput> {
-  return function* distinctByGenerator(generator) {
+): PipeSource<TInput> {
+  return function* distinctByGenerator(signal) {
     const set = new Set<Value>();
-    for (const next of generator) {
+    for (const next of source(signal)) {
       const key = selector(next);
       if (set.has(key)) {
         continue;
@@ -25,11 +23,12 @@ export function distinctBy<TInput, Value>(
   };
 }
 export function distinctByAsync<TInput, Value>(
+  source: AsyncPipeSource<TInput>,
   selector: (next: TInput) => Value,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* distinctByAsyncGenerator(generator) {
+): AsyncPipeSource<TInput> {
+  return async function* distinctByAsyncGenerator(signal) {
     const set = new Set<Value>();
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       const key = selector(next);
       if (set.has(key)) {
         continue;

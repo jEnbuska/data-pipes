@@ -1,14 +1,12 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
 export function skipWhile<TInput>(
+  source: PipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): GeneratorMiddleware<TInput> {
-  return function* skipWhileGenerator(generator) {
+): PipeSource<TInput> {
+  return function* skipWhileGenerator(signal) {
     let skip = true;
-    for (const next of generator) {
+    for (const next of source(signal)) {
       if (skip && predicate(next)) {
         continue;
       }
@@ -18,11 +16,12 @@ export function skipWhile<TInput>(
   };
 }
 export function skipWhileAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* skipWhileAsyncGenerator(generator) {
+): AsyncPipeSource<TInput> {
+  return async function* skipWhileAsyncGenerator(signal) {
     let skip = true;
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       if (skip && predicate(next)) {
         continue;
       }

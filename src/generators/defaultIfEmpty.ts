@@ -1,6 +1,7 @@
 import {
   type AsyncGeneratorProvider,
-  type GeneratorProvider,
+  type PipeSource,
+  type AsyncPipeSource,
 } from "../types.ts";
 
 /**
@@ -8,12 +9,13 @@ import {
  * @example
  * source([1,2,3].filter(it => it > 3).defaultIfEmpty(0).first() // 0
  */
-export function defaultIfEmpty<Default>(defaultValue: Default) {
-  return function* defaultIfEmptyGenerator<TInput>(
-    generator: GeneratorProvider<TInput>,
-  ) {
+export function defaultIfEmpty<TInput, TDefault>(
+  source: PipeSource<TInput>,
+  defaultValue: TDefault,
+): PipeSource<TInput | TDefault> {
+  return function* defaultIfEmptyGenerator(signal) {
     let empty = true;
-    for (const next of generator) {
+    for (const next of source(signal)) {
       yield next;
       empty = false;
     }
@@ -23,12 +25,15 @@ export function defaultIfEmpty<Default>(defaultValue: Default) {
   };
 }
 
-export function defaultIfEmptyAsync<Default>(defaultValue: Default) {
-  return async function* defaultIfEmptyAsyncGenerator<TInput>(
-    generator: AsyncGeneratorProvider<TInput>,
-  ): AsyncGeneratorProvider<TInput | Default> {
+export function defaultIfEmptyAsync<TInput, TDefault>(
+  source: AsyncPipeSource<TInput>,
+  defaultValue: TDefault,
+): AsyncPipeSource<TInput | TDefault> {
+  return async function* defaultIfEmptyAsyncGenerator(
+    signal,
+  ): AsyncGeneratorProvider<TInput | TDefault> {
     let empty = true;
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       yield next;
       empty = false;
     }

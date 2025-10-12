@@ -1,33 +1,19 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * Filters items produced by the generator using the provided predicate
- * and yields the items that pass the predicate to the next operation.
- *
- * @example
- * source([1,2,3, "A"]).filter((n): n is number => typeof n === "number").toArray() // [1,2,3];
- */
 export function filter<TInput, TOutput extends TInput = TInput>(
+  source: PipeSource<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): GeneratorMiddleware<TInput, TOutput>;
-/**
- * Filters items produced by the generator using the provided predicate
- * and yields the items that pass the predicate to the next operation.
- *
- * @example
- * source([1,2,3]).filter((n) => n % 2).toArray() // [1,3];
- */
+): PipeSource<TOutput>;
 export function filter<TInput>(
-  predicate: (next: TInput) => unknown,
-): GeneratorMiddleware<TInput>;
+  source: PipeSource<TInput>,
+  predicate: (next: TInput) => any,
+): PipeSource<TInput>;
 export function filter(
-  predicate: (next: unknown) => any,
-): GeneratorMiddleware<unknown, unknown> {
-  return function* filterGenerator(generator) {
-    for (const next of generator) {
+  source: PipeSource<unknown>,
+  predicate: (next: unknown) => unknown,
+): PipeSource<unknown> {
+  return function* filterGenerator(signal) {
+    for (const next of source(signal)) {
       if (predicate(next)) {
         yield next;
       }
@@ -36,16 +22,19 @@ export function filter(
 }
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
+  source: AsyncPipeSource<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): AsyncGeneratorMiddleware<TInput, TOutput>;
-export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  predicate: (next: TInput) => next is TOutput,
-): AsyncGeneratorMiddleware<TInput, TOutput>;
+): AsyncPipeSource<TOutput>;
+export function filterAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  predicate: (next: TInput) => any,
+): AsyncPipeSource<TInput>;
 export function filterAsync(
+  source: AsyncPipeSource<unknown>,
   predicate: (next: unknown) => any,
-): AsyncGeneratorMiddleware<unknown, unknown> {
-  return async function* filterAsyncGenerator(generator) {
-    for await (const next of generator) {
+): AsyncPipeSource<unknown> {
+  return async function* filterAsyncGenerator(signal) {
+    for await (const next of source(signal)) {
       if (predicate(next)) {
         yield next;
       }

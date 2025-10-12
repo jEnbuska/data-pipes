@@ -1,13 +1,11 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
 export function flatMap<TInput, TOutput>(
+  source: PipeSource<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): GeneratorMiddleware<TInput, TOutput> {
-  return function* flatMapGenerator(generator) {
-    for (const next of generator) {
+): PipeSource<TOutput> {
+  return function* flatMapGenerator(signal) {
+    for (const next of source(signal)) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
         yield* out as any;
@@ -19,10 +17,11 @@ export function flatMap<TInput, TOutput>(
 }
 
 export function flatMapAsync<TInput, TOutput>(
+  source: AsyncPipeSource<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): AsyncGeneratorMiddleware<TInput, TOutput> {
-  return async function* flatMapAsyncGenerator(generator) {
-    for await (const next of generator) {
+): AsyncPipeSource<Awaited<TOutput>> {
+  return async function* flatMapAsyncGenerator(signal) {
+    for await (const next of source(signal)) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
         yield* out as any;

@@ -61,11 +61,10 @@ describe("distinctUntilChanged", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
       (await fromPromises
         .resolve()
         .distinctUntilChanged(fullTwosPredicate)
-        .toArray()) satisfies number[] | Promise<number[]>,
+        .toArray()) satisfies number[],
     ).toStrictEqual([1, 2, 1]);
   });
 

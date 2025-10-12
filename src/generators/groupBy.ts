@@ -1,32 +1,32 @@
 import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-  type GeneratorProvider,
+  type PipeSource,
+  type AsyncPipeSource,
+  type GroupByGroups,
 } from "../types.ts";
 
-export function groupBy<TInput, Key extends PropertyKey>(
-  keySelector: (next: TInput) => Key | PropertyKey,
-): GeneratorMiddleware<TInput, Partial<Record<Key, TInput[]>>>;
 export function groupBy<
   TInput,
-  Key extends PropertyKey,
-  Groups extends Array<Key | PropertyKey> = [],
+  TKey extends PropertyKey,
+  TGroups extends undefined | GroupByGroups<TKey>,
 >(
-  keySelector: (next: TInput) => Key | PropertyKey,
-  groups?: Groups,
-): GeneratorMiddleware<
-  TInput,
-  Record<Groups[number], TInput[]> & Partial<Record<Key, TInput[]>>
+  source: PipeSource<TInput>,
+  keySelector: (next: TInput) => PropertyKey | TKey,
+  groups: TGroups,
+): PipeSource<
+  TGroups extends GroupByGroups<TKey>
+    ? Record<TGroups[number], TInput[]> & Partial<Record<TKey, TInput[]>>
+    : Partial<Record<TKey, TInput[]>>
 >;
 export function groupBy(
-  keySelector: (next: any) => PropertyKey,
-  groups?: any[],
-): GeneratorMiddleware<any, Partial<Record<PropertyKey, any[]>>> {
-  return function* groupByGenerator(generator: GeneratorProvider<any>) {
+  source: PipeSource<any>,
+  keySelector: (TInput: any) => PropertyKey,
+  groups: any[] | undefined,
+): PipeSource<any> {
+  return function* groupByGenerator(signal) {
     const record =
       groups?.reduce((acc, key) => ({ ...acc, [key]: [] }), {}) ??
       ({} satisfies Partial<Record<PropertyKey, any[]>>);
-    for (const next of generator) {
+    for (const next of source(signal)) {
       const key = keySelector(next);
       if (!(key in record)) {
         record[key] = [] as any;
@@ -39,24 +39,27 @@ export function groupBy(
 
 export function groupByAsync<
   TInput,
-  Key extends PropertyKey,
-  Groups extends Array<Key | PropertyKey> = [],
+  TKey extends PropertyKey,
+  TGroups extends undefined | GroupByGroups<TKey>,
 >(
-  keySelector: (next: TInput) => Key | PropertyKey,
-  groups?: Groups,
-): AsyncGeneratorMiddleware<
-  TInput,
-  Record<Groups[number], TInput[]> & Partial<Record<Key, TInput[]>>
+  source: AsyncPipeSource<TInput>,
+  keySelector: (next: TInput) => PropertyKey,
+  groups: TGroups,
+): AsyncPipeSource<
+  TGroups extends GroupByGroups<TKey>
+    ? Record<TGroups[number], TInput[]> & Partial<Record<TKey, TInput[]>>
+    : Partial<Record<TKey, TInput[]>>
 >;
 export function groupByAsync(
+  source: AsyncPipeSource<any>,
   keySelector: (next: any) => PropertyKey,
   groups?: any[],
-): AsyncGeneratorMiddleware<any, any> {
-  return async function* groupByAsyncGenerator(generator) {
+): AsyncPipeSource<Partial<Record<PropertyKey, any[]>>> {
+  return async function* groupByAsyncGenerator(signal) {
     const record =
       groups?.reduce((acc, key) => ({ ...acc, [key]: [] }), {}) ??
       ({} satisfies Partial<Record<PropertyKey, any[]>>);
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       const key = keySelector(next);
       if (!(key in record)) {
         record[key] = [] as any;

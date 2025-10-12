@@ -40,7 +40,7 @@ describe("countBy", () => {
   } = createTestSets(objects);
   test("from single", () => {
     expect(
-      fromSingle.countBy((next) => next.value).first() satisfies number,
+      fromSingle.countBy((next) => next.value).first() satisfies number | void,
     ).toEqual(objects[0].value);
   });
 
@@ -48,7 +48,7 @@ describe("countBy", () => {
     expect(
       await (fromResolvedPromises
         .countBy((next) => next.value)
-        .first() satisfies Promise<number>),
+        .first() satisfies Promise<number | void>),
     ).toBe(6);
   });
 
@@ -56,7 +56,7 @@ describe("countBy", () => {
     expect(
       await (fromAsyncGenerator
         .countBy((next) => next.value)
-        .first() satisfies Promise<number>),
+        .first() satisfies Promise<number | void>),
     ).toBe(6);
   });
 
@@ -66,13 +66,15 @@ describe("countBy", () => {
       (await fromPromises
         .resolve()
         .countBy((next) => next.value)
-        .first()) satisfies number | Promise<number>,
+        .first()) satisfies number | void,
     ).toBe(6);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.countBy((next) => next.value).first() satisfies number,
+      fromGenerator.countBy((next) => next.value).first() satisfies
+        | number
+        | void,
     ).toBe(6);
   });
 

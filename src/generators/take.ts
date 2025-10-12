@@ -1,22 +1,18 @@
 import {
   type AsyncGeneratorMiddlewareReturn,
-  type AsyncGeneratorProvider,
-  type GeneratorProvider,
+  type PipeSource,
+  type AsyncPipeSource,
 } from "../types.ts";
 
-/**
- * yields the first `count` items produced by the generator to the next and ignores the rest.
- * @example
- * source([1,2,3]).take(2).toArray() // [1,2]
- */
-export function take(count: number) {
-  return function* takeGenerator<TInput>(
-    generator: GeneratorProvider<TInput>,
-  ): GeneratorProvider<TInput> {
+export function take<TInput>(
+  source: PipeSource<TInput>,
+  count: number,
+): PipeSource<TInput> {
+  return function* takeGenerator(signal: AbortSignal) {
     if (count <= 0) {
       return;
     }
-    for (const next of generator) {
+    for (const next of source(signal)) {
       yield next;
       if (!--count) {
         break;
@@ -25,14 +21,17 @@ export function take(count: number) {
   };
 }
 
-export function takeAsync(count: number) {
-  return async function* takeAsyncGenerator<TInput>(
-    generator: AsyncGeneratorProvider<TInput>,
+export function takeAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  count: number,
+): AsyncPipeSource<TInput> {
+  return async function* takeAsyncGenerator(
+    signal: AbortSignal,
   ): AsyncGeneratorMiddlewareReturn<TInput> {
     if (count <= 0) {
       return;
     }
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       yield next;
       if (!--count) {
         break;

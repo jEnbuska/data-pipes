@@ -1,16 +1,13 @@
-import {
-  type AsyncGeneratorMiddlewareReturn,
-  type AsyncGeneratorProvider,
-  type GeneratorProvider,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-export function skipLast(count: number) {
-  return function* skipLastGenerator<TInput>(
-    generator: GeneratorProvider<TInput>,
-  ): GeneratorProvider<TInput> {
+export function skipLast<TInput>(
+  source: PipeSource<TInput>,
+  count: number,
+): PipeSource<TInput> {
+  return function* skipLastGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;
-    for (const next of generator) {
+    for (const next of source(signal)) {
       buffer.push(next);
       if (skipped < count) {
         skipped++;
@@ -21,13 +18,14 @@ export function skipLast(count: number) {
   };
 }
 
-export function skipLastAsync(count: number) {
-  return async function* skipLastAsyncGenerator<TInput>(
-    generator: AsyncGeneratorProvider<TInput>,
-  ): AsyncGeneratorMiddlewareReturn<TInput> {
+export function skipLastAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  count: number,
+): AsyncPipeSource<TInput> {
+  return async function* skipLastAsyncGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       buffer.push(next);
       if (skipped < count) {
         skipped++;

@@ -1,21 +1,13 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * Reduces items produced by the generator using the provided reducer function.
- * The final result of the reduction is yielded to the next operation.
- * @example
- * source([1,2,3].reduce((sum, n) => sum + n, 0).first() // 6
- * */
 export function reduce<TInput, TOutput>(
+  source: PipeSource<TInput>,
   reducer: (acc: TOutput, next: TInput) => TOutput,
   initialValue: TOutput,
-): GeneratorMiddleware<TInput, TOutput> {
-  return function* reduceGenerator(generator) {
+): PipeSource<TOutput> {
+  return function* reduceGenerator(signal) {
     let acc = initialValue;
-    for (const next of generator) {
+    for (const next of source(signal)) {
       acc = reducer(acc, next);
     }
     yield acc;
@@ -23,12 +15,13 @@ export function reduce<TInput, TOutput>(
 }
 
 export function reduceAsync<TInput, TOutput>(
+  source: AsyncPipeSource<TInput>,
   reducer: (acc: TOutput, next: TInput) => TOutput,
   initialValue: TOutput,
-): AsyncGeneratorMiddleware<TInput, TOutput> {
-  return async function* reduceAsyncGenerator(generator) {
+): AsyncPipeSource<TOutput> {
+  return async function* reduceAsyncGenerator(signal) {
     let acc = initialValue;
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       acc = reducer(acc, next);
     }
     yield acc;

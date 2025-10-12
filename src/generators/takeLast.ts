@@ -1,24 +1,23 @@
-import {
-  type AsyncGeneratorMiddlewareReturn,
-  type AsyncGeneratorProvider,
-  type GeneratorProvider,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-export function takeLast(count: number) {
-  return function* takeLastGenerator<TInput>(
-    generator: GeneratorProvider<TInput>,
-  ): GeneratorProvider<TInput> {
-    const array = [...generator];
+export function takeLast<TInput>(
+  source: PipeSource<TInput>,
+  count: number,
+): PipeSource<TInput> {
+  return function* takeLastGenerator(signal) {
+    const array = [...source(signal)];
     yield* array.slice(Math.max(array.length - count, 0));
   };
 }
 
-export function takeLastAsync(count: number) {
-  return async function* takeLastAsyncGenerator<TInput>(
-    generator: AsyncGeneratorProvider<TInput>,
-  ): AsyncGeneratorMiddlewareReturn<TInput> {
+export function takeLastAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  count: number,
+): AsyncPipeSource<TInput> {
+  return async function* takeLastAsyncGenerator(signal) {
     const acc: TInput[] = [];
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
+      if (signal.aborted) break;
       acc.push(next);
     }
     yield* acc.slice(Math.max(acc.length - count, 0));

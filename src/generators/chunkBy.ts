@@ -1,14 +1,12 @@
-import type {
-  AsyncGeneratorMiddleware,
-  GeneratorMiddleware,
-} from "../types.ts";
+import type { PipeSource, AsyncPipeSource } from "../types.ts";
 
 export function chunkBy<TInput, TIdentifier = any>(
+  source: PipeSource<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): GeneratorMiddleware<TInput, TInput[]> {
-  return function* chunkByGenerator(generator) {
+): PipeSource<TInput[]> {
+  return function* chunkByGenerator(signal) {
     const map = new Map<any, TInput[]>();
-    for (const next of generator) {
+    for (const next of source(signal)) {
       const key = keySelector(next);
       if (!map.has(next)) {
         map.set(next, []);
@@ -20,11 +18,12 @@ export function chunkBy<TInput, TIdentifier = any>(
 }
 
 export function chunkByAsync<TInput, TIdentifier = any>(
+  source: AsyncPipeSource<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): AsyncGeneratorMiddleware<TInput, TInput[]> {
-  return async function* chunkByAsyncGenerator(generator) {
+): AsyncPipeSource<TInput[]> {
+  return async function* chunkByAsyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       const key = keySelector(next);
       if (!map.has(next)) {
         map.set(next, []);

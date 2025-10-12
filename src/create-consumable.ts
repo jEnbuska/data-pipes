@@ -1,7 +1,7 @@
 import {
-  type AsyncGeneratorProvider,
   type GeneratorConsumable,
-  type GeneratorProvider,
+  type AsyncPipeSource,
+  type PipeSource,
 } from "./types.ts";
 import { consumeAsync } from "./consumers/consume.ts";
 import { firstAsync } from "./consumers/first.ts";
@@ -9,42 +9,35 @@ import { toArrayAsync } from "./consumers/toArray.ts";
 import { consume, first, toArray } from "./consumers";
 
 export function createConsumable<TInput>(
-  generator: GeneratorProvider<TInput>,
+  source: PipeSource<TInput>,
 ): GeneratorConsumable<TInput> {
   return {
-    [Symbol.asyncIterator]: undefined,
-    [Symbol.iterator]: generator[Symbol.iterator].bind(generator),
     [Symbol.toStringTag]: "GeneratorConsumer",
-    toArray() {
-      return toArray()(generator);
+    toArray(signal?: AbortSignal) {
+      return toArray<TInput>(source, signal);
     },
-    consume() {
-      return consume()(generator);
+    consume(signal?: AbortSignal) {
+      return consume<TInput>(source, signal);
     },
-    first(_?: AbortSignal) {
-      return first<TInput>()(generator);
+    first(signal?: AbortSignal) {
+      return first<TInput>(source, signal);
     },
   };
 }
 
 export function createAsyncConsumable<TInput>(
-  generator: AsyncGeneratorProvider<TInput>,
-  source:
-    | GeneratorProvider<unknown>
-    | AsyncGeneratorProvider<unknown> = generator,
+  source: AsyncPipeSource<TInput>,
 ): GeneratorConsumable<TInput, true> {
   return {
-    [Symbol.iterator]: undefined,
-    [Symbol.toStringTag]: "GeneratorConsumer",
-    [Symbol.asyncIterator]: generator[Symbol.asyncIterator].bind(generator),
+    [Symbol.toStringTag]: "AsyncGeneratorConsumer",
     toArray(signal?: AbortSignal) {
-      return toArrayAsync(source, signal)(generator);
+      return toArrayAsync<TInput>(source, signal);
     },
     consume(signal?: AbortSignal) {
-      return consumeAsync(source, signal)(generator);
+      return consumeAsync<TInput>(source, signal);
     },
     first(signal?: AbortSignal) {
-      return firstAsync<TInput>(source, signal)(generator);
+      return firstAsync<TInput>(source, signal);
     },
   };
 }

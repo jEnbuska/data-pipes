@@ -1,4 +1,4 @@
-import { source } from "../../chainable/source.ts";
+import source from "../../";
 
 export function createTestSets<T>(array: T[]) {
   return {

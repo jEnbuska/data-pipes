@@ -1,14 +1,13 @@
-import type {
-  AsyncGeneratorMiddleware,
-  GeneratorMiddleware,
-} from "../types.ts";
+import type { PipeSource, AsyncPipeSource } from "../types.ts";
 
 export function batch<TInput>(
+  source: PipeSource<TInput>,
   predicate: (acc: TInput[]) => boolean,
-): GeneratorMiddleware<TInput, TInput[]> {
-  return function* batchGenerator(generator) {
+): PipeSource<TInput[]> {
+  return function* batchGenerator(signal) {
     let acc: TInput[] = [];
-    for (const next of generator) {
+    for (const next of source(signal)) {
+      if (signal.aborted) return;
       acc.push(next);
       if (!predicate(acc)) {
         continue;
@@ -23,11 +22,13 @@ export function batch<TInput>(
 }
 
 export function batchAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   predicate: (batch: TInput[]) => boolean,
-): AsyncGeneratorMiddleware<TInput, TInput[]> {
-  return async function* batchGenerator(generator) {
+): AsyncPipeSource<TInput[]> {
+  return async function* batchGenerator(signal) {
     let acc: TInput[] = [];
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
+      if (signal.aborted) return;
       acc.push(next);
       if (!predicate(acc)) {
         continue;

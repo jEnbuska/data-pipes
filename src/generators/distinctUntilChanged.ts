@@ -1,17 +1,15 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 export function distinctUntilChanged<TInput>(
+  source: PipeSource<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): GeneratorMiddleware<TInput> {
-  return function* distinctUntilChangedGenerator(generator) {
+): PipeSource<TInput> {
+  return function* distinctUntilChangedGenerator(signal) {
     let first = true;
     let previous: TInput;
-    for (const current of generator) {
+    for (const current of source(signal)) {
       if (first || !compare(previous!, current)) {
         previous = current;
         yield current;
@@ -22,12 +20,13 @@ export function distinctUntilChanged<TInput>(
 }
 
 export function distinctUntilChangedAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* distinctUntilChangedAsyncGenerator(generator) {
+): AsyncPipeSource<TInput> {
+  return async function* distinctUntilChangedAsyncGenerator(signal) {
     let first = true;
     let previous: TInput;
-    for await (const current of generator) {
+    for await (const current of source(signal)) {
       if (first || !compare(previous!, current)) {
         previous = current;
         yield current;

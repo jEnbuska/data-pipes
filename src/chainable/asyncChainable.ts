@@ -1,6 +1,5 @@
 import { createAsyncConsumable } from "../create-consumable.ts";
 import {
-  batchAsync,
   chunkByAsync,
   countAsync,
   countByAsync,
@@ -27,129 +26,126 @@ import {
   takeAsync,
   takeLastAsync,
   takeWhileAsync,
+  batchAsync,
 } from "../generators";
 import {
   type AsyncChainable,
-  type AsyncGeneratorProvider,
-  type GeneratorMiddleware,
-  type GeneratorProvider,
+  type AsyncPipeSource,
+  type AsyncLiftMiddleware,
+  type GroupByGroups,
 } from "../types.ts";
 
 export function createAsyncChainable<TInput = unknown>(
-  generator: AsyncGeneratorProvider<TInput>,
-  source:
-    | GeneratorProvider<unknown>
-    | AsyncGeneratorProvider<unknown> = generator,
+  source: AsyncPipeSource<TInput>,
 ): AsyncChainable<TInput> {
   return {
-    ...createAsyncConsumable(generator, source),
+    isAsync: true,
+    ...createAsyncConsumable(source),
     batch(predicate) {
-      return createAsyncChainable(batchAsync(predicate)(generator), source);
+      return createAsyncChainable(batchAsync(source, predicate));
     },
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
-      return createAsyncChainable(chunkByAsync(fn)(generator), source);
+      return createAsyncChainable(chunkByAsync(source, fn));
     },
     count() {
-      return createAsyncChainable(countAsync()(generator), source);
+      return createAsyncChainable(countAsync(source));
     },
     countBy(fn) {
-      return createAsyncChainable(countByAsync(fn)(generator), source);
+      return createAsyncChainable(countByAsync(source, fn));
     },
     defaultIfEmpty<TDefault>(defaultValue: TDefault) {
       return createAsyncChainable(
-        defaultIfEmptyAsync<TDefault, TInput>(defaultValue)(generator),
-        source,
+        defaultIfEmptyAsync<TInput, TDefault>(source, defaultValue),
       );
     },
     distinctBy<TValue>(selector: (next: TInput) => TValue) {
-      return createAsyncChainable(distinctByAsync(selector)(generator), source);
+      return createAsyncChainable(distinctByAsync(source, selector));
     },
     distinctUntilChanged(isEqual) {
-      return createAsyncChainable(
-        distinctUntilChangedAsync(isEqual)(generator),
-        source,
-      );
+      return createAsyncChainable(distinctUntilChangedAsync(source, isEqual));
     },
     every(predicate) {
-      return createAsyncChainable(everyAsync(predicate)(generator), source);
+      return createAsyncChainable(everyAsync(source, predicate));
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
       return createAsyncChainable(
-        filterAsync<TInput, TOutput>(predicate)(generator),
-        source,
+        filterAsync<TInput, TOutput>(source, predicate),
       );
     },
     find(predicate) {
-      return createAsyncChainable(findAsync(predicate)(generator), source);
+      return createAsyncChainable(findAsync(source, predicate));
     },
     flat<TDepth extends number = 1>(depth?: TDepth) {
-      return createAsyncChainable(flatAsync(depth)(generator), source);
+      return createAsyncChainable(flatAsync(source, depth));
     },
     flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
-      return createAsyncChainable(flatMapAsync(callback)(generator), source);
+      return createAsyncChainable<TOutput | readonly TOutput[]>(
+        flatMapAsync<TInput, TOutput>(source, callback),
+      );
     },
     forEach(consumer) {
-      return createAsyncChainable(forEachAsync(consumer)(generator), source);
+      return createAsyncChainable(forEachAsync(source, consumer));
     },
     groupBy<
       TKey extends PropertyKey,
-      TGroups extends Array<TKey | PropertyKey> = [],
-    >(keySelector: (next: TInput) => TKey | PropertyKey, groups?: TGroups) {
+      TGroups extends undefined | GroupByGroups<TKey> = undefined,
+    >(...args: Parameters<AsyncChainable<TInput>["groupBy"]>) {
       return createAsyncChainable(
-        groupByAsync<TInput, TKey, TGroups>(keySelector, groups)(generator),
-        source,
+        groupByAsync<TInput, TKey, TGroups>(
+          source,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          args[0] as any,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          args[1] as any,
+        ),
       );
     },
-    isAsync: true,
-    lift<TOutput>(middleware: GeneratorMiddleware<TInput, TOutput, true>) {
-      return createAsyncChainable<TOutput>(middleware(generator), source);
+    lift<TOutput>(middleware: AsyncLiftMiddleware<TInput, TOutput>) {
+      return createAsyncChainable<TOutput>(middleware(source));
     },
     map<TOutput>(mapper: (next: TInput) => TOutput) {
-      return createAsyncChainable(mapAsync(mapper)(generator), source);
+      return createAsyncChainable(mapAsync<TInput, TOutput>(source, mapper));
     },
     max(callback) {
-      return createAsyncChainable(maxAsync(callback)(generator), source);
+      return createAsyncChainable(maxAsync(source, callback));
     },
     min(callback) {
-      return createAsyncChainable(minAsync(callback)(generator), source);
+      return createAsyncChainable(minAsync(source, callback));
     },
     reduce<TOutput>(
       reducer: (acc: TOutput, next: TInput) => TOutput,
       initialValue: TOutput,
     ) {
-      return createAsyncChainable(
-        reduceAsync(reducer, initialValue)(generator),
-        source,
-      );
+      return createAsyncChainable(reduceAsync(source, reducer, initialValue));
     },
     reverse() {
-      return createAsyncChainable(reverseAsync()(generator), source);
+      return createAsyncChainable(reverseAsync(source));
     },
     skip(count) {
-      return createAsyncChainable(skipAsync(count)(generator), source);
+      return createAsyncChainable(skipAsync(source, count));
     },
     skipLast(count: number): AsyncChainable<TInput> {
-      return createAsyncChainable(skipLastAsync(count)(generator), source);
+      return createAsyncChainable(skipLastAsync(source, count));
     },
     skipWhile(predicate) {
-      return createAsyncChainable(skipWhileAsync(predicate)(generator), source);
+      return createAsyncChainable(skipWhileAsync(source, predicate));
     },
     some(predicate) {
-      return createAsyncChainable(someAsync(predicate)(generator), source);
+      return createAsyncChainable(someAsync(source, predicate));
     },
     sort(comparator) {
-      return createAsyncChainable(sortAsync(comparator)(generator), source);
+      return createAsyncChainable(sortAsync(source, comparator));
     },
     take(count) {
-      return createAsyncChainable(takeAsync(count)(generator), source);
+      return createAsyncChainable(takeAsync(source, count));
     },
     takeLast(count) {
-      return createAsyncChainable(takeLastAsync(count)(generator), source);
+      return createAsyncChainable(takeLastAsync(source, count));
     },
     takeWhile(predicate) {
-      return createAsyncChainable(takeWhileAsync(predicate)(generator), source);
+      return createAsyncChainable(takeWhileAsync(source, predicate));
     },
   };
 }

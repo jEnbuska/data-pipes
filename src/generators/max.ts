@@ -1,19 +1,13 @@
-import { type GeneratorMiddleware, type GeneratorProvider } from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * takes each item produced by the generator and maps it to a number using the callback.
- * Finally it yields the item with the highest number to the next operation.
- *
- * @example
- * source([1,2,4,3]).max(n => n).first() // 4
- * */
 export function max<TInput>(
+  source: PipeSource<TInput>,
   callback: (next: TInput) => number,
-): GeneratorMiddleware<TInput> {
-  return function* maxGenerator(generator) {
+): PipeSource<TInput> {
+  return function* maxGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    for (const next of generator) {
+    for (const next of source(signal)) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
         current = next;
@@ -27,13 +21,14 @@ export function max<TInput>(
   };
 }
 
-export function maxAsync<TInput>(callback: (next: TInput) => number) {
-  return async function* maxGenerator(
-    generator: GeneratorProvider<TInput, true>,
-  ) {
+export function maxAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  callback: (next: TInput) => number,
+): AsyncPipeSource<TInput> {
+  return async function* maxGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
         current = next;

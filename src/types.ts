@@ -1,10 +1,3 @@
-export type GeneratorProvider<
-  TInput,
-  TAsync extends boolean = false,
-> = TAsync extends true
-  ? AsyncGenerator<TInput, void, undefined & void>
-  : Generator<TInput, void, undefined & void>;
-
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
 export type AsyncGeneratorProvider<TInput> = AsyncGenerator<
   TInput,
@@ -12,30 +5,19 @@ export type AsyncGeneratorProvider<TInput> = AsyncGenerator<
   undefined & void
 >;
 
-export type GeneratorMiddleware<
-  TInput,
-  TOutput = TInput,
-  TAsync extends boolean = false,
-> = (
-  generator: GeneratorProvider<TInput, TAsync>,
-) => GeneratorProvider<TOutput, TAsync>;
-
-export type AsyncGeneratorMiddleware<TInput, TOutput = TInput> = (
-  generator: AsyncGeneratorProvider<TInput> | GeneratorProvider<TInput>,
-) => AsyncGeneratorMiddlewareReturn<TOutput>;
-
 export type AsyncGeneratorMiddlewareReturn<TOutput> = AsyncGenerator<
   Awaited<TOutput>,
   void,
   undefined & void
 >;
-export type SyncPipeSource<TInput> =
-  | TInput
-  | TInput[]
-  | (() => GeneratorProvider<TInput>)
-  | GeneratorConsumable<TInput>;
 
-export type AsyncPipeSource<TInput> = () => AsyncGeneratorProvider<TInput>;
+export type AsyncPipeSource<TOutput> = (
+  signal: AbortSignal,
+) => AsyncGeneratorProvider<TOutput>;
+
+export type PipeSource<TOutput> = (
+  signal: AbortSignal,
+) => Generator<TOutput, void, undefined & void>;
 
 type ConsumerResult<
   TInput,
@@ -43,13 +25,9 @@ type ConsumerResult<
 > = TAsync extends true ? Promise<TInput> : TInput;
 
 export type GeneratorConsumable<TInput, TAsync extends boolean = false> = {
-  [Symbol.iterator]: TAsync extends true
-    ? undefined
-    : () => Generator<TInput, void, undefined & void>;
-  [Symbol.asyncIterator]: TAsync extends true
-    ? () => AsyncGenerator<TInput, void, undefined & void>
-    : undefined;
-  [Symbol.toStringTag]: "GeneratorConsumer";
+  [Symbol.toStringTag]: TAsync extends true
+    ? "AsyncGeneratorConsumer"
+    : "GeneratorConsumer";
   /**
    * Triggers the generators to execute and returns their outputs as an array.
    */
@@ -248,24 +226,16 @@ type BaseChainable<
    *  .groupBy(n => n % 2 ? 'odd' : 'even')
    *  .first() // {even: [2,4], odd: [1,3]}
    */
-  groupBy<TKey extends PropertyKey>(
-    keySelector: (next: TInput) => TKey,
-  ): AnyChainable<Record<TKey, TInput[]>, TAsync>;
-  /**
-   * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
-   * @example
-   * source([1,2,3,4])
-   *  .groupBy(n => n % 2 ? 'odd' : 'even', ["odd", "other"])
-   *  .first() // {odd: [1,3], even: [2,4], other: []}
-   */
   groupBy<
     TKey extends PropertyKey,
-    TGroups extends Array<TKey | PropertyKey> = [],
+    TGroups extends GroupByGroups<TKey> | undefined,
   >(
     keySelector: (next: TInput) => TKey | PropertyKey,
-    groups?: TGroups,
+    groups?: undefined,
   ): AnyChainable<
-    Record<TGroups[number], TInput[]> & Partial<Record<TKey, TInput[]>>,
+    TGroups extends GroupByGroups<TKey>
+      ? Record<TGroups[number], TInput[]> & Partial<Record<TKey, TInput[]>>
+      : Partial<Record<TKey, TInput[]>>,
     TAsync
   >;
   /**
@@ -370,7 +340,7 @@ type BaseChainable<
    * @example
    * source([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    for (const next of generator) {
+   *    for (const next of source(signal)) {
    *     yield next * 2;
    *    }
    *   })
@@ -379,7 +349,7 @@ type BaseChainable<
    * @example
    * source([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *   for (const next of generator) {
+   *   for (const next of source(signal)) {
    *    if (next < 0) continue;
    *     yield next;
    *    }
@@ -388,17 +358,21 @@ type BaseChainable<
    *
    * @example
    * source("a", "b", "c")
-   *  .lift(function* joinStrings(generator) {
-   *    const acc: string[] = [];
-   *    for (const next of generator) {
-   *     acc.push(next);
+   *  .lift(function* joinStrings(source) {
+   *    return function(signal) {
+   *      const acc: string[] = [];
+   *      for (const next of source(signal)) {
+   *       acc.push(next);
+   *      }
+   *      yield acc.join(".");
    *    }
-   *    yield acc.join(".");
    *  })
    *  .first() // "a.b.c"
    * */
   lift<TOutput = never>(
-    generatorFunction: GeneratorMiddleware<TInput, TOutput, TAsync>,
+    middleware: TAsync extends true
+      ? (source: AsyncPipeSource<TInput>) => AsyncPipeSource<TOutput>
+      : (source: PipeSource<TInput>) => PipeSource<TOutput>,
   ): AnyChainable<TOutput, TAsync>;
 
   countBy(fn: (next: TInput) => number): AnyChainable<number, TAsync>;
@@ -407,3 +381,12 @@ type BaseChainable<
     fn: (next: TInput) => TIdentifier,
   ): AnyChainable<ChainableOutput<TInput[], TAsync>, TAsync>;
 };
+
+export type GroupByGroups<TKey extends PropertyKey> = Array<TKey | PropertyKey>;
+
+export type LiftMiddleware<TInput, TOutput> = (
+  source: PipeSource<TInput>,
+) => PipeSource<TOutput>;
+export type AsyncLiftMiddleware<TInput, TOutput> = (
+  source: AsyncPipeSource<TInput>,
+) => AsyncPipeSource<TOutput>;

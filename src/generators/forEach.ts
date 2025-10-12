@@ -1,19 +1,11 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * Calls the provided consumer function for each item produced by the generator and yields it
- * to the next operation.
- * @example
- * source([1,2,3]).forEach(n => console.log(n)).consume();
- * */
 export function forEach<TInput>(
+  source: PipeSource<TInput>,
   consumer: (next: TInput) => unknown,
-): GeneratorMiddleware<TInput> {
-  return function* forEachGenerator(generator) {
-    for (const next of generator) {
+): PipeSource<TInput> {
+  return function* forEachGenerator(signal) {
+    for (const next of source(signal)) {
       consumer(next);
       yield next;
     }
@@ -21,10 +13,11 @@ export function forEach<TInput>(
 }
 
 export function forEachAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   consumer: (next: TInput) => unknown,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* forEachAsyncGenerator(generator) {
-    for await (const next of generator) {
+): AsyncPipeSource<TInput> {
+  return async function* forEachAsyncGenerator(signal) {
+    for await (const next of source(signal)) {
       consumer(next);
       yield next;
     }

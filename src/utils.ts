@@ -1,8 +1,4 @@
-import type {
-  AsyncGeneratorProvider,
-  AsyncPipeSource,
-  GeneratorProvider,
-} from "./types.ts";
+import type { AsyncPipeSource } from "./types.ts";
 
 export function isAsyncGeneratorFunction<TInput>(
   source: unknown,
@@ -11,14 +7,6 @@ export function isAsyncGeneratorFunction<TInput>(
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
   );
-}
-export function addReturnRootOnAbortListener(
-  signal: AbortSignal | undefined,
-  source: GeneratorProvider<any> | AsyncGeneratorProvider<any>,
-) {
-  signal?.addEventListener("abort", function handleAbort() {
-    void source.return();
-  });
 }
 
 export function invoke<T>(cb: () => T) {

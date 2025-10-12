@@ -1,18 +1,11 @@
-import {
-  type AsyncGeneratorProvider,
-  type GeneratorProvider,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * yields true when predicate returns true for the first time, otherwise finally it yields false after the generator is consumer. <br/>
- * if the generator is empty yields false
- *
- * @example
- * source([1,2,3,4].some(n => n > 2).first() // true
- */
-export function some<TInput>(predicate: (next: TInput) => boolean) {
-  return function* someGenerator(generator: GeneratorProvider<TInput>) {
-    for (const next of generator) {
+export function some<TInput>(
+  source: PipeSource<TInput>,
+  predicate: (next: TInput) => boolean,
+): PipeSource<boolean> {
+  return function* someGenerator(signal) {
+    for (const next of source(signal)) {
       if (predicate(next)) {
         yield true;
         return;
@@ -21,11 +14,12 @@ export function some<TInput>(predicate: (next: TInput) => boolean) {
     yield false;
   };
 }
-export function someAsync<TInput>(predicate: (next: TInput) => boolean) {
-  return async function* someAsyncGenerator(
-    generator: AsyncGeneratorProvider<TInput>,
-  ) {
-    for await (const next of generator) {
+export function someAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
+  predicate: (next: TInput) => boolean,
+): AsyncPipeSource<boolean> {
+  return async function* someAsyncGenerator(signal: AbortSignal) {
+    for await (const next of source(signal)) {
       if (predicate(next)) {
         yield true;
         return;

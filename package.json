@@ -7,10 +7,10 @@
     "build": "tsc",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "lint": "eslint --ext .ts --max-warnings 0 ./src ./tests",
-    "lint:fix": "eslint --fix --ext .ts ./src ./tests",
-    "prettier": "prettier --check ./src ./tests",
-    "prettier:write": "prettier --write ./src ./tests"
+    "lint": "eslint --ext .ts --max-warnings 0 ./src",
+    "lint:fix": "eslint --fix --ext .ts ./src",
+    "prettier": "prettier --check ./src",
+    "prettier:write": "prettier --write ./src"
   },
   "devDependencies": {
     "bun": "^1.2.21",

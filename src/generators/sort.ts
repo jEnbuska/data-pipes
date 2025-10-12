@@ -1,21 +1,13 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
- *
- * @example
- * source([3,2,1].sort((a, z) => a - z).toArray() // [1,2,3]
- */
-export function sort<TInput = never>(
+export function sort<TInput>(
+  source: PipeSource<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): GeneratorMiddleware<TInput> {
-  return function* sortGenerator(generator) {
+): PipeSource<TInput> {
+  return function* sortGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    for (const next of generator) {
+    for (const next of source(signal)) {
       const index = findIndex(next);
       acc.splice(index, 0, next);
     }
@@ -24,12 +16,13 @@ export function sort<TInput = never>(
 }
 
 export function sortAsync<TInput = never>(
+  source: AsyncPipeSource<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncGeneratorMiddleware<TInput> {
-  return async function* sortAsyncGenerator(generator) {
+): AsyncPipeSource<TInput> {
+  return async function* sortAsyncGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       const index = findIndex(next);
       acc.splice(index, 0, next);
     }

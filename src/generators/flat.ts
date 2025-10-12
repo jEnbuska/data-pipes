@@ -1,24 +1,12 @@
-import {
-  type AsyncGeneratorProvider,
-  type GeneratorProvider,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * Returns a new array with all sub-array elements concatenated into it recursively up to the
- * specified depth.
- *
- * @example
- * source([[1], [2], [3]]).flat().toArray() // [1,2,3]
- *
- * @example
- * source([[1], [[2]], [[[3]]]]).flat(2).toArray() // [1,2,[3]]
- * */
-export function flat<const Depth extends number = 1>(depth?: Depth) {
-  return function* flatGenerator<TInput>(
-    generator: GeneratorProvider<TInput>,
-  ): GeneratorProvider<FlatArray<TInput[], Depth>> {
+export function flat<TInput, const Depth extends number = 1>(
+  source: PipeSource<TInput>,
+  depth?: Depth,
+): PipeSource<FlatArray<TInput[], Depth>> {
+  return function* flatGenerator(signal) {
     depth = depth ?? (1 as Depth);
-    for (const next of generator) {
+    for (const next of source(signal)) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next as any;
         continue;
@@ -28,12 +16,13 @@ export function flat<const Depth extends number = 1>(depth?: Depth) {
   };
 }
 
-export function flatAsync<const Depth extends number = 1>(depth?: Depth) {
-  return async function* flatGenerator<TInput>(
-    generator: AsyncGeneratorProvider<TInput>,
-  ): AsyncGeneratorProvider<FlatArray<TInput[], Depth>> {
+export function flatAsync<TInput, const Depth extends number = 1>(
+  source: AsyncPipeSource<TInput>,
+  depth?: Depth,
+): AsyncPipeSource<FlatArray<TInput[], Depth>> {
+  return async function* flatGenerator(signal) {
     depth = depth ?? (1 as Depth);
-    for await (const next of generator) {
+    for await (const next of source(signal)) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next as any;
         continue;

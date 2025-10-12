@@ -1,20 +1,11 @@
-import {
-  type AsyncGeneratorMiddleware,
-  type GeneratorMiddleware,
-} from "../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 
-/**
- * yields false when predicate returns false for the first time, otherwise finally it yields true after the generator is consumer. <br/>
- * if the generator is empty yields true
- *
- * @example
- * source([1,2,3,4].every(n => n > 1).first() // false
- */
 export function every<TInput>(
+  source: PipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): GeneratorMiddleware<TInput, boolean> {
-  return function* everyGenerator(generator) {
-    for (const next of generator) {
+): PipeSource<boolean> {
+  return function* everyGenerator(signal) {
+    for (const next of source(signal)) {
       if (!predicate(next)) {
         yield false;
         return;
@@ -24,10 +15,11 @@ export function every<TInput>(
   };
 }
 export function everyAsync<TInput>(
+  source: AsyncPipeSource<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncGeneratorMiddleware<TInput, boolean> {
-  return async function* everyAsyncGenerator(generator) {
-    for await (const next of generator) {
+): AsyncPipeSource<boolean> {
+  return async function* everyAsyncGenerator(signal) {
+    for await (const next of source(signal)) {
       if (!predicate(next)) {
         yield false;
         return;
