@@ -22,6 +22,7 @@ export function skipAsync<TInput>(
   return async function* skipAsyncGenerator(signal) {
     let skipped = 0;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       if (skipped < count) {
         skipped++;
         continue;

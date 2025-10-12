@@ -22,6 +22,7 @@ export function reduceAsync<TInput, TOutput>(
   return async function* reduceAsyncGenerator(signal) {
     let acc = initialValue;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       acc = reducer(acc, next);
     }
     yield acc;

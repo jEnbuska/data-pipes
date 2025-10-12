@@ -43,13 +43,13 @@ export function source(source: any) {
     return createChainable(source);
   }
   return createChainable(function* dataSource(
-    signal: AbortSignal,
+    signal?: AbortSignal,
   ): Generator<any, void, undefined & void> {
-    if (signal.aborted) return;
+    if (signal?.aborted) return;
     if (!Array.isArray(source)) yield source;
     else {
       for (const next of source) {
-        if (signal.aborted) return;
+        if (signal?.aborted) return;
         yield next;
       }
     }

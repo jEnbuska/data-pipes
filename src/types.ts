@@ -16,7 +16,7 @@ export type AsyncPipeSource<TOutput> = (
 ) => AsyncGeneratorProvider<TOutput>;
 
 export type PipeSource<TOutput> = (
-  signal: AbortSignal,
+  signal: AbortSignal | undefined,
 ) => Generator<TOutput, void, undefined & void>;
 
 type ConsumerResult<
@@ -42,7 +42,13 @@ export type GeneratorConsumable<TInput, TAsync extends boolean = false> = {
    * - If the generator provides no items and no default value is specified, an error is thrown upon completion.
    * - If the generator provides no items but a default value is specified, the default value is returned.
    */
-  first(signale?: AbortSignal): ConsumerResult<TInput | void, TAsync>;
+  first<TDefault extends void = void>(
+    signal?: AbortSignal,
+  ): ConsumerResult<TInput | TDefault, TAsync>;
+  first<TDefault>(
+    defaultValue: TDefault,
+    signal?: AbortSignal,
+  ): ConsumerResult<TInput | TAsync>;
 };
 
 type ChainableOutput<TOutput, TAsync> = TAsync extends true

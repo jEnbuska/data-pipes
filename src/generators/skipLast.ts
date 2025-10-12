@@ -26,6 +26,7 @@ export function skipLastAsync<TInput>(
     const buffer: TInput[] = [];
     let skipped = 0;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       buffer.push(next);
       if (skipped < count) {
         skipped++;

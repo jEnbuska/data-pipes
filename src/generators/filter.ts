@@ -34,10 +34,10 @@ export function filterAsync(
   predicate: (next: unknown) => any,
 ): AsyncPipeSource<unknown> {
   return async function* filterAsyncGenerator(signal) {
+    if (signal.aborted) return;
     for await (const next of source(signal)) {
-      if (predicate(next)) {
-        yield next;
-      }
+      if (signal.aborted) return;
+      if (predicate(next)) yield next;
     }
   };
 }

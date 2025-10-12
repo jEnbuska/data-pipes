@@ -25,6 +25,7 @@ export function countByAsync<TInput>(
   return async function* countByAsyncGenerator(signal) {
     let acc = 0;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       acc += mapper(next);
     }
     yield acc;

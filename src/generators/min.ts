@@ -28,6 +28,7 @@ export function minAsync<TInput>(
     let currentMin: undefined | number;
     let current: undefined | TInput;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {
         current = next;

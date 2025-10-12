@@ -1,6 +1,5 @@
 import {
   type AsyncGeneratorProvider,
-  type AnyGeneratorProvider,
   type PipeSource,
   type AsyncPipeSource,
 } from "../types.ts";
@@ -11,7 +10,7 @@ import {
  * source([1,2,3])count().first() // 3
  */
 export function count<TInput>(source: PipeSource<TInput>): PipeSource<number> {
-  return function* countGenerator(signal): AnyGeneratorProvider<number> {
+  return function* countGenerator(signal) {
     yield [...source(signal)].length;
   };
 }
@@ -24,6 +23,7 @@ export function countAsync<TInput>(
   ): AsyncGeneratorProvider<number> {
     let count = 0;
     for await (const _ of source(signal)) {
+      if (signal.aborted) return;
       count++;
     }
     yield count;

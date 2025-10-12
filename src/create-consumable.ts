@@ -7,6 +7,7 @@ import { consumeAsync } from "./consumers/consume.ts";
 import { firstAsync } from "./consumers/first.ts";
 import { toArrayAsync } from "./consumers/toArray.ts";
 import { consume, first, toArray } from "./consumers";
+import { isAbortSignal } from "./utils.ts";
 
 export function createConsumable<TInput>(
   source: PipeSource<TInput>,
@@ -36,8 +37,18 @@ export function createAsyncConsumable<TInput>(
     consume(signal?: AbortSignal) {
       return consumeAsync<TInput>(source, signal);
     },
-    first(signal?: AbortSignal) {
-      return firstAsync<TInput>(source, signal);
+    first<TDefault = void>(
+      ...args: Parameters<GeneratorConsumable<TInput, true>["first"]>
+    ) {
+      const defaultValue = (
+        args[0] && isAbortSignal(args[0]) ? undefined : args[0]
+      ) as TDefault;
+      const signal: AbortSignal | undefined = isAbortSignal(args[0])
+        ? args[0]
+        : isAbortSignal(args[1])
+          ? args[1]
+          : undefined;
+      return firstAsync<TInput, TDefault>(source, defaultValue, signal);
     },
   };
 }

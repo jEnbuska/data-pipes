@@ -18,6 +18,7 @@ export function forEachAsync<TInput>(
 ): AsyncPipeSource<TInput> {
   return async function* forEachAsyncGenerator(signal) {
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       consumer(next);
       yield next;
     }

@@ -17,6 +17,7 @@ export function mapAsync<TInput, TOutput>(
 ): AsyncPipeSource<Awaited<TOutput>> {
   return async function* mapAsyncGenerator(signal) {
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       yield mapper(next);
     }
   };

@@ -20,10 +20,8 @@ export function everyAsync<TInput>(
 ): AsyncPipeSource<boolean> {
   return async function* everyAsyncGenerator(signal) {
     for await (const next of source(signal)) {
-      if (!predicate(next)) {
-        yield false;
-        return;
-      }
+      if (signal.aborted) return;
+      if (!predicate(next)) return yield false;
     }
     yield true;
   };

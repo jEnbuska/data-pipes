@@ -7,7 +7,7 @@ export function consume<TInput>(
   signal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;
-  for (const _ of source(signal)) {
+  for (const _ of source(undefined)) {
     /* iterate until done */
   }
 }
@@ -17,17 +17,13 @@ export async function consumeAsync<TInput>(
   signal = new AbortController().signal,
 ): Promise<void> {
   const resolvable = await createResolvable<void>();
-  if (signal.aborted) {
-    return;
-  }
-  signal?.addEventListener("abort", () => resolvable.resolve());
+  if (signal.aborted) return;
+  signal.addEventListener("abort", () => resolvable.resolve());
   return Promise.race([
     resolvable.promise,
     invoke(async function () {
       for await (const _ of source(signal)) {
-        if (signal?.aborted) {
-          return resolvable.promise;
-        }
+        if (signal?.aborted) return resolvable.promise;
       }
     }),
   ]);

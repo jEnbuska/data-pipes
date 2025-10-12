@@ -32,6 +32,7 @@ export function takeAsync<TInput>(
       return;
     }
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       yield next;
       if (!--count) {
         break;

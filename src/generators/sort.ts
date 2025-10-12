@@ -23,6 +23,7 @@ export function sortAsync<TInput = never>(
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const index = findIndex(next);
       acc.splice(index, 0, next);
     }

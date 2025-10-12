@@ -7,9 +7,8 @@ export function toArray<TInput>(
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
-  if (signal.aborted) return acc;
-  for (const next of source(signal)) {
-    if (signal.aborted) return acc;
+  if (!signal) return acc;
+  for (const next of source(undefined)) {
     acc.push(next);
   }
   return acc;
@@ -21,17 +20,13 @@ export async function toArrayAsync<TInput>(
 ): Promise<TInput[]> {
   const acc: TInput[] = [];
   const resolvable = await createResolvable<TInput[]>();
-  if (signal?.aborted) {
-    return Promise.resolve(acc);
-  }
-  signal?.addEventListener("abort", () => resolvable.resolve(acc));
+  if (signal.aborted) return acc;
+  signal.addEventListener("abort", () => resolvable.resolve(acc));
   return Promise.race([
     resolvable.promise,
     invoke(async function () {
       for await (const next of source(signal)) {
-        if (signal?.aborted) {
-          return resolvable.promise;
-        }
+        if (signal?.aborted) return resolvable.promise;
         acc.push(next);
       }
       return acc;

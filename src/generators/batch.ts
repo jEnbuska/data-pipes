@@ -7,7 +7,6 @@ export function batch<TInput>(
   return function* batchGenerator(signal) {
     let acc: TInput[] = [];
     for (const next of source(signal)) {
-      if (signal.aborted) return;
       acc.push(next);
       if (!predicate(acc)) {
         continue;
@@ -30,14 +29,10 @@ export function batchAsync<TInput>(
     for await (const next of source(signal)) {
       if (signal.aborted) return;
       acc.push(next);
-      if (!predicate(acc)) {
-        continue;
-      }
+      if (!predicate(acc)) continue;
       yield acc;
       acc = [];
     }
-    if (acc.length) {
-      yield acc;
-    }
+    if (acc.length) yield acc;
   };
 }

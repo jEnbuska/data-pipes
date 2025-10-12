@@ -29,6 +29,7 @@ export function maxAsync<TInput>(
     let currentMax: undefined | number;
     let current: undefined | TInput;
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
         current = next;

@@ -27,6 +27,7 @@ export function groupBy(
       groups?.reduce((acc, key) => ({ ...acc, [key]: [] }), {}) ??
       ({} satisfies Partial<Record<PropertyKey, any[]>>);
     for (const next of source(signal)) {
+      if (signal.aborted) return;
       const key = keySelector(next);
       if (!(key in record)) {
         record[key] = [] as any;

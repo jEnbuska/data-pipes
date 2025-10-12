@@ -22,6 +22,7 @@ export function flatMapAsync<TInput, TOutput>(
 ): AsyncPipeSource<Awaited<TOutput>> {
   return async function* flatMapAsyncGenerator(signal) {
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const out = flatMapper(next);
       if (Array.isArray(out)) {
         yield* out as any;

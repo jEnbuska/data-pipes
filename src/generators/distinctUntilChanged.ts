@@ -27,6 +27,7 @@ export function distinctUntilChangedAsync<TInput>(
     let first = true;
     let previous: TInput;
     for await (const current of source(signal)) {
+      if (signal.aborted) return;
       if (first || !compare(previous!, current)) {
         previous = current;
         yield current;

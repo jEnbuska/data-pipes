@@ -29,10 +29,9 @@ export function distinctByAsync<TInput, Value>(
   return async function* distinctByAsyncGenerator(signal) {
     const set = new Set<Value>();
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const key = selector(next);
-      if (set.has(key)) {
-        continue;
-      }
+      if (set.has(key)) continue;
       set.add(key);
       yield next;
     }

@@ -5,6 +5,7 @@ export function resolve<TInput>(
 ): AsyncPipeSource<TInput extends Promise<infer U> ? U : TInput> {
   return async function* resolveGenerator(signal) {
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       yield next as any;
     }
   };

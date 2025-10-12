@@ -20,10 +20,8 @@ export function findAsync<TInput>(
 ): AsyncPipeSource<TInput> {
   return async function* findAsyncGenerator(signal) {
     for await (const next of source(signal)) {
-      if (predicate(next)) {
-        yield next;
-        break;
-      }
+      if (signal.aborted) return;
+      if (predicate(next)) return yield next;
     }
   };
 }

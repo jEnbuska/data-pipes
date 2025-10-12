@@ -22,9 +22,8 @@ export function skipWhileAsync<TInput>(
   return async function* skipWhileAsyncGenerator(signal) {
     let skip = true;
     for await (const next of source(signal)) {
-      if (skip && predicate(next)) {
-        continue;
-      }
+      if (signal.aborted) return;
+      if (skip && predicate(next)) continue;
       skip = false;
       yield next;
     }

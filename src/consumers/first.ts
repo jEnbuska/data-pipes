@@ -6,23 +6,22 @@ export function first<TInput>(
   signal = new AbortController().signal,
 ): TInput | void {
   if (signal.aborted) return;
-  const result = source(signal).next();
+  const result = source(undefined).next();
   return result.value;
 }
 
-export async function firstAsync<TInput>(
+export async function firstAsync<TInput, TDefault = void>(
   source: AsyncPipeSource<TInput>,
+  defaultValue: TDefault,
   signal = new AbortController().signal,
-): Promise<TInput | void> {
-  const resolvable = await createResolvable<TInput | void>();
-  if (signal?.aborted) {
-    return;
-  }
-  signal?.addEventListener("abort", () => resolvable.resolve());
+): Promise<TInput | TDefault> {
+  const resolvable = await createResolvable<TDefault>();
+  if (signal.aborted) return defaultValue;
+  signal.addEventListener("abort", () => resolvable.resolve(defaultValue));
   return Promise.race([
     resolvable.promise,
     source(signal)
       .next()
-      .then((result) => result.value),
+      .then((result) => (result.done ? defaultValue : result.value)),
   ]);
 }

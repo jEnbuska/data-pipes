@@ -24,10 +24,9 @@ export function chunkByAsync<TInput, TIdentifier = any>(
   return async function* chunkByAsyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
     for await (const next of source(signal)) {
+      if (signal.aborted) return;
       const key = keySelector(next);
-      if (!map.has(next)) {
-        map.set(next, []);
-      }
+      if (!map.has(next)) map.set(next, []);
       map.get(key)!.push(next);
     }
     yield* map.values();

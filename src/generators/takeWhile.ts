@@ -20,11 +20,9 @@ export function takeWhileAsync<TInput>(
 ): AsyncPipeSource<TInput> {
   return async function* takeWhileAsyncGenerator(signal) {
     for await (const next of source(signal)) {
-      if (predicate(next)) {
-        yield next;
-      } else {
-        break;
-      }
+      if (signal.aborted) return;
+      if (predicate(next)) yield next;
+      else return;
     }
   };
 }
