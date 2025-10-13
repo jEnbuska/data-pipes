@@ -7,7 +7,8 @@ export function consume<TInput>(
   signal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;
-  for (const _ of source(undefined)) {
+  for (const _ of source()) {
+    if (signal.aborted) return;
     /* iterate until done */
   }
 }
@@ -22,7 +23,7 @@ export async function consumeAsync<TInput>(
   return Promise.race([
     resolvable.promise,
     invoke(async function () {
-      for await (const _ of source(signal)) {
+      for await (const _ of source()) {
         if (signal?.aborted) return resolvable.promise;
       }
     }),

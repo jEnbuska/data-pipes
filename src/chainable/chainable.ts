@@ -5,7 +5,7 @@ import {
   chunkBy,
   count,
   countBy,
-  defaultIfEmpty,
+  defaultTo,
   distinctBy,
   distinctUntilChanged,
   every,
@@ -36,17 +36,25 @@ import {
   type GroupByGroups,
   type LiftMiddleware,
 } from "../types.ts";
+import { fold } from "../generators/reducers/fold.ts";
 
-export function createChainable<TInput = unknown>(
+export function createChainable<TInput = unknown, TDefault = undefined>(
   source: PipeSource<TInput>,
+  defaultValue?: TDefault,
 ): Chainable<TInput> {
   return {
     batch(predicate) {
       return createChainable(batch(source, predicate));
     },
-    ...createConsumable(source),
+    ...createConsumable<TInput, TDefault>(source, defaultValue),
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
       return createChainable(chunkBy(source, fn));
+    },
+    fold<TOutput>(
+      initial: () => TOutput,
+      reducer: (acc: TOutput, next: TInput) => TOutput,
+    ) {
+      return createChainable(fold(source, initial, reducer));
     },
     count() {
       return createChainable(count(source));
@@ -54,8 +62,8 @@ export function createChainable<TInput = unknown>(
     countBy(fn) {
       return createChainable(countBy(source, fn));
     },
-    defaultIfEmpty<TDefault>(defaultValue: TDefault) {
-      return createChainable(defaultIfEmpty(source, defaultValue));
+    defaultTo<TDefault>(defaultValue: TDefault) {
+      return createChainable(defaultTo(source, defaultValue));
     },
     distinctBy<Value>(selector: (next: TInput) => Value) {
       return createChainable(distinctBy(source, selector));

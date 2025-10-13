@@ -1,4 +1,4 @@
-import { source } from "./chainable/source.ts";
+import { source } from "./consumers/source.ts";
 
 export * from "./consumers";
 export * from "./generators";

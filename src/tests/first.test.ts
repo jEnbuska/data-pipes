@@ -8,7 +8,7 @@ describe("first", () => {
   });
 
   test("none with default to first", () => {
-    expect(source([]).defaultIfEmpty("None").first()).toBe("None");
+    expect(source([]).defaultTo("None").first()).toBe("None");
   });
 
   test("get first from async generator", async () => {

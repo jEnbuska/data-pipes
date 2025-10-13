@@ -1,9 +1,11 @@
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export type AsyncGeneratorProvider<TInput> = AsyncGenerator<
+export type AsyncProvider<TInput> = AsyncGenerator<
   TInput,
   void,
   undefined & void
 >;
+
+export type Provider<TInput> = Generator<TInput, void, undefined & void>;
 
 export type AsyncGeneratorMiddlewareReturn<TOutput> = AsyncGenerator<
   Awaited<TOutput>,
@@ -11,20 +13,20 @@ export type AsyncGeneratorMiddlewareReturn<TOutput> = AsyncGenerator<
   undefined & void
 >;
 
-export type AsyncPipeSource<TOutput> = (
-  signal: AbortSignal,
-) => AsyncGeneratorProvider<TOutput>;
+export type AsyncPipeSource<TOutput> = () => AsyncProvider<TOutput>;
 
-export type PipeSource<TOutput> = (
-  signal: AbortSignal | undefined,
-) => Generator<TOutput, void, undefined & void>;
+export type PipeSource<TOutput> = () => Provider<TOutput>;
 
 type ConsumerResult<
   TInput,
   TAsync extends boolean = false,
 > = TAsync extends true ? Promise<TInput> : TInput;
 
-export type GeneratorConsumable<TInput, TAsync extends boolean = false> = {
+export type GeneratorConsumable<
+  TInput,
+  TAsync extends boolean = false,
+  TDefault = undefined,
+> = {
   [Symbol.toStringTag]: TAsync extends true
     ? "AsyncGeneratorConsumer"
     : "GeneratorConsumer";
@@ -38,17 +40,9 @@ export type GeneratorConsumable<TInput, TAsync extends boolean = false> = {
   consume(signal?: AbortSignal): ConsumerResult<void, TAsync>;
   /**
    * Initiates the generators and retrieves the first item they produce.
-   *
-   * - If the generator provides no items and no default value is specified, an error is thrown upon completion.
-   * - If the generator provides no items but a default value is specified, the default value is returned.
+   * - If the generator provides no items but a defaultTo was provided, the default value is returned.
    */
-  first<TDefault extends void = void>(
-    signal?: AbortSignal,
-  ): ConsumerResult<TInput | TDefault, TAsync>;
-  first<TDefault>(
-    defaultValue: TDefault,
-    signal?: AbortSignal,
-  ): ConsumerResult<TInput | TAsync>;
+  first(signal?: AbortSignal): ConsumerResult<TInput | TDefault, TAsync>;
 };
 
 type ChainableOutput<TOutput, TAsync> = TAsync extends true
@@ -146,8 +140,20 @@ type BaseChainable<
    *   .first() // 6
    * */
   reduce<TOutput>(
-    fn: (acc: TOutput, next: TInput) => TOutput,
+    reducer: (acc: TOutput, next: TInput) => TOutput,
     initialValue: TOutput,
+  ): AnyChainable<TOutput, TAsync>;
+  /**
+   * Just and other way to reduce items produced by the generator using the provided reducer function.
+   * The final result of the reduction is yielded to the next operation.
+   * @example
+   * source([1,2,3])
+   *   .fold(() => 0, (sum, n) => sum + n)
+   *   .first() // 6
+   * */
+  fold<TOutput>(
+    initial: () => TOutput,
+    reducer: (acc: TOutput, next: TInput) => TOutput,
   ): AnyChainable<TOutput, TAsync>;
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
@@ -298,10 +304,10 @@ type BaseChainable<
    * @example
    * source([1,2,3])
    *  .filter(it => it > 3)
-   *  .defaultIfEmpty(0)
+   *  .defaultTo(0)
    *  .first() // 0
    */
-  defaultIfEmpty<TDefault = TInput>(
+  defaultTo<TDefault = TInput>(
     defaultValue: TDefault,
   ): AnyChainable<TInput | TDefault, TAsync>;
   /**
@@ -346,7 +352,8 @@ type BaseChainable<
    * @example
    * source([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    for (const next of source(signal)) {
+   *    using generator = disposable(source);
+    for (const next of generator) {
    *     yield next * 2;
    *    }
    *   })
@@ -355,7 +362,8 @@ type BaseChainable<
    * @example
    * source([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *   for (const next of source(signal)) {
+   *   using generator = disposable(source);
+    for (const next of generator) {
    *    if (next < 0) continue;
    *     yield next;
    *    }
@@ -365,9 +373,10 @@ type BaseChainable<
    * @example
    * source("a", "b", "c")
    *  .lift(function* joinStrings(source) {
-   *    return function(signal) {
+   *    return function() {
    *      const acc: string[] = [];
-   *      for (const next of source(signal)) {
+   *      using generator = disposable(source);
+    for (const next of generator) {
    *       acc.push(next);
    *      }
    *      yield acc.join(".");

@@ -2,7 +2,7 @@ import { describe, test, expect } from "bun:test";
 
 import { createTestSets } from "./utils/createTestSets.ts";
 
-describe("defaultIfEmpty", () => {
+describe("defaultTo", () => {
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
@@ -15,7 +15,7 @@ describe("defaultIfEmpty", () => {
     fromEmptyAsync,
   } = createTestSets(numbers);
   test("from single", () => {
-    expect(fromSingle.defaultIfEmpty(0).first() satisfies number).toEqual(
+    expect(fromSingle.defaultTo(0).first() satisfies number).toEqual(
       numbers[0],
     );
   });
@@ -23,49 +23,45 @@ describe("defaultIfEmpty", () => {
   test("from resolver promises", async () => {
     expect(
       await (fromResolvedPromises
-        .defaultIfEmpty(0)
+        .defaultTo(0)
         .first() satisfies Promise<number>),
     ).toStrictEqual(numbers[0]);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator
-        .defaultIfEmpty(0)
-        .first() satisfies Promise<number>),
+      await (fromAsyncGenerator.defaultTo(0).first() satisfies Promise<number>),
     ).toStrictEqual(numbers[0]);
   });
 
   test("from promises", async () => {
     expect(
       // TODO fix this
-      (await fromPromises.defaultIfEmpty(0).first()) satisfies
+      (await fromPromises.defaultTo(0).first()) satisfies
         | number
         | Promise<number>,
     ).toStrictEqual(numbers[0]);
   });
 
   test("from generator", async () => {
-    expect(
-      fromGenerator.defaultIfEmpty(0).first() satisfies number,
-    ).toStrictEqual(numbers[0]);
+    expect(fromGenerator.defaultTo(0).first() satisfies number).toStrictEqual(
+      numbers[0],
+    );
   });
 
   test("from array", () => {
-    expect(fromArray.defaultIfEmpty(0).first() satisfies number).toStrictEqual(
+    expect(fromArray.defaultTo(0).first() satisfies number).toStrictEqual(
       numbers[0],
     );
   });
 
   test("from empty", () => {
-    expect(fromEmpty.defaultIfEmpty(0).first() satisfies number).toStrictEqual(
-      0,
-    );
+    expect(fromEmpty.defaultTo(0).first() satisfies number).toStrictEqual(0);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.defaultIfEmpty(0).first() satisfies Promise<
+      await (fromEmptyAsync.defaultTo(0).first() satisfies Promise<
         number | void
       >),
     ).toStrictEqual(0);

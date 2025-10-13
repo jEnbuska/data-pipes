@@ -1,12 +1,14 @@
 import { type PipeSource, type AsyncPipeSource } from "../types.ts";
 import { createResolvable } from "../resolvable.ts";
 
-export function first<TInput>(
+export function first<TInput, TDefault = undefined>(
   source: PipeSource<TInput>,
+  defaultValue: TDefault,
   signal = new AbortController().signal,
-): TInput | void {
-  if (signal.aborted) return;
-  const result = source(undefined).next();
+): TInput | TDefault {
+  if (signal.aborted) return defaultValue;
+  const result = source().next();
+  if (signal.aborted || result.done) return defaultValue;
   return result.value;
 }
 
@@ -20,7 +22,7 @@ export async function firstAsync<TInput, TDefault = void>(
   signal.addEventListener("abort", () => resolvable.resolve(defaultValue));
   return Promise.race([
     resolvable.promise,
-    source(signal)
+    source()
       .next()
       .then((result) => (result.done ? defaultValue : result.value)),
   ]);

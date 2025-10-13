@@ -7,10 +7,10 @@ import { consumeAsync } from "./consumers/consume.ts";
 import { firstAsync } from "./consumers/first.ts";
 import { toArrayAsync } from "./consumers/toArray.ts";
 import { consume, first, toArray } from "./consumers";
-import { isAbortSignal } from "./utils.ts";
 
-export function createConsumable<TInput>(
+export function createConsumable<TInput, TDefault = undefined>(
   source: PipeSource<TInput>,
+  defaultValue?: TDefault,
 ): GeneratorConsumable<TInput> {
   return {
     [Symbol.toStringTag]: "GeneratorConsumer",
@@ -21,13 +21,18 @@ export function createConsumable<TInput>(
       return consume<TInput>(source, signal);
     },
     first(signal?: AbortSignal) {
-      return first<TInput>(source, signal);
+      return first<TInput, TDefault>(
+        source,
+        defaultValue as TDefault,
+        signal,
+      ) as any;
     },
   };
 }
 
-export function createAsyncConsumable<TInput>(
+export function createAsyncConsumable<TInput, TDefault = undefined>(
   source: AsyncPipeSource<TInput>,
+  defaultValue?: TDefault,
 ): GeneratorConsumable<TInput, true> {
   return {
     [Symbol.toStringTag]: "AsyncGeneratorConsumer",
@@ -37,18 +42,12 @@ export function createAsyncConsumable<TInput>(
     consume(signal?: AbortSignal) {
       return consumeAsync<TInput>(source, signal);
     },
-    first<TDefault = void>(
-      ...args: Parameters<GeneratorConsumable<TInput, true>["first"]>
-    ) {
-      const defaultValue = (
-        args[0] && isAbortSignal(args[0]) ? undefined : args[0]
-      ) as TDefault;
-      const signal: AbortSignal | undefined = isAbortSignal(args[0])
-        ? args[0]
-        : isAbortSignal(args[1])
-          ? args[1]
-          : undefined;
-      return firstAsync<TInput, TDefault>(source, defaultValue, signal);
+    first(signal?: AbortSignal) {
+      return firstAsync<TInput, TDefault>(
+        source,
+        defaultValue as TDefault,
+        signal,
+      ) as any;
     },
   };
 }

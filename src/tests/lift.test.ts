@@ -1,12 +1,15 @@
 import { describe, test, expect } from "bun:test";
 import source from "../index.ts";
 
+import { disposable } from "../utils.ts";
+
 describe("lift", () => {
   test("lift mapper", () => {
     const array = source([1, 2, 3])
       .lift(function multiplyByTwo(source) {
-        return function* (signal) {
-          for (const next of source(signal)) {
+        return function* () {
+          using generator = disposable(source);
+          for (const next of generator) {
             yield next * 2;
           }
         };
@@ -18,8 +21,9 @@ describe("lift", () => {
   test("lift filter", () => {
     const array = source([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
-        return function* (signal) {
-          for (const next of source(signal)) {
+        return function* () {
+          using generator = disposable(source);
+          for (const next of generator) {
             if (next < 0) continue;
             yield next;
           }
@@ -32,9 +36,10 @@ describe("lift", () => {
   test("lift aggregate", () => {
     const text = source(["a", "b", "c"])
       .lift(function joinStrings(source) {
-        return function* (signal) {
+        return function* () {
           const acc: string[] = [];
-          for (const next of source(signal)) {
+          using generator = disposable(source);
+          for (const next of generator) {
             acc.push(next);
           }
           yield acc.join(".");

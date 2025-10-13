@@ -8,7 +8,8 @@ export function toArray<TInput>(
 ): TInput[] {
   const acc: TInput[] = [];
   if (!signal) return acc;
-  for (const next of source(undefined)) {
+  for (const next of source()) {
+    if (signal.aborted) return acc;
     acc.push(next);
   }
   return acc;
@@ -25,8 +26,8 @@ export async function toArrayAsync<TInput>(
   return Promise.race([
     resolvable.promise,
     invoke(async function () {
-      for await (const next of source(signal)) {
-        if (signal?.aborted) return resolvable.promise;
+      for await (const next of source()) {
+        if (signal.aborted) return resolvable.promise;
         acc.push(next);
       }
       return acc;

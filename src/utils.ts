@@ -1,4 +1,9 @@
-import type { AsyncPipeSource } from "./types.ts";
+import type {
+  AsyncPipeSource,
+  PipeSource,
+  Provider,
+  AsyncProvider,
+} from "./types.ts";
 
 export function isAsyncGeneratorFunction<TInput>(
   source: unknown,
@@ -15,4 +20,30 @@ export function invoke<T>(cb: () => T) {
 
 export function isAbortSignal(value: unknown): value is AbortSignal {
   return typeof AbortSignal !== "undefined" && value instanceof AbortSignal;
+}
+
+export function disposable<TInput>(source: PipeSource<TInput>): Generator<
+  TInput,
+  void,
+  undefined & void
+> & {
+  [Symbol.dispose]: () => void;
+};
+export function disposable<TInput>(
+  source: PipeSource<TInput>,
+): Provider<TInput> & {
+  [Symbol.dispose]: () => void;
+};
+export function disposable<TInput>(
+  source: AsyncPipeSource<TInput>,
+): AsyncProvider<TInput> & {
+  [Symbol.dispose]: () => void;
+};
+export function disposable(source: any) {
+  const generator = source();
+  return Object.assign(generator, {
+    [Symbol.dispose]() {
+      void generator.return();
+    },
+  });
 }

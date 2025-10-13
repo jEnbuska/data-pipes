@@ -3,7 +3,7 @@ import {
   chunkByAsync,
   countAsync,
   countByAsync,
-  defaultIfEmptyAsync,
+  defaultToAsync,
   distinctByAsync,
   distinctUntilChangedAsync,
   everyAsync,
@@ -34,13 +34,21 @@ import {
   type AsyncLiftMiddleware,
   type GroupByGroups,
 } from "../types.ts";
+import { foldAsync } from "../generators/reducers/fold.ts";
 
-export function createAsyncChainable<TInput = unknown>(
+export function createAsyncChainable<TInput = unknown, TDefault = undefined>(
   source: AsyncPipeSource<TInput>,
+  defaultValue?: TDefault,
 ): AsyncChainable<TInput> {
   return {
     isAsync: true,
-    ...createAsyncConsumable(source),
+    ...createAsyncConsumable(source, defaultValue),
+    fold<TOutput>(
+      initial: () => TOutput,
+      reducer: (acc: TOutput, next: TInput) => TOutput,
+    ) {
+      return createAsyncChainable(foldAsync(source, initial, reducer));
+    },
     batch(predicate) {
       return createAsyncChainable(batchAsync(source, predicate));
     },
@@ -53,9 +61,10 @@ export function createAsyncChainable<TInput = unknown>(
     countBy(fn) {
       return createAsyncChainable(countByAsync(source, fn));
     },
-    defaultIfEmpty<TDefault>(defaultValue: TDefault) {
-      return createAsyncChainable(
-        defaultIfEmptyAsync<TInput, TDefault>(source, defaultValue),
+    defaultTo<TDefault>(defaultValue: TDefault) {
+      return createAsyncChainable<TInput | TDefault, TDefault>(
+        defaultToAsync<TInput, TDefault>(source, defaultValue),
+        defaultValue,
       );
     },
     distinctBy<TValue>(selector: (next: TInput) => TValue) {
