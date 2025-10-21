@@ -5,7 +5,6 @@ import {
   chunkBy,
   count,
   countBy,
-  defaultTo,
   distinctBy,
   distinctUntilChanged,
   every,
@@ -29,125 +28,144 @@ import {
   take,
   takeLast,
   takeWhile,
+  defaultTo,
 } from "../generators";
 import {
   type Chainable,
   type PipeSource,
-  type GroupByGroups,
   type LiftMiddleware,
 } from "../types.ts";
 import { fold } from "../generators/reducers/fold.ts";
+import { createDefault, returnUndefined } from "../utils.ts";
+import { createInitialGroups } from "../generators/reducers/groupBy.ts";
 
-export function createChainable<TInput = unknown, TDefault = undefined>(
+export function createChainable<TInput, TDefault = undefined>(
   source: PipeSource<TInput>,
-  defaultValue?: TDefault,
-): Chainable<TInput> {
+  getDefault: () => TDefault,
+): Chainable<TInput, TDefault> {
   return {
     batch(predicate) {
-      return createChainable(batch(source, predicate));
+      return createChainable(
+        batch(source, predicate),
+        createDefault<TInput[]>([]),
+      );
     },
-    ...createConsumable<TInput, TDefault>(source, defaultValue),
+    ...createConsumable<TInput, TDefault>(source, getDefault),
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
-      return createChainable(chunkBy(source, fn));
+      return createChainable(chunkBy(source, fn), createDefault<TInput[]>([]));
+    },
+    count() {
+      return createChainable(count(source), createDefault(0));
+    },
+    countBy(fn) {
+      return createChainable(countBy(source, fn), createDefault(0));
+    },
+    defaultTo<TDefault>(getDefault: () => TDefault) {
+      return createChainable(defaultTo(source, getDefault), getDefault);
+    },
+    distinctBy<Value>(selector: (next: TInput) => Value) {
+      return createChainable(distinctBy(source, selector), returnUndefined);
+    },
+    distinctUntilChanged(isEqual) {
+      return createChainable(
+        distinctUntilChanged(source, isEqual),
+        returnUndefined,
+      );
+    },
+    every(predicate) {
+      return createChainable(
+        every(source, predicate),
+        createDefault<true>(true),
+      );
+    },
+    filter<TOutput extends TInput>(
+      predicate: (next: TInput) => next is TOutput,
+    ) {
+      return createChainable(
+        filter<TInput, TOutput>(source, predicate),
+        returnUndefined,
+      );
+    },
+    find(predicate) {
+      return createChainable(find(source, predicate), returnUndefined);
+    },
+    flat<TDepth extends number = 1>(depth?: TDepth) {
+      return createChainable(flat(source, depth), returnUndefined);
+    },
+    flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
+      return createChainable(flatMap(source, callback), returnUndefined);
     },
     fold<TOutput>(
       initial: () => TOutput,
       reducer: (acc: TOutput, next: TInput) => TOutput,
     ) {
-      return createChainable(fold(source, initial, reducer));
+      return createChainable(fold(source, initial, reducer), initial);
     },
-    count() {
-      return createChainable(count(source));
+    forEach(consumer: (next: TInput) => unknown) {
+      return createChainable(forEach(source, consumer), getDefault);
     },
-    countBy(fn) {
-      return createChainable(countBy(source, fn));
-    },
-    defaultTo<TDefault>(defaultValue: TDefault) {
-      return createChainable(defaultTo(source, defaultValue));
-    },
-    distinctBy<Value>(selector: (next: TInput) => Value) {
-      return createChainable(distinctBy(source, selector));
-    },
-    distinctUntilChanged(isEqual) {
-      return createChainable(distinctUntilChanged(source, isEqual));
-    },
-    every(predicate) {
-      return createChainable(every(source, predicate));
-    },
-    filter<TOutput extends TInput>(
-      predicate: (next: TInput) => next is TOutput,
+    groupBy(
+      keySelector: (next: TInput) => PropertyKey,
+      groups: PropertyKey[] = [],
     ) {
-      return createChainable(filter<TInput, TOutput>(source, predicate));
-    },
-    find(predicate) {
-      return createChainable(find(source, predicate));
-    },
-    flat<TDepth extends number = 1>(depth?: TDepth) {
-      return createChainable(flat(source, depth));
-    },
-    flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
-      return createChainable(flatMap(source, callback));
-    },
-    forEach(consumer) {
-      return createChainable(forEach(source, consumer));
-    },
-    groupBy<
-      TKey extends PropertyKey,
-      TGroups extends undefined | GroupByGroups<TKey> = undefined,
-    >(...args: Parameters<Chainable<TInput>["groupBy"]>) {
-      return createChainable(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        groupBy<TInput, TKey, TGroups>(source, args[0] as any, args[1] as any),
+      return createChainable(groupBy(source, keySelector, groups), () =>
+        Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
     isAsync: false,
     lift<TOutput>(middleware: LiftMiddleware<TInput, TOutput>) {
-      return createChainable(middleware(source));
+      return createChainable(middleware(source), returnUndefined);
     },
     map<TOutput>(mapper: (next: TInput) => TOutput) {
-      return createChainable(map(source, mapper));
+      return createChainable(map(source, mapper), returnUndefined);
     },
     max(callback) {
-      return createChainable(max(source, callback));
+      return createChainable(max(source, callback), returnUndefined);
     },
     min(callback) {
-      return createChainable(min(source, callback));
+      return createChainable(min(source, callback), returnUndefined);
     },
     reduce<TOutput>(
       reducer: (acc: TOutput, next: TInput) => TOutput,
       initialValue: TOutput,
     ) {
-      return createChainable(reduce(source, reducer, initialValue));
+      return createChainable(
+        reduce(source, reducer, initialValue),
+        createDefault(initialValue),
+      );
     },
     resolve() {
-      return createAsyncChainable(resolve<TInput>(source));
+      return createAsyncChainable(resolve<TInput>(source), getDefault);
     },
     reverse() {
-      return createChainable(reverse(source));
+      return createChainable(reverse(source), returnUndefined);
     },
     skip(count) {
-      return createChainable(skip(source, count));
+      return createChainable(skip(source, count), returnUndefined);
     },
-    skipLast(count: number): Chainable<TInput> {
-      return createChainable(skipLast(source, count));
+    skipLast(count: number) {
+      return createChainable(skipLast(source, count), returnUndefined);
     },
     skipWhile(predicate) {
-      return createChainable(skipWhile(source, predicate));
+      return createChainable(skipWhile(source, predicate), returnUndefined);
     },
     some(predicate) {
-      return createChainable(some(source, predicate));
+      return createChainable(
+        some(source, predicate),
+        createDefault<false>(false),
+      );
     },
     sort(comparator) {
-      return createChainable(sort(source, comparator));
+      return createChainable(sort(source, comparator), returnUndefined);
     },
     take(count) {
-      return createChainable(take(source, count));
+      return createChainable(take(source, count), returnUndefined);
     },
     takeLast(count) {
-      return createChainable(takeLast(source, count));
+      return createChainable(takeLast(source, count), returnUndefined);
     },
     takeWhile(predicate) {
-      return createChainable(takeWhile(source, predicate));
+      return createChainable(takeWhile(source, predicate), returnUndefined);
     },
   };
 }

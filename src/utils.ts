@@ -47,3 +47,10 @@ export function disposable(source: any) {
     },
   });
 }
+
+export function createDefault<T>(defaultValue: T) {
+  return () => defaultValue;
+}
+export function returnUndefined() {
+  return undefined;
+}

@@ -12,7 +12,7 @@ import { disposable } from "../../utils.ts";
  */
 export function defaultTo<TInput, TDefault>(
   source: PipeSource<TInput>,
-  defaultValue: TDefault,
+  getDefault: () => TDefault,
 ): PipeSource<TInput | TDefault> {
   return function* defaultToGenerator() {
     let empty = true;
@@ -22,14 +22,14 @@ export function defaultTo<TInput, TDefault>(
       empty = false;
     }
     if (empty) {
-      yield defaultValue;
+      yield getDefault();
     }
   };
 }
 
 export function defaultToAsync<TInput, TDefault>(
   source: AsyncPipeSource<TInput>,
-  defaultValue: TDefault,
+  getDefault: () => TDefault,
 ): AsyncPipeSource<TInput | TDefault> {
   return async function* defaultToAsyncGenerator(): AsyncProvider<
     TInput | TDefault
@@ -41,7 +41,7 @@ export function defaultToAsync<TInput, TDefault>(
       empty = false;
     }
     if (empty) {
-      yield defaultValue;
+      yield getDefault();
     }
   };
 }

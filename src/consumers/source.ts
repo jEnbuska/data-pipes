@@ -6,7 +6,7 @@ import {
   type Chainable,
   type PipeSource,
 } from "../types.ts";
-import { isAsyncGeneratorFunction } from "../utils.ts";
+import { isAsyncGeneratorFunction, returnUndefined } from "../utils.ts";
 import { isGeneratorFunction } from "util/types";
 
 /**
@@ -37,10 +37,10 @@ export function source<TInput>(
 ): Chainable<TInput>;
 export function source(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
-    return createAsyncChainable(source);
+    return createAsyncChainable(source, returnUndefined);
   }
   if (isGeneratorFunction(source)) {
-    return createChainable(source);
+    return createChainable(source, returnUndefined);
   }
   return createChainable(function* dataSource(
     signal?: AbortSignal,
@@ -53,5 +53,5 @@ export function source(source: any) {
         yield next;
       }
     }
-  });
+  }, returnUndefined);
 }

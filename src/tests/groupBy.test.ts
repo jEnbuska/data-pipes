@@ -56,7 +56,10 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = source([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"])
-        .first();
+        .first() satisfies
+        | (Record<"even" | "other", number[]> &
+            Partial<Record<"odd", number[]>>)
+        | undefined;
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -92,14 +95,16 @@ describe("groupBy", () => {
   };
   test("from single", () => {
     expect(
-      fromSingle.groupBy(getKey).first() satisfies ExpectedReturnType,
+      fromSingle.groupBy(getKey).first() satisfies
+        | Partial<ExpectedReturnType>
+        | undefined,
     ).toEqual({ odd: [1] });
   });
 
   test("from resolver promises", async () => {
     expect(
       await (fromResolvedPromises.groupBy(getKey).first() satisfies Promise<
-        ExpectedReturnType | undefined
+        Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
@@ -107,7 +112,7 @@ describe("groupBy", () => {
   test("from async generator", async () => {
     expect(
       await (fromAsyncGenerator.groupBy(getKey).first() satisfies Promise<
-        ExpectedReturnType | undefined
+        Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
@@ -116,27 +121,32 @@ describe("groupBy", () => {
     expect(
       // TODO fix this
       (await fromPromises.resolve().groupBy(getKey).first()) satisfies
-        | void
-        | ExpectedReturnType
-        | Promise<ExpectedReturnType | undefined>,
+        | Partial<ExpectedReturnType>
+        | undefined,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.groupBy(getKey).first() satisfies ExpectedReturnType | void,
+      fromGenerator
+        .groupBy(getKey)
+        .first() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from array", () => {
     expect(
-      fromArray.groupBy(getKey).first() satisfies ExpectedReturnType | void,
+      fromArray
+        .groupBy(getKey)
+        .first() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.groupBy(getKey).first() satisfies ExpectedReturnType | void,
+      fromEmpty
+        .groupBy(getKey)
+        .first() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({});
   });
 
@@ -144,7 +154,7 @@ describe("groupBy", () => {
     expect(
       await (fromEmptyAsync
         .groupBy(getKey)
-        .first() satisfies Promise<ExpectedReturnType | void>),
+        .first() satisfies Promise<Partial<ExpectedReturnType> | void>),
     ).toStrictEqual({});
   });
 });
