@@ -43,7 +43,13 @@ export type GeneratorConsumable<
    * - If the generator provides no items but a defaultTo was provided, the default value is returned.
    */
   first(signal?: AbortSignal): ConsumerResult<TInput | TDefault, TAsync>;
-};
+} & (TAsync extends true
+  ? {
+      [Symbol.asyncIterator](): AsyncIterableIterator<Awaited<TInput>>;
+    }
+  : {
+      [Symbol.iterator](): IterableIterator<TInput>;
+    });
 
 type ChainableOutput<TOutput, TAsync> = TAsync extends true
   ? Awaited<TOutput>

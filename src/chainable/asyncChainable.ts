@@ -87,10 +87,10 @@ export function createAsyncChainable<TInput = unknown, TDefault = undefined>(
       return createAsyncChainable(findAsync(source, predicate));
     },
     flat<TDepth extends number = 1>(depth?: TDepth) {
-      return createAsyncChainable(flatAsync(source, depth));
+      return createAsyncChainable(flatAsync<TInput, TDepth>(source, depth));
     },
     flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
-      return createAsyncChainable<TOutput | readonly TOutput[]>(
+      return createAsyncChainable(
         flatMapAsync<TInput, TOutput>(source, callback),
       );
     },
