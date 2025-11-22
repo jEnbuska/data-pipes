@@ -49,10 +49,10 @@ describe("filter", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
-      (await fromPromises.resolve().filter(module2).toArray()) satisfies
-        | number[]
-        | Promise<number[]>,
+      (await fromPromises
+        .resolve()
+        .filter(module2)
+        .toArray()) satisfies number[],
     ).toStrictEqual([1, 3]);
   });
 

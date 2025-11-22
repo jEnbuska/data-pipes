@@ -66,13 +66,7 @@ describe("forEach", () => {
   test("from promises", async () => {
     const args = [1, 2];
     const callback = createCallback(args);
-
-    // TODO fix this
-    (await fromPromises
-      .resolve()
-      .forEach(callback)
-      .consume()) satisfies void | Promise<void>;
-
+    (await fromPromises.resolve().forEach(callback).consume()) satisfies void;
     expect(callback).toHaveBeenCalledTimes(2);
   });
 

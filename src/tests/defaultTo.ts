@@ -38,10 +38,7 @@ describe("defaultTo", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
-      (await fromPromises.defaultTo(() => 0).first()) satisfies
-        | number
-        | Promise<number>,
+      (await fromPromises.defaultTo(() => 0).first()) satisfies number,
     ).toStrictEqual(numbers[0]);
   });
 

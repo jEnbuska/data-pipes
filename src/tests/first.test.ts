@@ -134,13 +134,13 @@ describe("first", () => {
           .first(controller.signal) satisfies string[],
       ).toStrictEqual([]);
     });
-    test("resolve", () => {
+    test("resolve", async () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([Promise.resolve("")])
+        (await source([Promise.resolve("")])
           .resolve()
-          .first(controller.signal) satisfies Promise<string | undefined>,
+          .first(controller.signal)) satisfies string | undefined,
       ).toBe(undefined);
     });
     test("resolve with default", async () => {

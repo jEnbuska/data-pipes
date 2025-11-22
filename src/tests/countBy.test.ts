@@ -61,12 +61,15 @@ describe("countBy", () => {
   });
 
   test("from promises", async () => {
+    const value = await fromPromises
+      .resolve()
+      .countBy((next) => next.value)
+      .first();
     expect(
-      // TODO fix this
-      (await fromPromises
+      await fromPromises
         .resolve()
         .countBy((next) => next.value)
-        .first()) satisfies number | void,
+        .first(),
     ).toBe(6);
   });
 

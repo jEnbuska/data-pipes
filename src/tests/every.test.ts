@@ -53,10 +53,10 @@ describe("every", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
-      (await fromPromises.resolve().every(isGreaterThenZero).first()) satisfies
-        | boolean
-        | Promise<boolean>,
+      (await fromPromises
+        .resolve()
+        .every(isGreaterThenZero)
+        .first()) satisfies boolean,
     ).toStrictEqual(true);
   });
 

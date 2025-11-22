@@ -119,14 +119,13 @@ describe("groupBy", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
       (await fromPromises.resolve().groupBy(getKey).first()) satisfies
         | Partial<ExpectedReturnType>
         | undefined,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
-  test("from generator", async () => {
+  test("from generator", () => {
     expect(
       fromGenerator
         .groupBy(getKey)

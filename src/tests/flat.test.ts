@@ -168,10 +168,7 @@ describe("flat", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
-      (await fromPromises.resolve().flat(5).toArray()) satisfies
-        | number[]
-        | Promise<number[]>,
+      (await fromPromises.resolve().flat(5).toArray()) satisfies number[],
     ).toStrictEqual([1, 2, 3, 4, 5]);
   });
 

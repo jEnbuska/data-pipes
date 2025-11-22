@@ -51,13 +51,10 @@ describe("flatMap", () => {
 
   test("from promises", async () => {
     expect(
-      // TODO fix this
       (await fromPromises
         .resolve()
         .flatMap((next) => next)
-        .toArray()) satisfies
-        | Array<number | number[]>
-        | Promise<Array<number | number[]>>,
+        .toArray()) satisfies Array<number | number[]>,
     ).toStrictEqual(expected);
   });
 
