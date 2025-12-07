@@ -155,13 +155,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
       );
     },
     reverse() {
-      const asyncReverseSource = reverseAsync(source);
-      return {
-        ...createAsyncChainable(asyncReverseSource, returnUndefined),
-        toArray(signal) {
-          return toArrayAsyncFromReturn(asyncReverseSource, signal);
-        },
-      };
+      return createAsyncChainableFromListReturn(reverseAsync(source));
     },
     skip(count) {
       return createAsyncChainable(skipAsync(source, count), returnUndefined);
@@ -183,28 +177,30 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
       return createAsyncChainable(someSource, createDefault<false>(false));
     },
     sort(comparator) {
-      const asyncSortSource = sortAsync(source, comparator);
-      return {
-        ...createAsyncChainable(asyncSortSource, returnUndefined),
-        toArray(signal) {
-          return toArrayAsyncFromReturn(asyncSortSource, signal);
-        },
-      };
+      return createAsyncChainableFromListReturn(sortAsync(source, comparator));
     },
     take(count) {
       return createAsyncChainable(takeAsync(source, count), returnUndefined);
     },
     takeLast(count) {
-      return createAsyncChainable(
-        takeLastAsync(source, count),
-        returnUndefined,
-      );
+      return createAsyncChainableFromListReturn(takeLastAsync(source, count));
     },
     takeWhile(predicate) {
       return createAsyncChainable(
         takeWhileAsync(source, predicate),
         returnUndefined,
       );
+    },
+  };
+}
+
+function createAsyncChainableFromListReturn<TInput>(
+  source: AsyncPipeSource<TInput, TInput[]>,
+): AsyncChainable<TInput> {
+  return {
+    ...createAsyncChainable(source, returnUndefined),
+    toArray(signal?: AbortSignal) {
+      return toArrayAsyncFromReturn<TInput>(source, signal);
     },
   };
 }

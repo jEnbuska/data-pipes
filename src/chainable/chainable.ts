@@ -139,13 +139,7 @@ export function createChainable<TInput, TDefault = undefined>(
       return createAsyncChainable(resolve<TInput>(source), getDefault);
     },
     reverse() {
-      const reverseSource = reverse(source);
-      return {
-        ...createChainable(reverseSource, returnUndefined),
-        toArray(signal) {
-          return toArrayFromReturn<TInput>(reverseSource, signal);
-        },
-      };
+      return createChainableFromListReturn(reverse(source));
     },
     skip(count) {
       return createChainable(skip(source, count), returnUndefined);
@@ -163,22 +157,27 @@ export function createChainable<TInput, TDefault = undefined>(
       );
     },
     sort(comparator) {
-      const sortSource = sort(source, comparator);
-      return {
-        ...createChainable(sortSource, returnUndefined),
-        toArray(signal) {
-          return toArrayFromReturn<TInput>(sortSource, signal);
-        },
-      };
+      return createChainableFromListReturn(sort(source, comparator));
     },
     take(count) {
       return createChainable(take(source, count), returnUndefined);
     },
     takeLast(count) {
-      return createChainable(takeLast(source, count), returnUndefined);
+      return createChainableFromListReturn(takeLast(source, count));
     },
     takeWhile(predicate) {
       return createChainable(takeWhile(source, predicate), returnUndefined);
+    },
+  };
+}
+
+function createChainableFromListReturn<TInput>(
+  source: PipeSource<TInput, TInput[]>,
+): Chainable<TInput> {
+  return {
+    ...createChainable(source, returnUndefined),
+    toArray(signal) {
+      return toArrayFromReturn<TInput>(source, signal);
     },
   };
 }

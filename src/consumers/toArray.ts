@@ -42,7 +42,7 @@ export function toArrayFromReturn<TInput>(
   let result = generator.next();
   while (true) {
     if (signal.aborted) return [];
-    if (result.done) return result.value;
+    if (result.done) return result.value ?? [];
     result = generator.next();
   }
 }
@@ -61,7 +61,7 @@ export async function toArrayAsyncFromReturn<TInput>(
       let result = await generator.next();
       while (true) {
         if (signal.aborted) return [];
-        if (result.done) return result.value;
+        if (result.done) return result.value ?? [];
         result = await generator.next();
       }
     }),
