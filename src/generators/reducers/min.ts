@@ -22,6 +22,7 @@ export function min<TInput>(
     yield current as TInput;
   };
 }
+
 export function minAsync<TInput>(
   source: AsyncPipeSource<TInput>,
   callback: (next: TInput) => number,

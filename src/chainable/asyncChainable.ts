@@ -37,6 +37,8 @@ import { foldAsync } from "../generators/reducers/fold.ts";
 import { createDefault, returnUndefined } from "../utils.ts";
 import { createInitialGroups } from "../generators/reducers/groupBy.ts";
 
+import { toArrayAsyncFromReturn } from "../consumers/toArray.ts";
+
 export function createAsyncChainable<TInput, TDefault = undefined>(
   source: AsyncPipeSource<TInput>,
   getDefault: () => TDefault,
@@ -153,7 +155,13 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
       );
     },
     reverse() {
-      return createAsyncChainable(reverseAsync(source), returnUndefined);
+      const asyncReverseSource = reverseAsync(source);
+      return {
+        ...createAsyncChainable(asyncReverseSource, returnUndefined),
+        toArray(signal) {
+          return toArrayAsyncFromReturn(asyncReverseSource, signal);
+        },
+      };
     },
     skip(count) {
       return createAsyncChainable(skipAsync(source, count), returnUndefined);
@@ -175,10 +183,13 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
       return createAsyncChainable(someSource, createDefault<false>(false));
     },
     sort(comparator) {
-      return createAsyncChainable(
-        sortAsync(source, comparator),
-        returnUndefined,
-      );
+      const asyncSortSource = sortAsync(source, comparator);
+      return {
+        ...createAsyncChainable(asyncSortSource, returnUndefined),
+        toArray(signal) {
+          return toArrayAsyncFromReturn(asyncSortSource, signal);
+        },
+      };
     },
     take(count) {
       return createAsyncChainable(takeAsync(source, count), returnUndefined);

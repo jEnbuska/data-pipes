@@ -18,10 +18,6 @@ export function invoke<T>(cb: () => T) {
   return cb();
 }
 
-export function isAbortSignal(value: unknown): value is AbortSignal {
-  return typeof AbortSignal !== "undefined" && value instanceof AbortSignal;
-}
-
 export function disposable<TInput>(source: PipeSource<TInput>): Generator<
   TInput,
   void,

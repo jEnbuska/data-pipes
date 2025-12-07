@@ -26,7 +26,7 @@ export function distinctBy<TInput, Value>(
 }
 export function distinctByAsync<TInput, Value>(
   source: AsyncPipeSource<TInput>,
-  selector: (next: TInput, index: number) => Value,
+  selector: (next: TInput) => Value,
 ): AsyncPipeSource<TInput> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();

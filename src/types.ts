@@ -1,21 +1,29 @@
-// eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export type AsyncProvider<TInput> = AsyncGenerator<
+export type AsyncProvider<TInput, TReturn = unknown> = AsyncGenerator<
   TInput,
-  void,
+  TReturn,
   undefined & void
 >;
 
-export type Provider<TInput> = Generator<TInput, void, undefined & void>;
-
-export type AsyncGeneratorMiddlewareReturn<TOutput> = AsyncGenerator<
-  Awaited<TOutput>,
-  void,
+export type Provider<TInput, TReturn = unknown> = Generator<
+  TInput,
+  TReturn,
   undefined & void
 >;
 
-export type AsyncPipeSource<TOutput> = () => AsyncProvider<TOutput>;
+export type AsyncGeneratorMiddlewareReturn<
+  TOutput,
+  TReturn = unknown,
+> = AsyncGenerator<Awaited<TOutput>, TReturn, undefined & void>;
 
-export type PipeSource<TOutput> = () => Provider<TOutput>;
+export type AsyncPipeSource<TOutput, TReturn = unknown> = () => AsyncProvider<
+  TOutput,
+  TReturn
+>;
+
+export type PipeSource<TOutput, TReturn = unknown> = () => Provider<
+  TOutput,
+  TReturn
+>;
 
 type ConsumerResult<
   TInput,

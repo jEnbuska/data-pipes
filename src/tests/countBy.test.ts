@@ -61,10 +61,6 @@ describe("countBy", () => {
   });
 
   test("from promises", async () => {
-    const value = await fromPromises
-      .resolve()
-      .countBy((next) => next.value)
-      .first();
     expect(
       await fromPromises
         .resolve()

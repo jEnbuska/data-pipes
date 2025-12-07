@@ -38,6 +38,7 @@ import {
 import { fold } from "../generators/reducers/fold.ts";
 import { createDefault, returnUndefined } from "../utils.ts";
 import { createInitialGroups } from "../generators/reducers/groupBy.ts";
+import { toArrayFromReturn } from "../consumers/toArray.ts";
 
 export function createChainable<TInput, TDefault = undefined>(
   source: PipeSource<TInput>,
@@ -138,7 +139,13 @@ export function createChainable<TInput, TDefault = undefined>(
       return createAsyncChainable(resolve<TInput>(source), getDefault);
     },
     reverse() {
-      return createChainable(reverse(source), returnUndefined);
+      const reverseSource = reverse(source);
+      return {
+        ...createChainable(reverseSource, returnUndefined),
+        toArray(signal) {
+          return toArrayFromReturn<TInput>(reverseSource, signal);
+        },
+      };
     },
     skip(count) {
       return createChainable(skip(source, count), returnUndefined);
@@ -156,7 +163,13 @@ export function createChainable<TInput, TDefault = undefined>(
       );
     },
     sort(comparator) {
-      return createChainable(sort(source, comparator), returnUndefined);
+      const sortSource = sort(source, comparator);
+      return {
+        ...createChainable(sortSource, returnUndefined),
+        toArray(signal) {
+          return toArrayFromReturn<TInput>(sortSource, signal);
+        },
+      };
     },
     take(count) {
       return createChainable(take(source, count), returnUndefined);

@@ -32,7 +32,8 @@ export function defaultToAsync<TInput, TDefault>(
   getDefault: () => TDefault,
 ): AsyncPipeSource<TInput | TDefault> {
   return async function* defaultToAsyncGenerator(): AsyncProvider<
-    TInput | TDefault
+    TInput | TDefault,
+    void
   > {
     let empty = true;
     using generator = disposable(source);

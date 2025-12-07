@@ -4,7 +4,7 @@ import { disposable } from "../../utils.ts";
 export function sort<TInput>(
   source: PipeSource<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): PipeSource<TInput> {
+): PipeSource<TInput, TInput[]> {
   return function* sortGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -13,13 +13,14 @@ export function sort<TInput>(
       acc.splice(findIndex(next), 0, next);
     }
     yield* acc;
+    return acc;
   };
 }
 
 export function sortAsync<TInput = never>(
   source: AsyncPipeSource<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncPipeSource<TInput> {
+): AsyncPipeSource<TInput, TInput[]> {
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -28,6 +29,7 @@ export function sortAsync<TInput = never>(
       acc.splice(findIndex(next), 0, next);
     }
     yield* acc;
+    return acc;
   };
 }
 

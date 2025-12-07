@@ -1,8 +1,4 @@
-import {
-  type AsyncProvider,
-  type PipeSource,
-  type AsyncPipeSource,
-} from "../../types.ts";
+import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 /**
@@ -20,7 +16,7 @@ export function count<TInput>(source: PipeSource<TInput>): PipeSource<number> {
 export function countAsync<TInput>(
   source: AsyncPipeSource<TInput>,
 ): AsyncPipeSource<number> {
-  return async function* countAsyncGenerator(): AsyncProvider<number> {
+  return async function* countAsyncGenerator() {
     let count = 0;
     using generator = disposable(source);
     for await (const _ of generator) {
