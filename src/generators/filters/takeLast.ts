@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function takeLast<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   count: number,
-): PipeSource<TInput, TInput[]> {
+): ProviderFunction<TInput, TInput[]> {
   return function* takeLastGenerator() {
     const generator = disposable(source);
     const array = [...generator];
@@ -15,9 +18,9 @@ export function takeLast<TInput>(
 }
 
 export function takeLastAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   count: number,
-): AsyncPipeSource<TInput, TInput[]> {
+): AsyncProviderFunction<TInput, TInput[]> {
   return async function* takeLastAsyncGenerator() {
     const acc: TInput[] = [];
     using generator = disposable(source);

@@ -1,4 +1,4 @@
-import { createAsyncConsumable } from "../create-consumable.ts";
+import { createAsyncConsumers } from "../create-consumers.ts";
 import {
   chunkByAsync,
   countAsync,
@@ -30,7 +30,7 @@ import {
 } from "../generators";
 import {
   type AsyncChainable,
-  type AsyncPipeSource,
+  type AsyncProviderFunction,
   type AsyncLiftMiddleware,
 } from "../types.ts";
 import { foldAsync } from "../generators/reducers/fold.ts";
@@ -40,7 +40,7 @@ import { createInitialGroups } from "../generators/reducers/groupBy.ts";
 import { toArrayAsyncFromReturn } from "../consumers/toArray.ts";
 
 export function createAsyncChainable<TInput, TDefault = undefined>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   getDefault: () => TDefault,
 ): AsyncChainable<TInput, TDefault> {
   return {
@@ -50,7 +50,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
         createDefault<TInput[]>([]),
       );
     },
-    ...createAsyncConsumable<TInput, TDefault>(source, getDefault),
+    ...createAsyncConsumers<TInput, TDefault>(source, getDefault),
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
       return createAsyncChainable(
         chunkByAsync(source, fn),
@@ -195,7 +195,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
 }
 
 function createAsyncChainableFromListReturn<TInput>(
-  source: AsyncPipeSource<TInput, TInput[]>,
+  source: AsyncProviderFunction<TInput, TInput[]>,
 ): AsyncChainable<TInput> {
   return {
     ...createAsyncChainable(source, returnUndefined),

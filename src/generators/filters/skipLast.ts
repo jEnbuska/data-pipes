@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function skipLast<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   count: number,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* skipLastGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;
@@ -21,9 +24,9 @@ export function skipLast<TInput>(
 }
 
 export function skipLastAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   count: number,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* skipLastAsyncGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;

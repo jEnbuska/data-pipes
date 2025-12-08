@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function sort<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): PipeSource<TInput, TInput[]> {
+): ProviderFunction<TInput, TInput[]> {
   return function* sortGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -18,9 +21,9 @@ export function sort<TInput>(
 }
 
 export function sortAsync<TInput = never>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncPipeSource<TInput, TInput[]> {
+): AsyncProviderFunction<TInput, TInput[]> {
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);

@@ -1,9 +1,9 @@
-import { type PipeSource, type AsyncPipeSource } from "../types.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../types.ts";
 import { invoke } from "../utils.ts";
 import { createResolvable } from "../resolvable.ts";
 
 export function toArray<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
@@ -16,7 +16,7 @@ export function toArray<TInput>(
 }
 
 export async function toArrayAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
   const acc: TInput[] = [];
@@ -35,7 +35,7 @@ export async function toArrayAsync<TInput>(
   ]);
 }
 export function toArrayFromReturn<TInput>(
-  source: PipeSource<TInput, TInput[]>,
+  source: ProviderFunction<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   const generator = source();
@@ -48,7 +48,7 @@ export function toArrayFromReturn<TInput>(
 }
 
 export async function toArrayAsyncFromReturn<TInput>(
-  source: AsyncPipeSource<TInput, TInput[]>,
+  source: AsyncProviderFunction<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
   const resolvable = await createResolvable<TInput[]>();

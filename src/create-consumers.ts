@@ -1,7 +1,7 @@
 import {
-  type GeneratorConsumable,
-  type AsyncPipeSource,
-  type PipeSource,
+  type ChainableConsumersFunctions,
+  type AsyncProviderFunction,
+  type ProviderFunction,
 } from "./types.ts";
 import { consumeAsync } from "./consumers/consume.ts";
 import { firstAsync } from "./consumers/first.ts";
@@ -9,10 +9,10 @@ import { toArrayAsync } from "./consumers/toArray.ts";
 import { consume, first, toArray } from "./consumers";
 import { disposable } from "./utils.ts";
 
-export function createConsumable<TInput, TDefault>(
-  source: PipeSource<TInput>,
+export function createConsumers<TInput, TDefault>(
+  source: ProviderFunction<TInput>,
   getDefault: () => TDefault,
-): GeneratorConsumable<TInput, false, TDefault> {
+): ChainableConsumersFunctions<TInput, false, TDefault> {
   return {
     [Symbol.toStringTag]: "GeneratorConsumer",
     *[Symbol.iterator]() {
@@ -33,10 +33,10 @@ export function createConsumable<TInput, TDefault>(
   };
 }
 
-export function createAsyncConsumable<TInput, TDefault>(
-  source: AsyncPipeSource<TInput>,
+export function createAsyncConsumers<TInput, TDefault>(
+  source: AsyncProviderFunction<TInput>,
   getDefault: () => TDefault,
-): GeneratorConsumable<TInput, true, TDefault> {
+): ChainableConsumersFunctions<TInput, true, TDefault> {
   return {
     [Symbol.toStringTag]: "AsyncGeneratorConsumer",
     async *[Symbol.asyncIterator]() {

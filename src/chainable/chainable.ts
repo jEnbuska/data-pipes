@@ -1,5 +1,5 @@
 import { createAsyncChainable } from "./asyncChainable.ts";
-import { createConsumable } from "../create-consumable.ts";
+import { createConsumers } from "../create-consumers.ts";
 import {
   batch,
   chunkBy,
@@ -31,8 +31,8 @@ import {
   defaultTo,
 } from "../generators";
 import {
-  type Chainable,
-  type PipeSource,
+  type SyncChainable,
+  type ProviderFunction,
   type LiftMiddleware,
 } from "../types.ts";
 import { fold } from "../generators/reducers/fold.ts";
@@ -41,9 +41,9 @@ import { createInitialGroups } from "../generators/reducers/groupBy.ts";
 import { toArrayFromReturn } from "../consumers/toArray.ts";
 
 export function createChainable<TInput, TDefault = undefined>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   getDefault: () => TDefault,
-): Chainable<TInput, TDefault> {
+): SyncChainable<TInput, TDefault> {
   return {
     batch(predicate) {
       return createChainable(
@@ -51,7 +51,7 @@ export function createChainable<TInput, TDefault = undefined>(
         createDefault<TInput[]>([]),
       );
     },
-    ...createConsumable<TInput, TDefault>(source, getDefault),
+    ...createConsumers<TInput, TDefault>(source, getDefault),
     chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
       return createChainable(chunkBy(source, fn), createDefault<TInput[]>([]));
     },
@@ -172,8 +172,8 @@ export function createChainable<TInput, TDefault = undefined>(
 }
 
 function createChainableFromListReturn<TInput>(
-  source: PipeSource<TInput, TInput[]>,
-): Chainable<TInput> {
+  source: ProviderFunction<TInput, TInput[]>,
+): SyncChainable<TInput> {
   return {
     ...createChainable(source, returnUndefined),
     toArray(signal) {

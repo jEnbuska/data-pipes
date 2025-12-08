@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function chunkBy<TInput, TIdentifier = any>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): PipeSource<TInput[]> {
+): ProviderFunction<TInput[]> {
   return function* chunkByGenerator() {
     const map = new Map<any, TInput[]>();
     using generator = disposable(source);
@@ -18,9 +21,9 @@ export function chunkBy<TInput, TIdentifier = any>(
 }
 
 export function chunkByAsync<TInput, TIdentifier = any>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): AsyncPipeSource<TInput[]> {
+): AsyncProviderFunction<TInput[]> {
   return async function* chunkByAsyncGenerator() {
     const map = new Map<any, TInput[]>();
     using generator = disposable(source);

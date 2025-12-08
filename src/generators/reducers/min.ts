@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function min<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   callback: (next: TInput) => number,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* minGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
@@ -24,9 +27,9 @@ export function min<TInput>(
 }
 
 export function minAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   callback: (next: TInput) => number,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* minAsyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;

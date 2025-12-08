@@ -1,28 +1,12 @@
-export type AsyncProvider<TInput, TReturn = unknown> = AsyncGenerator<
-  TInput,
-  TReturn,
-  undefined & void
->;
-
-export type Provider<TInput, TReturn = unknown> = Generator<
-  TInput,
-  TReturn,
-  undefined & void
->;
-
-export type AsyncGeneratorMiddlewareReturn<
+export type AsyncProviderFunction<
   TOutput,
   TReturn = unknown,
-> = AsyncGenerator<Awaited<TOutput>, TReturn, undefined & void>;
+> = () => AsyncGenerator<TOutput, TReturn, undefined & void>;
 
-export type AsyncPipeSource<TOutput, TReturn = unknown> = () => AsyncProvider<
+export type ProviderFunction<TOutput, TReturn = unknown> = () => Generator<
   TOutput,
-  TReturn
->;
-
-export type PipeSource<TOutput, TReturn = unknown> = () => Provider<
-  TOutput,
-  TReturn
+  TReturn,
+  undefined & void
 >;
 
 type ConsumerResult<
@@ -30,7 +14,7 @@ type ConsumerResult<
   TAsync extends boolean = false,
 > = TAsync extends true ? Promise<TInput> : TInput;
 
-export type GeneratorConsumable<
+export type ChainableConsumersFunctions<
   TInput,
   TAsync extends boolean = false,
   TDefault = undefined,
@@ -59,35 +43,39 @@ export type GeneratorConsumable<
       [Symbol.iterator](): IterableIterator<TInput>;
     });
 
-type ChainableOutput<TOutput, TAsync> = TAsync extends true
+type MaybeAwaited<TOutput, TAsync> = TAsync extends true
   ? Awaited<TOutput>
   : TOutput;
 
-export type Chainable<TInput = unknown, TDefault = undefined> = {
+export type Chainable<
+  TInput = unknown,
+  TAsync extends boolean = false,
+  TDefault = undefined,
+> = TAsync extends false
+  ? SyncChainable<TInput, TDefault>
+  : AsyncChainable<TInput, TDefault>;
+
+export type SyncChainable<
+  TInput = unknown,
+  TDefault = undefined,
+> = ChainableFunctions<TInput, false, TDefault> & {
   isAsync: false;
   resolve(): AsyncChainable<
     TInput extends Promise<infer U> ? U : TInput,
     TDefault
   >;
-} & BaseChainable<TInput, false, TDefault>;
+};
 
-export type AsyncChainable<TInput = unknown, TDefault = undefined> = {
-  isAsync: true;
-} & BaseChainable<TInput, true, TDefault>;
+export type AsyncChainable<
+  TInput = unknown,
+  TDefault = undefined,
+> = ChainableFunctions<TInput, true, TDefault> & { isAsync: true };
 
-export type AnyChainable<
+type ChainableFunctions<
   TInput = unknown,
   TAsync extends boolean = false,
   TDefault = undefined,
-> = TAsync extends false
-  ? Chainable<TInput, TDefault>
-  : AsyncChainable<TInput, TDefault>;
-
-type BaseChainable<
-  TInput = unknown,
-  TAsync extends boolean = false,
-  TDefault = undefined,
-> = GeneratorConsumable<TInput, TAsync, TDefault> & {
+> = ChainableConsumersFunctions<TInput, TAsync, TDefault> & {
   /**
    * Maps next item produced by the generator using the provided transform function and yields it
    * to the next operation.
@@ -99,7 +87,7 @@ type BaseChainable<
    */
   map<TOutput = unknown>(
     mapper: (next: TInput) => TOutput,
-  ): AnyChainable<ChainableOutput<TOutput, TAsync>, TAsync>;
+  ): Chainable<MaybeAwaited<TOutput, TAsync>, TAsync>;
   /**
    * Batch values into groups   *
    * @example
@@ -109,7 +97,7 @@ type BaseChainable<
    */
   batch(
     predicate: (acc: TInput[]) => boolean,
-  ): AnyChainable<ChainableOutput<TInput[], TAsync>, TAsync, TInput[]>;
+  ): Chainable<MaybeAwaited<TInput[], TAsync>, TAsync, TInput[]>;
   /**
    * Returns a new array with all sub-array elements concatenated into it recursively up to the
    * specified depth.
@@ -126,10 +114,10 @@ type BaseChainable<
    * */
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): AnyChainable<FlatArray<TInput[], Depth>, TAsync>;
+  ): Chainable<FlatArray<TInput[], Depth>, TAsync>;
   flatMap<TOutput>(
     callback: (value: TInput) => TOutput | readonly TOutput[],
-  ): AnyChainable<ChainableOutput<TOutput, TAsync>, TAsync>;
+  ): Chainable<MaybeAwaited<TOutput, TAsync>, TAsync>;
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields the items that pass the predicate to the next operation.
@@ -141,7 +129,7 @@ type BaseChainable<
    */
   filter<TOutput extends TInput>(
     fn: (next: TInput) => next is TOutput,
-  ): AnyChainable<ChainableOutput<TOutput, TAsync>, TAsync>;
+  ): Chainable<MaybeAwaited<TOutput, TAsync>, TAsync>;
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields the items that pass the predicate to the next operation.
@@ -151,7 +139,7 @@ type BaseChainable<
    *   .filter(n => n % 2)
    *   .toArray() // [1,3];
    */
-  filter(fn: (next: TInput) => any): AnyChainable<TInput, TAsync>;
+  filter(fn: (next: TInput) => any): Chainable<TInput, TAsync>;
   /**
    * Reduces items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
@@ -163,7 +151,7 @@ type BaseChainable<
   reduce<TOutput>(
     reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
     initialValue: TOutput,
-  ): AnyChainable<TOutput, TAsync, TOutput>;
+  ): Chainable<TOutput, TAsync, TOutput>;
   /**
    * Just and other way to reduce items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
@@ -175,7 +163,7 @@ type BaseChainable<
   fold<TOutput>(
     initial: () => TOutput,
     reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-  ): AnyChainable<TOutput, TAsync, TOutput>;
+  ): Chainable<TOutput, TAsync, TOutput>;
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
    * to the next operation.
@@ -186,7 +174,7 @@ type BaseChainable<
    * */
   forEach(
     callback: (next: TInput) => unknown,
-  ): AnyChainable<TInput, TAsync, TDefault>;
+  ): Chainable<TInput, TAsync, TDefault>;
   /**
    * skips the first `count` items produced by the generator and yields the rest to the next operation.
    * @example
@@ -194,7 +182,7 @@ type BaseChainable<
    *  .skip(2)
    *  .toArray() // [3]
    */
-  skip(count: number): AnyChainable<TInput, TAsync>;
+  skip(count: number): Chainable<TInput, TAsync>;
   /**
    * skips the last `count` items produced by the generator and yields the rest to the next operation.
    * @example
@@ -202,7 +190,7 @@ type BaseChainable<
    *  .skipLast(2)
    *  .toArray() // [1]
    */
-  skipLast(count: number): AnyChainable<TInput, TAsync>;
+  skipLast(count: number): Chainable<TInput, TAsync>;
   /**
    * skips items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
@@ -210,7 +198,7 @@ type BaseChainable<
    *  .skipWhile(n => n < 3)
    *  .toArray() // [3,4]
    * */
-  skipWhile(fn: (next: TInput) => boolean): AnyChainable<TInput, TAsync>;
+  skipWhile(fn: (next: TInput) => boolean): Chainable<TInput, TAsync>;
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
@@ -218,7 +206,7 @@ type BaseChainable<
    *  .take(2)
    *  .toArray() // [1,2]
    */
-  take(count: number): AnyChainable<TInput, TAsync>;
+  take(count: number): Chainable<TInput, TAsync>;
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
@@ -226,7 +214,7 @@ type BaseChainable<
    *  .takeLast(2)
    *  .toArray() // [2,3]
    */
-  takeLast(count: number): AnyChainable<TInput, TAsync>;
+  takeLast(count: number): Chainable<TInput, TAsync>;
   /**
    * counts the number of items produced by the generator and then yields the total to the next operation.
    * @example
@@ -234,7 +222,7 @@ type BaseChainable<
    *  .count()
    *  .first() // 3
    */
-  count(): AnyChainable<number, TAsync, number>;
+  count(): Chainable<number, TAsync, number>;
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
@@ -242,7 +230,7 @@ type BaseChainable<
    *  .takeWhile(n => n < 3)
    *  .toArray() // [1,2]
    */
-  takeWhile(fn: (next: TInput) => boolean): AnyChainable<TInput, TAsync>;
+  takeWhile(fn: (next: TInput) => boolean): Chainable<TInput, TAsync>;
   /**
    * sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
    *
@@ -251,9 +239,7 @@ type BaseChainable<
    *  .sort((a, z) => a - z)
    *  .toArray() // [1,2,3]
    */
-  sort(
-    compareFn?: (a: TInput, b: TInput) => number,
-  ): AnyChainable<TInput, TAsync>;
+  sort(compareFn?: (a: TInput, b: TInput) => number): Chainable<TInput, TAsync>;
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
    * @example
@@ -264,7 +250,7 @@ type BaseChainable<
   groupBy<TKey extends PropertyKey>(
     keySelector: (next: TInput) => TKey,
     groups?: undefined,
-  ): AnyChainable<
+  ): Chainable<
     Partial<Record<TKey, TInput[]>>,
     TAsync,
     Partial<Record<TKey, TInput[]>>
@@ -272,7 +258,7 @@ type BaseChainable<
   groupBy<TKey extends PropertyKey, TGroups extends PropertyKey>(
     keySelector: (next: TInput) => TKey,
     groups: TGroups[],
-  ): AnyChainable<
+  ): Chainable<
     Record<TGroups, TInput[]> &
       Partial<Record<Exclude<TKey, TGroups>, TInput[]>>,
     TAsync,
@@ -289,7 +275,7 @@ type BaseChainable<
    */
   distinctBy<Value>(
     selector: (next: TInput) => Value,
-  ): AnyChainable<TInput, TAsync>;
+  ): Chainable<TInput, TAsync>;
   /**
    * filters out items produced by the generator that are equal to the previous item by the compare function.
    * If no compare function is provided, the strict equality operator is used.
@@ -306,7 +292,7 @@ type BaseChainable<
    */
   distinctUntilChanged(
     comparator?: (previous: TInput, current: TInput) => boolean,
-  ): AnyChainable<TInput, TAsync>;
+  ): Chainable<TInput, TAsync>;
   /**
    * takes each item produced by the generator and maps it to a number using the callback.
    * Finally it yields the item with the lowest number to the next operation.
@@ -316,7 +302,7 @@ type BaseChainable<
    *  .min(n => n)
    *  .first() // 1
    */
-  min(selector: (next: TInput) => number): AnyChainable<TInput, TAsync>;
+  min(selector: (next: TInput) => number): Chainable<TInput, TAsync>;
   /**
    * takes each item produced by the generator and maps it to a number using the callback.
    * Finally it yields the item with the highest number to the next operation.
@@ -326,7 +312,7 @@ type BaseChainable<
    *  .max(n => n)
    *  .first() // 4
    */
-  max(selector: (next: TInput) => number): AnyChainable<TInput, TAsync>;
+  max(selector: (next: TInput) => number): Chainable<TInput, TAsync>;
   /**
    * yields the default value if the generator does not produce any items
    *
@@ -338,7 +324,7 @@ type BaseChainable<
    */
   defaultTo<TDefault = TInput>(
     getDefault: () => TDefault,
-  ): AnyChainable<TInput | TDefault, TAsync, TDefault>;
+  ): Chainable<TInput | TDefault, TAsync, TDefault>;
   /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example
@@ -346,7 +332,7 @@ type BaseChainable<
    *  .find(n => n > 2)
    *  .toArray() // [3]
    */
-  find(fn: (next: TInput) => boolean): AnyChainable<TInput, TAsync>;
+  find(fn: (next: TInput) => boolean): Chainable<TInput, TAsync>;
   /**
    * yields true when predicate returns true for the first time, otherwise finally it yields false after the generator is consumer. <br/>
    * if the generator is empty yields false
@@ -356,7 +342,7 @@ type BaseChainable<
    *  .some(n => n > 2)
    *  .first() // true
    */
-  some(fn: (next: TInput) => boolean): AnyChainable<boolean, TAsync, false>;
+  some(fn: (next: TInput) => boolean): Chainable<boolean, TAsync, false>;
   /**
    * yields false when predicate returns false for the first time, otherwise finally it yields true after the generator is consumer. <br/>
    * if the generator is empty yields true
@@ -366,7 +352,7 @@ type BaseChainable<
    *  .every(n => n > 1)
    *  .first() // false
    */
-  every(fn: (next: TInput) => boolean): AnyChainable<boolean, TAsync, true>;
+  every(fn: (next: TInput) => boolean): Chainable<boolean, TAsync, true>;
   /**
    * yields the items in reverse order after the generator is consumed
    * @example
@@ -374,7 +360,7 @@ type BaseChainable<
    *  .reverse()
    *  .toArray() // [3,2,1]
    */
-  reverse(): AnyChainable<TInput, TAsync>;
+  reverse(): Chainable<TInput, TAsync>;
   /**
    * Accepts a generator middleware and yields the output of the middleware to the next operation.
    *
@@ -415,20 +401,22 @@ type BaseChainable<
    * */
   lift<TOutput = never>(
     middleware: TAsync extends true
-      ? (source: AsyncPipeSource<TInput>) => AsyncPipeSource<TOutput>
-      : (source: PipeSource<TInput>) => PipeSource<TOutput>,
-  ): AnyChainable<TOutput, TAsync>;
+      ? (
+          source: AsyncProviderFunction<TInput>,
+        ) => AsyncProviderFunction<TOutput>
+      : (source: ProviderFunction<TInput>) => ProviderFunction<TOutput>,
+  ): Chainable<TOutput, TAsync>;
 
-  countBy(fn: (next: TInput) => number): AnyChainable<number, TAsync, number>;
+  countBy(fn: (next: TInput) => number): Chainable<number, TAsync, number>;
 
   chunkBy<TIdentifier>(
     fn: (next: TInput) => TIdentifier,
-  ): AnyChainable<ChainableOutput<TInput[], TAsync>, TAsync, TInput[]>;
+  ): Chainable<MaybeAwaited<TInput[], TAsync>, TAsync, TInput[]>;
 };
 
 export type LiftMiddleware<TInput, TOutput> = (
-  source: PipeSource<TInput>,
-) => PipeSource<TOutput>;
+  source: ProviderFunction<TInput>,
+) => ProviderFunction<TOutput>;
 export type AsyncLiftMiddleware<TInput, TOutput> = (
-  source: AsyncPipeSource<TInput>,
-) => AsyncPipeSource<TOutput>;
+  source: AsyncProviderFunction<TInput>,
+) => AsyncProviderFunction<TOutput>;

@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function map<TInput, TOutput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   mapper: (next: TInput) => TOutput,
-): PipeSource<TOutput> {
+): ProviderFunction<TOutput> {
   return function* mapGenerator() {
     using generator = disposable(source);
     for (const next of generator) {
@@ -14,9 +17,9 @@ export function map<TInput, TOutput>(
 }
 
 export function mapAsync<TInput, TOutput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   mapper: (next: TInput) => TOutput,
-): AsyncPipeSource<Awaited<TOutput>> {
+): AsyncProviderFunction<Awaited<TOutput>> {
   return async function* mapAsyncGenerator() {
     using generator = disposable(source);
     for await (const next of generator) {

@@ -1,4 +1,7 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 /**
@@ -7,9 +10,9 @@ import { disposable } from "../../utils.ts";
  * source([{age: 5, age: 59}]).countBy((next) => next.age).first() // 64
  */
 export function countBy<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   mapper: (next: TInput) => number,
-): PipeSource<number> {
+): ProviderFunction<number> {
   return function* countByGenerator() {
     let acc = 0;
     using generator = disposable(source);
@@ -21,9 +24,9 @@ export function countBy<TInput>(
 }
 
 export function countByAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   mapper: (next: TInput) => number,
-): AsyncPipeSource<number> {
+): AsyncProviderFunction<number> {
   return async function* countByAsyncGenerator() {
     let acc = 0;
     using generator = disposable(source);

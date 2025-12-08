@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function skipWhile<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* skipWhileGenerator() {
     let skip = true;
     using generator = disposable(source);
@@ -16,9 +19,9 @@ export function skipWhile<TInput>(
   };
 }
 export function skipWhileAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* skipWhileAsyncGenerator() {
     let skip = true;
     using generator = disposable(source);

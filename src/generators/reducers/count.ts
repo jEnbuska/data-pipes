@@ -1,4 +1,7 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 /**
@@ -6,7 +9,9 @@ import { disposable } from "../../utils.ts";
  * @example
  * source([1,2,3])count().first() // 3
  */
-export function count<TInput>(source: PipeSource<TInput>): PipeSource<number> {
+export function count<TInput>(
+  source: ProviderFunction<TInput>,
+): ProviderFunction<number> {
   return function* countGenerator() {
     using generator = disposable(source);
     yield [...generator].length;
@@ -14,8 +19,8 @@ export function count<TInput>(source: PipeSource<TInput>): PipeSource<number> {
 }
 
 export function countAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
-): AsyncPipeSource<number> {
+  source: AsyncProviderFunction<TInput>,
+): AsyncProviderFunction<number> {
   return async function* countAsyncGenerator() {
     let count = 0;
     using generator = disposable(source);

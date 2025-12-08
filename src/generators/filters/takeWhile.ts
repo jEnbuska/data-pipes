@@ -1,10 +1,13 @@
-import { type AsyncPipeSource, type PipeSource } from "../../types.ts";
+import {
+  type AsyncProviderFunction,
+  type ProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function takeWhile<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* takeWhileAsyncGenerator() {
     using generator = disposable(source);
     for (const next of generator) {
@@ -14,9 +17,9 @@ export function takeWhile<TInput>(
   };
 }
 export function takeWhileAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* takeWhileAsyncGenerator() {
     using generator = disposable(source);
     for await (const next of generator) {

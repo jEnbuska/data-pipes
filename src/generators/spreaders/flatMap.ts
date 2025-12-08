@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function flatMap<TInput, TOutput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): PipeSource<TOutput> {
+): ProviderFunction<TOutput> {
   return function* flatMapGenerator() {
     using generator = disposable(source);
     for (const next of generator) {
@@ -19,9 +22,9 @@ export function flatMap<TInput, TOutput>(
 }
 
 export function flatMapAsync<TInput, TOutput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): AsyncPipeSource<Awaited<TOutput>> {
+): AsyncProviderFunction<Awaited<TOutput>> {
   return async function* flatMapAsyncGenerator() {
     using generator = disposable(source);
     for await (const next of generator) {

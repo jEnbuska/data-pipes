@@ -1,7 +1,6 @@
 import {
-  type AsyncProvider,
-  type PipeSource,
-  type AsyncPipeSource,
+  type ProviderFunction,
+  type AsyncProviderFunction,
 } from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
@@ -11,9 +10,9 @@ import { disposable } from "../../utils.ts";
  * source([1,2,3].filter(it => it > 3).defaultTo(0).first() // 0
  */
 export function defaultTo<TInput, TDefault>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   getDefault: () => TDefault,
-): PipeSource<TInput | TDefault> {
+): ProviderFunction<TInput | TDefault> {
   return function* defaultToGenerator() {
     let empty = true;
     using generator = disposable(source);
@@ -28,13 +27,10 @@ export function defaultTo<TInput, TDefault>(
 }
 
 export function defaultToAsync<TInput, TDefault>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   getDefault: () => TDefault,
-): AsyncPipeSource<TInput | TDefault> {
-  return async function* defaultToAsyncGenerator(): AsyncProvider<
-    TInput | TDefault,
-    void
-  > {
+): AsyncProviderFunction<TInput | TDefault> {
+  return async function* defaultToAsyncGenerator() {
     let empty = true;
     using generator = disposable(source);
     for await (const next of generator) {

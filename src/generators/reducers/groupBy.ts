@@ -1,4 +1,7 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function createInitialGroups(groups: any[] = []) {
@@ -6,10 +9,10 @@ export function createInitialGroups(groups: any[] = []) {
 }
 
 export function groupBy(
-  source: PipeSource<any>,
+  source: ProviderFunction<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): PipeSource<any> {
+): ProviderFunction<any> {
   return function* groupByGenerator() {
     const record = createInitialGroups(groups);
     using generator = disposable(source);
@@ -25,10 +28,10 @@ export function groupBy(
 }
 
 export function groupByAsync(
-  source: AsyncPipeSource<any>,
+  source: AsyncProviderFunction<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): AsyncPipeSource<any> {
+): AsyncProviderFunction<any> {
   return async function* groupByAsyncGenerator() {
     const record = createInitialGroups(groups);
     using generator = disposable(source);

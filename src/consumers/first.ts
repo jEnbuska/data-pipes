@@ -1,8 +1,8 @@
-import { type PipeSource, type AsyncPipeSource } from "../types.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../types.ts";
 import { createResolvable } from "../resolvable.ts";
 
 export function first<TInput, TDefault>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): TInput | TDefault {
@@ -13,7 +13,7 @@ export function first<TInput, TDefault>(
 }
 
 export async function firstAsync<TInput, TDefault>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): Promise<TInput | TDefault> {

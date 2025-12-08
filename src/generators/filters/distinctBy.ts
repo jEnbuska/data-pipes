@@ -1,4 +1,7 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 /**
@@ -8,9 +11,9 @@ import { disposable } from "../../utils.ts";
  * source([1,2,3,4].distinctBy(n => n % 2).toArray() // [1,2]
  */
 export function distinctBy<TInput, Value>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   selector: (next: TInput) => Value,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* distinctByGenerator() {
     const set = new Set<Value>();
     using generator = disposable(source);
@@ -25,9 +28,9 @@ export function distinctBy<TInput, Value>(
   };
 }
 export function distinctByAsync<TInput, Value>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   selector: (next: TInput) => Value,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
     using generator = disposable(source);

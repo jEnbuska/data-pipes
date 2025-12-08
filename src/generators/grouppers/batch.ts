@@ -1,10 +1,10 @@
-import type { PipeSource, AsyncPipeSource } from "../../types.ts";
+import type { ProviderFunction, AsyncProviderFunction } from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function batch<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (acc: TInput[]) => boolean,
-): PipeSource<TInput[]> {
+): ProviderFunction<TInput[]> {
   return function* batchGenerator() {
     let acc: TInput[] = [];
     using generator = disposable(source);
@@ -23,9 +23,9 @@ export function batch<TInput>(
 }
 
 export function batchAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (batch: TInput[]) => boolean,
-): AsyncPipeSource<TInput[]> {
+): AsyncProviderFunction<TInput[]> {
   return async function* batchGenerator() {
     let acc: TInput[] = [];
     using generator = disposable(source);

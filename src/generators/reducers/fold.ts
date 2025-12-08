@@ -1,11 +1,14 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function fold<TInput, TOutput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): PipeSource<TOutput> {
+): ProviderFunction<TOutput> {
   return function* foldGenerator() {
     let acc = initial();
     let index = 0;
@@ -18,10 +21,10 @@ export function fold<TInput, TOutput>(
 }
 
 export function foldAsync<TInput, TOutput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): AsyncPipeSource<TOutput> {
+): AsyncProviderFunction<TOutput> {
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;

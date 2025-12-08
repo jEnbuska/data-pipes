@@ -1,11 +1,14 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function reduce<TInput, TOutput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): PipeSource<TOutput> {
+): ProviderFunction<TOutput> {
   return function* reduceGenerator() {
     let acc = initialValue;
     let index = 0;
@@ -18,10 +21,10 @@ export function reduce<TInput, TOutput>(
 }
 
 export function reduceAsync<TInput, TOutput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): AsyncPipeSource<TOutput> {
+): AsyncProviderFunction<TOutput> {
   return async function* reduceAsyncGenerator() {
     let acc = initialValue;
     using generator = disposable(source);

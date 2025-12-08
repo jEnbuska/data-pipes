@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function every<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): PipeSource<boolean> {
+): ProviderFunction<boolean> {
   return function* everyGenerator() {
     using generator = disposable(source);
     for (const next of generator) {
@@ -15,9 +18,9 @@ export function every<TInput>(
   };
 }
 export function everyAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncPipeSource<boolean> {
+): AsyncProviderFunction<boolean> {
   return async function* everyAsyncGenerator() {
     using generator = disposable(source);
     for await (const next of generator) {

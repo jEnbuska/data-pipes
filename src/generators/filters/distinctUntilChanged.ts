@@ -1,12 +1,15 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 export function distinctUntilChanged<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* distinctUntilChangedGenerator() {
     let first = true;
     let previous: TInput;
@@ -22,9 +25,9 @@ export function distinctUntilChanged<TInput>(
 }
 
 export function distinctUntilChangedAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): AsyncPipeSource<TInput> {
+): AsyncProviderFunction<TInput> {
   return async function* distinctUntilChangedAsyncGenerator() {
     let first = true;
     let previous: TInput;

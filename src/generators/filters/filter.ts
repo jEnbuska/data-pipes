@@ -1,18 +1,21 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function filter<TInput, TOutput extends TInput = TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): PipeSource<TOutput>;
+): ProviderFunction<TOutput>;
 export function filter<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   predicate: (next: TInput) => any,
-): PipeSource<TInput>;
+): ProviderFunction<TInput>;
 export function filter(
-  source: PipeSource<unknown>,
+  source: ProviderFunction<unknown>,
   predicate: (next: unknown) => unknown,
-): PipeSource<unknown> {
+): ProviderFunction<unknown> {
   return function* filterGenerator() {
     using generator = disposable(source);
     for (const next of generator) {
@@ -22,17 +25,17 @@ export function filter(
 }
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): AsyncPipeSource<TOutput>;
+): AsyncProviderFunction<TOutput>;
 export function filterAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => any,
-): AsyncPipeSource<TInput>;
+): AsyncProviderFunction<TInput>;
 export function filterAsync(
-  source: AsyncPipeSource<unknown>,
+  source: AsyncProviderFunction<unknown>,
   predicate: (next: unknown) => any,
-): AsyncPipeSource<unknown> {
+): AsyncProviderFunction<unknown> {
   return async function* filterAsyncGenerator() {
     using generator = disposable(source);
     for await (const next of generator) {

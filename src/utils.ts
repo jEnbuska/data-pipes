@@ -1,13 +1,8 @@
-import type {
-  AsyncPipeSource,
-  PipeSource,
-  Provider,
-  AsyncProvider,
-} from "./types.ts";
+import type { AsyncProviderFunction, ProviderFunction } from "./types.ts";
 
 export function isAsyncGeneratorFunction<TInput>(
   source: unknown,
-): source is AsyncPipeSource<TInput> {
+): source is AsyncProviderFunction<TInput> {
   return (
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
@@ -18,28 +13,23 @@ export function invoke<T>(cb: () => T) {
   return cb();
 }
 
-export function disposable<TInput>(source: PipeSource<TInput>): Generator<
-  TInput,
-  void,
-  undefined & void
-> & {
+export function disposable<P extends ProviderFunction<any>>(
+  source: P,
+): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
-export function disposable<TInput>(
-  source: PipeSource<TInput>,
-): Provider<TInput> & {
+export function disposable<P extends AsyncProviderFunction<any>>(
+  source: P,
+): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
-export function disposable<TInput>(
-  source: AsyncPipeSource<TInput>,
-): AsyncProvider<TInput> & {
-  [Symbol.dispose]: () => void;
-};
-export function disposable(source: any) {
+export function disposable(
+  source: ProviderFunction<any> | AsyncProviderFunction<any>,
+) {
   const generator = source();
   return Object.assign(generator, {
     [Symbol.dispose]() {
-      void generator.return();
+      void generator.return(undefined);
     },
   });
 }

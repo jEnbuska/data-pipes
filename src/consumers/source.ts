@@ -2,9 +2,9 @@ import { createAsyncChainable } from "../chainable/asyncChainable.ts";
 import { createChainable } from "../chainable/chainable.ts";
 import {
   type AsyncChainable,
-  type AsyncPipeSource,
-  type Chainable,
-  type PipeSource,
+  type AsyncProviderFunction,
+  type SyncChainable,
+  type ProviderFunction,
 } from "../types.ts";
 import { isAsyncGeneratorFunction, returnUndefined } from "../utils.ts";
 import { isGeneratorFunction } from "util/types";
@@ -30,11 +30,11 @@ import { isGeneratorFunction } from "util/types";
  */
 
 export function source<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
 ): AsyncChainable<TInput>;
 export function source<TInput>(
-  source: PipeSource<TInput> | TInput[] | TInput,
-): Chainable<TInput>;
+  source: ProviderFunction<TInput> | TInput[] | TInput,
+): SyncChainable<TInput>;
 export function source(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
     return createAsyncChainable(source, returnUndefined);

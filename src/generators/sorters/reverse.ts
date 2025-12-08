@@ -1,9 +1,12 @@
-import { type AsyncPipeSource, type PipeSource } from "../../types.ts";
+import {
+  type AsyncProviderFunction,
+  type ProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function reverse<TInput>(
-  source: PipeSource<TInput>,
-): PipeSource<TInput, TInput[]> {
+  source: ProviderFunction<TInput>,
+): ProviderFunction<TInput, TInput[]> {
   return function* reverseGenerator() {
     const acc: TInput[] = [];
     using generator = disposable(source);
@@ -16,8 +19,8 @@ export function reverse<TInput>(
 }
 
 export function reverseAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
-): AsyncPipeSource<TInput, TInput[]> {
+  source: AsyncProviderFunction<TInput>,
+): AsyncProviderFunction<TInput, TInput[]> {
   return async function* reverseAsyncGenerator(): AsyncGenerator<
     TInput,
     TInput[],

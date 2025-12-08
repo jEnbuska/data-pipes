@@ -1,9 +1,9 @@
-import { type AsyncPipeSource, type PipeSource } from "../types.ts";
+import { type AsyncProviderFunction, type ProviderFunction } from "../types.ts";
 import { invoke } from "../utils.ts";
 import { createResolvable } from "../resolvable.ts";
 
 export function consume<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   signal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;
@@ -14,7 +14,7 @@ export function consume<TInput>(
 }
 
 export async function consumeAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   signal = new AbortController().signal,
 ): Promise<void> {
   const resolvable = await createResolvable<void>();

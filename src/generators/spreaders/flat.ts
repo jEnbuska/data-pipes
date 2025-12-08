@@ -1,10 +1,13 @@
-import { type PipeSource, type AsyncPipeSource } from "../../types.ts";
+import {
+  type ProviderFunction,
+  type AsyncProviderFunction,
+} from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function flat<TInput, const Depth extends number = 1>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   depth?: Depth,
-): PipeSource<FlatArray<TInput[], Depth>> {
+): ProviderFunction<FlatArray<TInput[], Depth>> {
   return function* flatGenerator() {
     depth = depth ?? (1 as Depth);
     using generator = disposable(source);
@@ -19,9 +22,9 @@ export function flat<TInput, const Depth extends number = 1>(
 }
 
 export function flatAsync<TInput, const Depth extends number = 1>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   depth?: Depth,
-): AsyncPipeSource<FlatArray<TInput[], Depth>> {
+): AsyncProviderFunction<FlatArray<TInput[], Depth>> {
   return async function* flatGenerator() {
     depth = depth ?? (1 as Depth);
     using generator = disposable(source);

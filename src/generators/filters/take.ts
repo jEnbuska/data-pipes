@@ -1,14 +1,13 @@
 import {
-  type AsyncGeneratorMiddlewareReturn,
-  type PipeSource,
-  type AsyncPipeSource,
+  type ProviderFunction,
+  type AsyncProviderFunction,
 } from "../../types.ts";
 import { disposable } from "../../utils.ts";
 
 export function take<TInput>(
-  source: PipeSource<TInput>,
+  source: ProviderFunction<TInput>,
   count: number,
-): PipeSource<TInput> {
+): ProviderFunction<TInput> {
   return function* takeGenerator() {
     if (count <= 0) {
       return;
@@ -22,10 +21,10 @@ export function take<TInput>(
 }
 
 export function takeAsync<TInput>(
-  source: AsyncPipeSource<TInput>,
+  source: AsyncProviderFunction<TInput>,
   count: number,
-): AsyncPipeSource<TInput> {
-  return async function* takeAsyncGenerator(): AsyncGeneratorMiddlewareReturn<TInput> {
+): AsyncProviderFunction<TInput> {
+  return async function* takeAsyncGenerator() {
     if (count <= 0) {
       return;
     }
