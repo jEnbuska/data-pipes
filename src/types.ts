@@ -20,8 +20,8 @@ export type ChainableConsumersFunctions<
   TDefault = undefined,
 > = {
   [Symbol.toStringTag]: TAsync extends true
-    ? "AsyncGeneratorConsumer"
-    : "GeneratorConsumer";
+    ? "AsyncChainable"
+    : "SyncChainable";
   /**
    * Triggers the generators to execute and returns their outputs as an array.
    */
@@ -273,8 +273,8 @@ type ChainableFunctions<
    *  .distinctBy(n => n % 2)
    *  .toArray() // [1,2]
    */
-  distinctBy<Value>(
-    selector: (next: TInput) => Value,
+  distinctBy<TValue>(
+    selector: (next: TInput) => TValue,
   ): Chainable<TInput, TAsync>;
   /**
    * filters out items produced by the generator that are equal to the previous item by the compare function.

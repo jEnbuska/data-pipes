@@ -28,11 +28,7 @@ import {
   batchAsync,
   defaultToAsync,
 } from "../generators";
-import {
-  type AsyncChainable,
-  type AsyncProviderFunction,
-  type AsyncLiftMiddleware,
-} from "../types.ts";
+import { type AsyncChainable, type AsyncProviderFunction } from "../types.ts";
 import { foldAsync } from "../generators/reducers/fold.ts";
 import { createDefault, returnUndefined } from "../utils.ts";
 import { createInitialGroups } from "../generators/reducers/groupBy.ts";
@@ -44,14 +40,15 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
   getDefault: () => TDefault,
 ): AsyncChainable<TInput, TDefault> {
   return {
+    isAsync: true,
+    ...createAsyncConsumers(source, getDefault),
     batch(predicate) {
       return createAsyncChainable(
         batchAsync(source, predicate),
         createDefault<TInput[]>([]),
       );
     },
-    ...createAsyncConsumers<TInput, TDefault>(source, getDefault),
-    chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
+    chunkBy(fn) {
       return createAsyncChainable(
         chunkByAsync(source, fn),
         createDefault<TInput[]>([]),
@@ -63,13 +60,13 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
     countBy(fn) {
       return createAsyncChainable(countByAsync(source, fn), createDefault(0));
     },
-    defaultTo<TDefault>(getDefault: () => TDefault) {
+    defaultTo(getDefault) {
       return createAsyncChainable(
         defaultToAsync(source, getDefault),
         getDefault,
       );
     },
-    distinctBy<TValue>(selector: (next: TInput) => TValue) {
+    distinctBy(selector) {
       return createAsyncChainable(
         distinctByAsync(source, selector),
         returnUndefined,
@@ -99,22 +96,16 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
         returnUndefined,
       );
     },
-    flat<TDepth extends number = 1>(depth?: TDepth) {
+    flat(depth) {
+      return createAsyncChainable(flatAsync(source, depth), returnUndefined);
+    },
+    flatMap(callback) {
       return createAsyncChainable(
-        flatAsync<TInput, TDepth>(source, depth),
+        flatMapAsync(source, callback),
         returnUndefined,
       );
     },
-    flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
-      return createAsyncChainable(
-        flatMapAsync<TInput, TOutput>(source, callback),
-        returnUndefined,
-      );
-    },
-    fold<TOutput>(
-      initial: () => TOutput,
-      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-    ) {
+    fold(initial, reducer) {
       return createAsyncChainable(foldAsync(source, initial, reducer), initial);
     },
     forEach(consumer) {
@@ -129,15 +120,11 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
         () => Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
-    isAsync: true,
-    lift(middleware: AsyncLiftMiddleware<any, any>) {
+    lift(middleware) {
       return createAsyncChainable(middleware(source), returnUndefined);
     },
-    map<TOutput>(mapper: (next: TInput) => TOutput) {
-      return createAsyncChainable(
-        mapAsync<TInput, TOutput>(source, mapper),
-        returnUndefined,
-      );
+    map(mapper) {
+      return createAsyncChainable(mapAsync(source, mapper), returnUndefined);
     },
     max(callback) {
       return createAsyncChainable(maxAsync(source, callback), returnUndefined);
@@ -145,10 +132,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
     min(callback) {
       return createAsyncChainable(minAsync(source, callback), returnUndefined);
     },
-    reduce<TOutput>(
-      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-      initialValue: TOutput,
-    ) {
+    reduce(reducer, initialValue) {
       return createAsyncChainable(
         reduceAsync(source, reducer, initialValue),
         createDefault(initialValue),
@@ -160,7 +144,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
     skip(count) {
       return createAsyncChainable(skipAsync(source, count), returnUndefined);
     },
-    skipLast(count: number) {
+    skipLast(count) {
       return createAsyncChainable(
         skipLastAsync(source, count),
         returnUndefined,

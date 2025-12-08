@@ -14,7 +14,7 @@ export function createConsumers<TInput, TDefault>(
   getDefault: () => TDefault,
 ): ChainableConsumersFunctions<TInput, false, TDefault> {
   return {
-    [Symbol.toStringTag]: "GeneratorConsumer",
+    [Symbol.toStringTag]: "SyncChainable",
     *[Symbol.iterator]() {
       using generator = disposable(source);
       for (const next of generator) {
@@ -38,7 +38,7 @@ export function createAsyncConsumers<TInput, TDefault>(
   getDefault: () => TDefault,
 ): ChainableConsumersFunctions<TInput, true, TDefault> {
   return {
-    [Symbol.toStringTag]: "AsyncGeneratorConsumer",
+    [Symbol.toStringTag]: "AsyncChainable",
     async *[Symbol.asyncIterator]() {
       using generator = disposable(source);
       for await (const next of generator) {

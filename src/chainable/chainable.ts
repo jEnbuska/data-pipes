@@ -30,11 +30,7 @@ import {
   takeWhile,
   defaultTo,
 } from "../generators";
-import {
-  type SyncChainable,
-  type ProviderFunction,
-  type LiftMiddleware,
-} from "../types.ts";
+import { type SyncChainable, type ProviderFunction } from "../types.ts";
 import { fold } from "../generators/reducers/fold.ts";
 import { createDefault, returnUndefined } from "../utils.ts";
 import { createInitialGroups } from "../generators/reducers/groupBy.ts";
@@ -45,14 +41,15 @@ export function createChainable<TInput, TDefault = undefined>(
   getDefault: () => TDefault,
 ): SyncChainable<TInput, TDefault> {
   return {
+    isAsync: false,
+    ...createConsumers(source, getDefault),
     batch(predicate) {
       return createChainable(
         batch(source, predicate),
         createDefault<TInput[]>([]),
       );
     },
-    ...createConsumers<TInput, TDefault>(source, getDefault),
-    chunkBy<TIdentifier>(fn: (next: TInput) => TIdentifier) {
+    chunkBy(fn) {
       return createChainable(chunkBy(source, fn), createDefault<TInput[]>([]));
     },
     count() {
@@ -61,10 +58,10 @@ export function createChainable<TInput, TDefault = undefined>(
     countBy(fn) {
       return createChainable(countBy(source, fn), createDefault(0));
     },
-    defaultTo<TDefault>(getDefault: () => TDefault) {
+    defaultTo(getDefault) {
       return createChainable(defaultTo(source, getDefault), getDefault);
     },
-    distinctBy<Value>(selector: (next: TInput) => Value) {
+    distinctBy(selector) {
       return createChainable(distinctBy(source, selector), returnUndefined);
     },
     distinctUntilChanged(isEqual) {
@@ -90,19 +87,16 @@ export function createChainable<TInput, TDefault = undefined>(
     find(predicate) {
       return createChainable(find(source, predicate), returnUndefined);
     },
-    flat<TDepth extends number = 1>(depth?: TDepth) {
+    flat(depth) {
       return createChainable(flat(source, depth), returnUndefined);
     },
-    flatMap<TOutput>(callback: (next: TInput) => TOutput | readonly TOutput[]) {
+    flatMap(callback) {
       return createChainable(flatMap(source, callback), returnUndefined);
     },
-    fold<TOutput>(
-      initial: () => TOutput,
-      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-    ) {
+    fold(initial, reducer) {
       return createChainable(fold(source, initial, reducer), initial);
     },
-    forEach(consumer: (next: TInput) => unknown) {
+    forEach(consumer) {
       return createChainable(forEach(source, consumer), getDefault);
     },
     groupBy(
@@ -113,11 +107,10 @@ export function createChainable<TInput, TDefault = undefined>(
         Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
-    isAsync: false,
-    lift<TOutput>(middleware: LiftMiddleware<TInput, TOutput>) {
+    lift(middleware) {
       return createChainable(middleware(source), returnUndefined);
     },
-    map<TOutput>(mapper: (next: TInput) => TOutput) {
+    map(mapper) {
       return createChainable(map(source, mapper), returnUndefined);
     },
     max(callback) {
@@ -126,17 +119,14 @@ export function createChainable<TInput, TDefault = undefined>(
     min(callback) {
       return createChainable(min(source, callback), returnUndefined);
     },
-    reduce<TOutput>(
-      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-      initialValue: TOutput,
-    ) {
+    reduce(reducer, initialValue) {
       return createChainable(
         reduce(source, reducer, initialValue),
         createDefault(initialValue),
       );
     },
     resolve() {
-      return createAsyncChainable(resolve<TInput>(source), getDefault);
+      return createAsyncChainable(resolve(source), getDefault);
     },
     reverse() {
       return createChainableFromListReturn(reverse(source));
@@ -144,7 +134,7 @@ export function createChainable<TInput, TDefault = undefined>(
     skip(count) {
       return createChainable(skip(source, count), returnUndefined);
     },
-    skipLast(count: number) {
+    skipLast(count) {
       return createChainable(skipLast(source, count), returnUndefined);
     },
     skipWhile(predicate) {
