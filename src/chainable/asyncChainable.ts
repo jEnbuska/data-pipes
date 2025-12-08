@@ -113,7 +113,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
     },
     fold<TOutput>(
       initial: () => TOutput,
-      reducer: (acc: TOutput, next: TInput) => TOutput,
+      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
     ) {
       return createAsyncChainable(foldAsync(source, initial, reducer), initial);
     },
@@ -146,7 +146,7 @@ export function createAsyncChainable<TInput, TDefault = undefined>(
       return createAsyncChainable(minAsync(source, callback), returnUndefined);
     },
     reduce<TOutput>(
-      reducer: (acc: TOutput, next: TInput) => TOutput,
+      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
       initialValue: TOutput,
     ) {
       return createAsyncChainable(

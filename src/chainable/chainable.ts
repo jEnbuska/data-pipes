@@ -98,7 +98,7 @@ export function createChainable<TInput, TDefault = undefined>(
     },
     fold<TOutput>(
       initial: () => TOutput,
-      reducer: (acc: TOutput, next: TInput) => TOutput,
+      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
     ) {
       return createChainable(fold(source, initial, reducer), initial);
     },
@@ -127,7 +127,7 @@ export function createChainable<TInput, TDefault = undefined>(
       return createChainable(min(source, callback), returnUndefined);
     },
     reduce<TOutput>(
-      reducer: (acc: TOutput, next: TInput) => TOutput,
+      reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
       initialValue: TOutput,
     ) {
       return createChainable(

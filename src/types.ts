@@ -161,7 +161,7 @@ type BaseChainable<
    *   .first() // 6
    * */
   reduce<TOutput>(
-    reducer: (acc: TOutput, next: TInput) => TOutput,
+    reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
     initialValue: TOutput,
   ): AnyChainable<TOutput, TAsync, TOutput>;
   /**
@@ -174,7 +174,7 @@ type BaseChainable<
    * */
   fold<TOutput>(
     initial: () => TOutput,
-    reducer: (acc: TOutput, next: TInput) => TOutput,
+    reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   ): AnyChainable<TOutput, TAsync, TOutput>;
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
