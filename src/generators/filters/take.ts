@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function take<TInput>(
   source: ProviderFunction<TInput>,
@@ -12,7 +9,7 @@ export function take<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       yield next;
       if (!--count) return;
@@ -28,7 +25,7 @@ export function takeAsync<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       yield next;
       if (!--count) return;

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../index.ts";
+import streamless from "../index";
 
 describe("reduce", () => {
   test("sum chainable", () => {

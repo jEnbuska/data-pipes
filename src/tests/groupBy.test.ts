@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../";
-import { createTestSets } from "./utils/createTestSets.ts";
+import streamless from "../";
+import { createTestSets } from "./utils/createTestSets";
 
 describe("groupBy", () => {
   describe("identity", () => {

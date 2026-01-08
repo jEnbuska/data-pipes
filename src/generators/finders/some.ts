@@ -1,15 +1,12 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function some<TInput>(
   source: ProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,
 ): ProviderFunction<boolean> {
   return function* someGenerator() {
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       if (predicate(next)) return yield true;
     }
@@ -21,7 +18,7 @@ export function someAsync<TInput>(
   predicate: (next: TInput) => boolean,
 ): AsyncProviderFunction<boolean> {
   return async function* someAsyncGenerator() {
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       if (predicate(next)) return yield true;
     }

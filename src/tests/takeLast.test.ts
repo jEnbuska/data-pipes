@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../";
+import streamless from "../";
 
 describe("takeLast", () => {
   test("take last when empty", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { createTestSets } from "./utils/createTestSets";
 
 describe("count", () => {
   const numbers = [1, 2, 3];

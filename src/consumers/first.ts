@@ -1,5 +1,5 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../types.ts";
-import { createResolvable } from "../resolvable.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../types";
+import { InternalStreamless } from "../utils";
 
 export function first<TInput, TDefault>(
   source: ProviderFunction<TInput>,
@@ -17,7 +17,7 @@ export async function firstAsync<TInput, TDefault>(
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): Promise<TInput | TDefault> {
-  const resolvable = await createResolvable<TDefault>();
+  const resolvable = await InternalStreamless.createResolvable<TDefault>();
   if (signal.aborted) return getDefault();
   signal.addEventListener("abort", () => resolvable.resolve(getDefault()));
   return Promise.race([

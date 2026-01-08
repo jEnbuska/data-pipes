@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function filter<TInput, TOutput extends TInput = TInput>(
   source: ProviderFunction<TInput>,
@@ -17,7 +14,7 @@ export function filter(
   predicate: (next: unknown) => unknown,
 ): ProviderFunction<unknown> {
   return function* filterGenerator() {
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -37,7 +34,7 @@ export function filterAsync(
   predicate: (next: unknown) => any,
 ): AsyncProviderFunction<unknown> {
   return async function* filterAsyncGenerator() {
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }

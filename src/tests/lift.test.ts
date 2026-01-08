@@ -1,13 +1,13 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../";
-import { disposable } from "../utils.ts";
+import streamless from "../";
+import { InternalStreamless } from "../utils";
 
 describe("lift", () => {
   test("lift mapper", () => {
     const array = streamless([1, 2, 3])
       .lift(function multiplyByTwo(source) {
         return function* () {
-          using generator = disposable(source);
+          using generator = InternalStreamless.disposable(source);
           for (const next of generator) {
             yield next * 2;
           }
@@ -21,7 +21,7 @@ describe("lift", () => {
     const array = streamless([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
         return function* () {
-          using generator = disposable(source);
+          using generator = InternalStreamless.disposable(source);
           for (const next of generator) {
             if (next < 0) continue;
             yield next;
@@ -37,7 +37,7 @@ describe("lift", () => {
       .lift(function joinStrings(source) {
         return function* () {
           const acc: string[] = [];
-          using generator = disposable(source);
+          using generator = InternalStreamless.disposable(source);
           for (const next of generator) {
             acc.push(next);
           }

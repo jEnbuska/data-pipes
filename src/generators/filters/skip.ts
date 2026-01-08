@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function skip<TInput>(
   source: ProviderFunction<TInput>,
@@ -10,7 +7,7 @@ export function skip<TInput>(
 ): ProviderFunction<TInput> {
   return function* skipGenerator() {
     let skipped = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       if (skipped < count) {
         skipped++;
@@ -26,7 +23,7 @@ export function skipAsync<TInput>(
 ): AsyncProviderFunction<TInput> {
   return async function* skipAsyncGenerator() {
     let skipped = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       if (skipped < count) {
         skipped++;

@@ -1,6 +1,5 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../types.ts";
-import { invoke } from "../utils.ts";
-import { createResolvable } from "../resolvable.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../types";
+import { InternalStreamless } from "../utils";
 
 export function toArray<TInput>(
   source: ProviderFunction<TInput>,
@@ -20,12 +19,12 @@ export async function toArrayAsync<TInput>(
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
   const acc: TInput[] = [];
-  const resolvable = await createResolvable<TInput[]>();
+  const resolvable = await InternalStreamless.createResolvable<TInput[]>();
   if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    invoke(async function () {
+    InternalStreamless.invoke(async function () {
       for await (const next of source()) {
         if (signal.aborted) return [];
         acc.push(next);
@@ -51,12 +50,12 @@ export async function toArrayAsyncFromReturn<TInput>(
   source: AsyncProviderFunction<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
-  const resolvable = await createResolvable<TInput[]>();
+  const resolvable = await InternalStreamless.createResolvable<TInput[]>();
   if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    invoke(async function () {
+    InternalStreamless.invoke(async function () {
       const generator = source();
       let result = await generator.next();
       while (true) {

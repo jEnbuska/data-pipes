@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function min<TInput>(
   source: ProviderFunction<TInput>,
@@ -11,7 +8,7 @@ export function min<TInput>(
   return function* minGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {
@@ -33,7 +30,7 @@ export function minAsync<TInput>(
   return async function* minAsyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {

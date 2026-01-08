@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
@@ -15,7 +12,7 @@ export function countBy<TInput>(
 ): ProviderFunction<number> {
   return function* countByGenerator() {
     let acc = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       acc += mapper(next);
     }
@@ -29,7 +26,7 @@ export function countByAsync<TInput>(
 ): AsyncProviderFunction<number> {
   return async function* countByAsyncGenerator() {
     let acc = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       acc += mapper(next);
     }

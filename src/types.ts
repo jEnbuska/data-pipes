@@ -20,8 +20,8 @@ export type ChainableConsumersFunctions<
   TDefault = undefined,
 > = {
   [Symbol.toStringTag]: TAsync extends true
-    ? "AsyncChainable"
-    : "SyncChainable";
+    ? "AsyncStreamless"
+    : "SyncStreamless";
   /**
    * Triggers the generators to execute and returns their outputs as an array.
    */
@@ -52,21 +52,21 @@ export type Chainable<
   TAsync extends boolean = false,
   TDefault = undefined,
 > = TAsync extends false
-  ? SyncChainable<TInput, TDefault>
-  : AsyncChainable<TInput, TDefault>;
+  ? SyncStreamless<TInput, TDefault>
+  : AsyncStreamless<TInput, TDefault>;
 
-export type SyncChainable<
+export type SyncStreamless<
   TInput = unknown,
   TDefault = undefined,
 > = ChainableFunctions<TInput, false, TDefault> & {
   isAsync: false;
-  resolve(): AsyncChainable<
+  resolve(): AsyncStreamless<
     TInput extends Promise<infer U> ? U : TInput,
     TDefault
   >;
 };
 
-export type AsyncChainable<
+export type AsyncStreamless<
   TInput = unknown,
   TDefault = undefined,
 > = ChainableFunctions<TInput, true, TDefault> & { isAsync: true };
@@ -367,7 +367,7 @@ type ChainableFunctions<
    * @example
    * streamless([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    using generator = disposable(source);
+   *    using generator =  InternalStreamless.disposable(source);
     for (const next of generator) {
    *     yield next * 2;
    *    }
@@ -377,7 +377,7 @@ type ChainableFunctions<
    * @example
    * streamless([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *   using generator = disposable(source);
+   *   using generator =  InternalStreamless.disposable(source);
     for (const next of generator) {
    *    if (next < 0) continue;
    *     yield next;
@@ -390,7 +390,7 @@ type ChainableFunctions<
    *  .lift(function* joinStrings(source) {
    *    return function() {
    *      const acc: string[] = [];
-   *      using generator = disposable(source);
+   *      using generator =  InternalStreamless.disposable(source);
     for (const next of generator) {
    *       acc.push(next);
    *      }

@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function chunkBy<TInput, TIdentifier = any>(
   source: ProviderFunction<TInput>,
@@ -10,7 +7,7 @@ export function chunkBy<TInput, TIdentifier = any>(
 ): ProviderFunction<TInput[]> {
   return function* chunkByGenerator() {
     const map = new Map<any, TInput[]>();
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);
@@ -26,7 +23,7 @@ export function chunkByAsync<TInput, TIdentifier = any>(
 ): AsyncProviderFunction<TInput[]> {
   return async function* chunkByAsyncGenerator() {
     const map = new Map<any, TInput[]>();
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);

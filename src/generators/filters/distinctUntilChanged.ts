@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
@@ -13,7 +10,7 @@ export function distinctUntilChanged<TInput>(
   return function* distinctUntilChangedGenerator() {
     let first = true;
     let previous: TInput;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;
@@ -31,7 +28,7 @@ export function distinctUntilChangedAsync<TInput>(
   return async function* distinctUntilChangedAsyncGenerator() {
     let first = true;
     let previous: TInput;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;

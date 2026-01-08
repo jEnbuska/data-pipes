@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../";
+import streamless from "../";
 
 describe("skipWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];

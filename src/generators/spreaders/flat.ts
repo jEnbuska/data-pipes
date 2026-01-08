@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function flat<TInput, const Depth extends number = 1>(
   source: ProviderFunction<TInput>,
@@ -10,7 +7,7 @@ export function flat<TInput, const Depth extends number = 1>(
 ): ProviderFunction<FlatArray<TInput[], Depth>> {
   return function* flatGenerator() {
     depth = depth ?? (1 as Depth);
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next as any;
@@ -27,7 +24,7 @@ export function flatAsync<TInput, const Depth extends number = 1>(
 ): AsyncProviderFunction<FlatArray<TInput[], Depth>> {
   return async function* flatGenerator() {
     depth = depth ?? (1 as Depth);
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next;

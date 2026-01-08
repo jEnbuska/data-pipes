@@ -1,15 +1,12 @@
-import {
-  type AsyncProviderFunction,
-  type ProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type AsyncProviderFunction, type ProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function reverse<TInput>(
   source: ProviderFunction<TInput>,
 ): ProviderFunction<TInput, TInput[]> {
   return function* reverseGenerator() {
     const acc: TInput[] = [];
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       acc.unshift(next);
     }
@@ -27,7 +24,7 @@ export function reverseAsync<TInput>(
     undefined & void
   > {
     const acc: TInput[] = [];
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       acc.unshift(next);
     }

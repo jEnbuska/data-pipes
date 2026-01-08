@@ -1,29 +1,17 @@
-import type { AsyncProviderFunction, ProviderFunction } from "./types.ts";
+import type { AsyncProviderFunction, ProviderFunction } from "./types";
 
-export function isAsyncGeneratorFunction<TInput>(
-  source: unknown,
-): source is AsyncProviderFunction<TInput> {
-  return (
-    Boolean(source) &&
-    Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
-  );
-}
-
-export function invoke<T>(cb: () => T) {
-  return cb();
-}
-
-export function disposable<P extends ProviderFunction<any>>(
+function disposable<P extends ProviderFunction<any>>(
   source: P,
 ): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
-export function disposable<P extends AsyncProviderFunction<any>>(
+function disposable<P extends AsyncProviderFunction<any>>(
   source: P,
 ): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
-export function disposable(
+
+function disposable(
   source: ProviderFunction<any> | AsyncProviderFunction<any>,
 ) {
   const generator = source();
@@ -33,10 +21,67 @@ export function disposable(
     },
   });
 }
+export const InternalStreamless = {
+  isAsyncGeneratorFunction<TInput>(
+    source: unknown,
+  ): source is AsyncProviderFunction<TInput> {
+    return (
+      Boolean(source) &&
+      Object.getPrototypeOf(source).constructor.name ===
+        "AsyncGeneratorFunction"
+    );
+  },
 
-export function createDefault<T>(defaultValue: T) {
-  return () => defaultValue;
-}
-export function returnUndefined() {
-  return undefined;
-}
+  invoke<T>(cb: () => T) {
+    return cb();
+  },
+
+  disposable,
+  createDefault<T>(defaultValue: T) {
+    return () => defaultValue;
+  },
+
+  returnUndefined(this: any) {
+    return undefined;
+  },
+
+  returnTrue(): true {
+    return true;
+  },
+
+  returnFalse(): false {
+    return false;
+  },
+
+  returnZero() {
+    return 0;
+  },
+
+  once<TArgs extends any[], TReturn>(cb: (...args: TArgs) => TReturn) {
+    let result: undefined | { value: TReturn };
+    return function invokeOnce(...args: TArgs) {
+      if (result) return result.value;
+      result = { value: cb(...args) };
+      return result.value;
+    };
+  },
+
+  createResolvable<R>(): Promise<{
+    promise: Promise<R>;
+    resolve(data: R): void;
+  }> {
+    // eslint-disable-next-line promise/param-names
+    return new Promise((resolveCreateResolvable) => {
+      const promise = new Promise<R>((resolve) =>
+        resolveCreateResolvable({
+          get promise(): Promise<R> {
+            return promise;
+          },
+          resolve(data: R) {
+            resolve(data);
+          },
+        }),
+      );
+    });
+  },
+};

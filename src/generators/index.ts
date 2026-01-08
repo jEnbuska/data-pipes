@@ -1,36 +1,39 @@
-import { batch, batchAsync } from "./grouppers/batch.ts";
-import { chunkBy, chunkByAsync } from "./grouppers/chunkBy.ts";
-import { count, countAsync } from "./reducers/count.ts";
-import { countBy, countByAsync } from "./reducers/countBy.ts";
-import { defaultTo, defaultToAsync } from "./misc/defaultTo.ts";
-import { distinctBy, distinctByAsync } from "./filters/distinctBy.ts";
+import { batch, batchAsync } from "./grouppers/batch";
+import { chunkBy, chunkByAsync } from "./grouppers/chunkBy";
+import { count, countAsync } from "./reducers/count";
+import { countBy, countByAsync } from "./reducers/countBy";
+import { defaultTo, defaultToAsync } from "./misc/defaultTo";
+import { distinctBy, distinctByAsync } from "./filters/distinctBy";
 import {
   distinctUntilChanged,
   distinctUntilChangedAsync,
-} from "./filters/distinctUntilChanged.ts";
-import { every, everyAsync } from "./finders/every.ts";
-import { filter, filterAsync } from "./filters/filter.ts";
-import { find, findAsync } from "./finders/find.ts";
-import { flat, flatAsync } from "./spreaders/flat.ts";
-import { flatMap, flatMapAsync } from "./spreaders/flatMap.ts";
-import { forEach, forEachAsync } from "./misc/forEach.ts";
-import { groupBy, groupByAsync } from "./reducers/groupBy.ts";
-import { map, mapAsync } from "./mappers/map.ts";
-import { max, maxAsync } from "./reducers/max.ts";
-import { min, minAsync } from "./reducers/min.ts";
-import { reduce, reduceAsync } from "./reducers/reduce.ts";
-import { resolve } from "./mappers/resolve.ts";
-import { reverse, reverseAsync } from "./sorters/reverse.ts";
-import { skip, skipAsync } from "./filters/skip.ts";
-import { skipLast, skipLastAsync } from "./filters/skipLast.ts";
-import { skipWhile, skipWhileAsync } from "./filters/skipWhile.ts";
-import { some, someAsync } from "./finders/some.ts";
-import { sort, sortAsync } from "./sorters/sort.ts";
-import { take, takeAsync } from "./filters/take.ts";
-import { takeLast, takeLastAsync } from "./filters/takeLast.ts";
-import { takeWhile, takeWhileAsync } from "./filters/takeWhile.ts";
+} from "./filters/distinctUntilChanged";
+import { every, everyAsync } from "./finders/every";
+import { filter, filterAsync } from "./filters/filter";
+import { find, findAsync } from "./finders/find";
+import { flat, flatAsync } from "./spreaders/flat";
+import { flatMap, flatMapAsync } from "./spreaders/flatMap";
+import { forEach, forEachAsync } from "./misc/forEach";
+import { groupBy, groupByAsync } from "./reducers/groupBy";
+import { fold, foldAsync } from "./reducers/fold";
+import { map, mapAsync } from "./mappers/map";
+import { max, maxAsync } from "./reducers/max";
+import { min, minAsync } from "./reducers/min";
+import { reduce, reduceAsync } from "./reducers/reduce";
+import { resolve } from "./mappers/resolve";
+import { reverse, reverseAsync } from "./sorters/reverse";
+import { skip, skipAsync } from "./filters/skip";
+import { skipLast, skipLastAsync } from "./filters/skipLast";
+import { skipWhile, skipWhileAsync } from "./filters/skipWhile";
+import { some, someAsync } from "./finders/some";
+import { sort, sortAsync } from "./sorters/sort";
+import { take, takeAsync } from "./filters/take";
+import { takeLast, takeLastAsync } from "./filters/takeLast";
+import { takeWhile, takeWhileAsync } from "./filters/takeWhile";
 
 export {
+  fold,
+  foldAsync,
   batch,
   batchAsync,
   chunkBy,

@@ -1,6 +1,6 @@
 import { describe, test, mock, expect } from "bun:test";
-import { streamless } from "../";
-import { createTestSets } from "./utils/createTestSets.ts";
+import streamless from "../";
+import { createTestSets } from "./utils/createTestSets";
 
 describe("forEach", () => {
   test("chainable single value", () => {

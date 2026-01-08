@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function fold<TInput, TOutput>(
   source: ProviderFunction<TInput>,
@@ -12,7 +9,7 @@ export function fold<TInput, TOutput>(
   return function* foldGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -28,7 +25,7 @@ export function foldAsync<TInput, TOutput>(
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       acc = fold(acc, next, index++);
     }

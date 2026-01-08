@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets.ts";
-import { streamless } from "../";
+import { createTestSets } from "./utils/createTestSets";
+import streamless from "../";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {

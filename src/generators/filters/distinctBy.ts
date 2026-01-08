@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 /**
  * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -16,7 +13,7 @@ export function distinctBy<TInput, Value>(
 ): ProviderFunction<TInput> {
   return function* distinctByGenerator() {
     const set = new Set<Value>();
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       const key = selector(next);
       if (set.has(key)) {
@@ -33,7 +30,7 @@ export function distinctByAsync<TInput, Value>(
 ): AsyncProviderFunction<TInput> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       const key = selector(next);
       if (set.has(key)) continue;

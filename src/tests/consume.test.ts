@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { streamless } from "../";
+import streamless from "../";
 
 describe("consume", () => {
   const numbers = [1, 2, 3];

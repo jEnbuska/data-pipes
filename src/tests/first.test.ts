@@ -1,6 +1,6 @@
 import { expect, test, describe } from "bun:test";
-import { createTestSets } from "./utils/createTestSets.ts";
-import { streamless } from "../";
+import { createTestSets } from "./utils/createTestSets";
+import streamless from "../";
 
 describe("first", () => {
   test("chain to first", () => {

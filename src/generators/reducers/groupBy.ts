@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
@@ -15,7 +12,7 @@ export function groupBy(
 ): ProviderFunction<any> {
   return function* groupByGenerator() {
     const record = createInitialGroups(groups);
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -34,7 +31,7 @@ export function groupByAsync(
 ): AsyncProviderFunction<any> {
   return async function* groupByAsyncGenerator() {
     const record = createInitialGroups(groups);
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

@@ -1,8 +1,5 @@
-import {
-  type ProviderFunction,
-  type AsyncProviderFunction,
-} from "../../types.ts";
-import { disposable } from "../../utils.ts";
+import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import { InternalStreamless } from "../../utils";
 
 /**
  * yields the default value if the generator does not produce any items
@@ -15,7 +12,7 @@ export function defaultTo<TInput, TDefault>(
 ): ProviderFunction<TInput | TDefault> {
   return function* defaultToGenerator() {
     let empty = true;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
       yield next;
       empty = false;
@@ -32,7 +29,7 @@ export function defaultToAsync<TInput, TDefault>(
 ): AsyncProviderFunction<TInput | TDefault> {
   return async function* defaultToAsyncGenerator() {
     let empty = true;
-    using generator = disposable(source);
+    using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       yield next;
       empty = false;

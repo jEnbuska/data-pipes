@@ -1,4 +1,4 @@
-import { streamless } from "../../";
+import streamless from "../../";
 
 export function createTestSets<T>(array: T[]) {
   return {

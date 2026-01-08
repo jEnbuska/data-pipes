@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../";
+import streamless from "../";
 
 describe("skipLast", () => {
   test("skip last when array is empty", () => {

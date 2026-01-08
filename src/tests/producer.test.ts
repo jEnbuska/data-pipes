@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import { createProducer } from "../producer.ts";
-import { streamless } from "../";
+import { createProducer } from "../producer";
+import streamless from "../";
 
 describe("producer", () => {
   test("producer test", async () => {

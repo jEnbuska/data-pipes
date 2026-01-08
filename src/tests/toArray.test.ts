@@ -1,5 +1,5 @@
 import { expect, test, describe } from "bun:test";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { createTestSets } from "./utils/createTestSets";
 
 describe("toArray", () => {
   const numbers = [1, 2, 3];
