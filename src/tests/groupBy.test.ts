@@ -1,6 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
-
+import { streamless } from "../";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("groupBy", () => {
@@ -12,7 +11,7 @@ describe("groupBy", () => {
     };
 
     test("chainable", () => {
-      const groups = source([1, 2, 3])
+      const groups = streamless([1, 2, 3])
         .groupBy((x) => x)
         .first();
       expect(groups).toStrictEqual(expected);
@@ -27,7 +26,7 @@ describe("groupBy", () => {
       4: [],
     };
     test("chainable", () => {
-      const groups = source([1, 2, 3])
+      const groups = streamless([1, 2, 3])
         .groupBy((x) => x, [1, 2, 4])
         .first();
       expect(groups).toStrictEqual(expected);
@@ -40,7 +39,7 @@ describe("groupBy", () => {
       0: [2, 4],
     };
     test("chainable", () => {
-      const groups = source([1, 2, 3, 4])
+      const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => x % 2)
         .first();
       expect(groups).toStrictEqual(expected);
@@ -54,7 +53,7 @@ describe("groupBy", () => {
       other: [],
     };
     test("chainable", () => {
-      const groups = source([1, 2, 3, 4])
+      const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"])
         .first() satisfies
         | (Record<"even" | "other", number[]> &
@@ -70,7 +69,7 @@ describe("groupBy", () => {
       even: [2, 4],
     };
     test("chainable", () => {
-      const groups = source([1, 2, 3, 4])
+      const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"))
         .first();
       expect(groups).toStrictEqual(expected);

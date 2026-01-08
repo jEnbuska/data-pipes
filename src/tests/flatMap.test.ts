@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
+import { streamless } from "../";
 
 describe("flatMap", () => {
   test("flatten non array", () => {
     expect(
-      source([1, 2, 3])
+      streamless([1, 2, 3])
         .flatMap((it) => it)
         .toArray() satisfies number[],
     ).toStrictEqual([1, 2, 3]);

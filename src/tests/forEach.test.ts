@@ -1,12 +1,11 @@
 import { describe, test, mock, expect } from "bun:test";
-import source from "../index.ts";
-
+import { streamless } from "../";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("forEach", () => {
   test("chainable single value", () => {
     const callback = mock((n: number) => expect(n).toBe(1));
-    source(1).forEach(callback).consume();
+    streamless(1).forEach(callback).consume();
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
@@ -20,7 +19,7 @@ describe("forEach", () => {
   test("with multiple", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    source(args).forEach(callback).consume();
+    streamless(args).forEach(callback).consume();
     expect(callback).toHaveBeenCalledTimes(2);
   });
 

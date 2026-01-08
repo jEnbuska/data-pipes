@@ -1,11 +1,10 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
-
+import { streamless } from "../";
 import { disposable } from "../utils.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
-    const array = source([1, 2, 3])
+    const array = streamless([1, 2, 3])
       .lift(function multiplyByTwo(source) {
         return function* () {
           using generator = disposable(source);
@@ -19,7 +18,7 @@ describe("lift", () => {
   });
 
   test("lift filter", () => {
-    const array = source([-2, 1, 2, -3, 4])
+    const array = streamless([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
         return function* () {
           using generator = disposable(source);
@@ -34,7 +33,7 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = source(["a", "b", "c"])
+    const text = streamless(["a", "b", "c"])
       .lift(function joinStrings(source) {
         return function* () {
           const acc: string[] = [];

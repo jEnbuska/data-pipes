@@ -7,7 +7,7 @@ import { disposable } from "../../utils.ts";
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
  * @example
- * source([1,2,3])count().first() // 3
+ * streamless([1,2,3])count().first() // 3
  */
 export function count<TInput>(
   source: ProviderFunction<TInput>,

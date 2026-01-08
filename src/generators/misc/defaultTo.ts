@@ -7,7 +7,7 @@ import { disposable } from "../../utils.ts";
 /**
  * yields the default value if the generator does not produce any items
  * @example
- * source([1,2,3].filter(it => it > 3).defaultTo(0).first() // 0
+ * streamless([1,2,3].filter(it => it > 3).defaultTo(0).first() // 0
  */
 export function defaultTo<TInput, TDefault>(
   source: ProviderFunction<TInput>,

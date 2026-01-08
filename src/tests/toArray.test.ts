@@ -1,5 +1,4 @@
 import { expect, test, describe } from "bun:test";
-
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("toArray", () => {

@@ -37,7 +37,7 @@ export type ChainableConsumersFunctions<
   first(signal?: AbortSignal): ConsumerResult<TInput | TDefault, TAsync>;
 } & (TAsync extends true
   ? {
-      [Symbol.asyncIterator](): AsyncIterableIterator<Awaited<TInput>>;
+      [Symbol.asyncIterator](): AsyncIterableIterator<TInput>;
     }
   : {
       [Symbol.iterator](): IterableIterator<TInput>;
@@ -81,7 +81,7 @@ type ChainableFunctions<
    * to the next operation.
    *
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .map(n => n * 2)
    *  .toArray() // [2, 4, 6];
    */
@@ -91,7 +91,7 @@ type ChainableFunctions<
   /**
    * Batch values into groups   *
    * @example
-   * source([1,2,3,4,5])
+   * streamless([1,2,3,4,5])
    *  .batch(acc => acc.length < 3)
    *  .toArray() // [[1,2], [3,4] [5]];
    */
@@ -103,12 +103,12 @@ type ChainableFunctions<
    * specified depth.
    *
    * @example
-   * source([[1], [2], [3]])
+   * streamless([[1], [2], [3]])
    *  .flat()
    *  .toArray() // [1,2,3]
    *
    * @example
-   * source([[1], [[2]], [[[3]]]])
+   * streamless([[1], [[2]], [[[3]]]])
    *  .flat(2)
    *  .toArray() // [1,2,[3]]
    * */
@@ -123,7 +123,7 @@ type ChainableFunctions<
    * and yields the items that pass the predicate to the next operation.
    *
    * @example
-   * source([1,2,3,"A"])
+   * streamless([1,2,3,"A"])
    *   .filter((n): n is number => typeof n === "number")
    *   .toArray() // [1,2,3];
    */
@@ -135,7 +135,7 @@ type ChainableFunctions<
    * and yields the items that pass the predicate to the next operation.
    *
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *   .filter(n => n % 2)
    *   .toArray() // [1,3];
    */
@@ -144,7 +144,7 @@ type ChainableFunctions<
    * Reduces items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *   .reduce((sum, n) => sum + n, 0)
    *   .first() // 6
    * */
@@ -156,7 +156,7 @@ type ChainableFunctions<
    * Just and other way to reduce items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *   .fold(() => 0, (sum, n) => sum + n)
    *   .first() // 6
    * */
@@ -168,7 +168,7 @@ type ChainableFunctions<
    * Calls the provided consumer function for each item produced by the generator and yields it
    * to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .forEach(n => console.log(n)) // 1, 2, 3
    *  .consume();
    * */
@@ -178,7 +178,7 @@ type ChainableFunctions<
   /**
    * skips the first `count` items produced by the generator and yields the rest to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .skip(2)
    *  .toArray() // [3]
    */
@@ -186,7 +186,7 @@ type ChainableFunctions<
   /**
    * skips the last `count` items produced by the generator and yields the rest to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .skipLast(2)
    *  .toArray() // [1]
    */
@@ -194,7 +194,7 @@ type ChainableFunctions<
   /**
    * skips items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .skipWhile(n => n < 3)
    *  .toArray() // [3,4]
    * */
@@ -202,7 +202,7 @@ type ChainableFunctions<
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .take(2)
    *  .toArray() // [1,2]
    */
@@ -210,7 +210,7 @@ type ChainableFunctions<
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .takeLast(2)
    *  .toArray() // [2,3]
    */
@@ -218,7 +218,7 @@ type ChainableFunctions<
   /**
    * counts the number of items produced by the generator and then yields the total to the next operation.
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .count()
    *  .first() // 3
    */
@@ -226,7 +226,7 @@ type ChainableFunctions<
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .takeWhile(n => n < 3)
    *  .toArray() // [1,2]
    */
@@ -235,7 +235,7 @@ type ChainableFunctions<
    * sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
    *
    * @example
-   * source([3,2,1])
+   * streamless([3,2,1])
    *  .sort((a, z) => a - z)
    *  .toArray() // [1,2,3]
    */
@@ -243,7 +243,7 @@ type ChainableFunctions<
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .groupBy(n => n % 2 ? 'odd' : 'even')
    *  .first() // {even: [2,4], odd: [1,3]}
    */
@@ -269,7 +269,7 @@ type ChainableFunctions<
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
    *
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .distinctBy(n => n % 2)
    *  .toArray() // [1,2]
    */
@@ -281,12 +281,12 @@ type ChainableFunctions<
    * If no compare function is provided, the strict equality operator is used.
    *
    * @example
-   * source([1,2,2,2,3])
+   * streamless([1,2,2,2,3])
    *  .distinctUntilChanged()
    *  .toArray() // [1,2,3]
    *
    * @example
-   * source([1, 2, 5, 8, 3])
+   * streamless([1, 2, 5, 8, 3])
    *  .distinctUntilChanged((previous, current) => previous % 3 === current % 3)
    *  .toArray() // [1,2,3]
    */
@@ -298,7 +298,7 @@ type ChainableFunctions<
    * Finally it yields the item with the lowest number to the next operation.
    *
    * @example
-   * source(2,1,3,4)
+   * streamless(2,1,3,4)
    *  .min(n => n)
    *  .first() // 1
    */
@@ -308,7 +308,7 @@ type ChainableFunctions<
    * Finally it yields the item with the highest number to the next operation.
    *
    * @example
-   * source([1,2,4,3])
+   * streamless([1,2,4,3])
    *  .max(n => n)
    *  .first() // 4
    */
@@ -317,7 +317,7 @@ type ChainableFunctions<
    * yields the default value if the generator does not produce any items
    *
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .filter(it => it > 3)
    *  .defaultTo(0)
    *  .first() // 0
@@ -328,7 +328,7 @@ type ChainableFunctions<
   /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .find(n => n > 2)
    *  .toArray() // [3]
    */
@@ -338,7 +338,7 @@ type ChainableFunctions<
    * if the generator is empty yields false
    *
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .some(n => n > 2)
    *  .first() // true
    */
@@ -348,7 +348,7 @@ type ChainableFunctions<
    * if the generator is empty yields true
    *
    * @example
-   * source([1,2,3,4])
+   * streamless([1,2,3,4])
    *  .every(n => n > 1)
    *  .first() // false
    */
@@ -356,7 +356,7 @@ type ChainableFunctions<
   /**
    * yields the items in reverse order after the generator is consumed
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .reverse()
    *  .toArray() // [3,2,1]
    */
@@ -365,7 +365,7 @@ type ChainableFunctions<
    * Accepts a generator middleware and yields the output of the middleware to the next operation.
    *
    * @example
-   * source([1,2,3])
+   * streamless([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
    *    using generator = disposable(source);
     for (const next of generator) {
@@ -375,7 +375,7 @@ type ChainableFunctions<
    *   .toArray() // [2, 4, 6]
    *
    * @example
-   * source([-2,1,2,-3,4])
+   * streamless([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
    *   using generator = disposable(source);
     for (const next of generator) {
@@ -386,7 +386,7 @@ type ChainableFunctions<
    *   .toArray() // [1, 2, 4]
    *
    * @example
-   * source("a", "b", "c")
+   * streamless("a", "b", "c")
    *  .lift(function* joinStrings(source) {
    *    return function() {
    *      const acc: string[] = [];

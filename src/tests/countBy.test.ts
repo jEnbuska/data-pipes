@@ -1,19 +1,18 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
-
 import { createTestSets } from "./utils/createTestSets.ts";
+import { streamless } from "../";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
     expect(
-      source<number>([])
+      streamless<number>([])
         .countBy((next) => next)
         .first(),
     ).toBe(0);
   });
   test("countBy with identity", () => {
     expect(
-      source(1)
+      streamless(1)
         .countBy((next) => next)
         .first(),
     ).toBe(1);
@@ -21,7 +20,7 @@ describe("countBy", () => {
 
   test("countBy by with selector identity", () => {
     expect(
-      source({ value: 5 })
+      streamless({ value: 5 })
         .countBy((next) => next.value)
         .first(),
     ).toBe(5);

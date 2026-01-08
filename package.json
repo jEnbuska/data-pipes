@@ -1,5 +1,5 @@
 {
-  "name": "data-pipes",
+  "name": "streamless",
   "module": "./src/index.ts",
   "type": "module",
   "types": "types",

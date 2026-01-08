@@ -1,16 +1,15 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
-
+import { streamless } from "../";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(source([]).distinctUntilChanged().toArray()).toStrictEqual([]);
+    expect(streamless([]).distinctUntilChanged().toArray()).toStrictEqual([]);
   });
 
   test("all unique", () => {
     expect(
-      source([1, 2, 3])
+      streamless([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -18,7 +17,7 @@ describe("distinctUntilChanged", () => {
 
   test("similar consecutive values", () => {
     expect(
-      source([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
+      streamless([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
     ).toStrictEqual([1, 2, 3, 4]);
   });
 

@@ -1,6 +1,6 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
+import { streamless } from "../";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {
@@ -11,7 +11,7 @@ describe("flat", () => {
     const numbers = [1, 2, 3];
     function flatten<T, const D extends number>(input: T[], depth: D) {
       return (
-        source(input)
+        streamless(input)
           .forEach(verify<FlatArray<T[], 0>>())
           .flat(depth)
           // Verify typing works correctly

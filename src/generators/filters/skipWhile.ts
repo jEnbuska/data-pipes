@@ -18,6 +18,7 @@ export function skipWhile<TInput>(
     }
   };
 }
+
 export function skipWhileAsync<TInput>(
   source: AsyncProviderFunction<TInput>,
   predicate: (next: TInput) => boolean,

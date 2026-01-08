@@ -1,18 +1,21 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
-
+import { streamless } from "../";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("every", () => {
   test("has every", () => {
-    expect(source([true, true, true]).every(Boolean).first()).toBe(true);
+    expect(streamless([true, true, true]).every(Boolean).first()).toBe(true);
   });
   test("has none", () => {
-    expect(source([false, false, false]).every(Boolean).first()).toBe(false);
+    expect(streamless([false, false, false]).every(Boolean).first()).toBe(
+      false,
+    );
   });
 
   test("has some", () => {
-    expect(source([false, false, false]).every(Boolean).first()).toBe(false);
+    expect(streamless([false, false, false]).every(Boolean).first()).toBe(
+      false,
+    );
   });
 
   const numbers = [1, 2, 3, 4];

@@ -1,22 +1,22 @@
 import { expect, test, describe } from "bun:test";
-import source from "../index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
+import { streamless } from "../";
 
 describe("first", () => {
   test("chain to first", () => {
-    expect(source([1, 2]).first() satisfies number | undefined).toBe(1);
+    expect(streamless([1, 2]).first() satisfies number | undefined).toBe(1);
   });
   describe("empty", () => {
     test("first with no default", () => {
-      expect(source([] as string[]).first() satisfies string | undefined).toBe(
-        undefined,
-      );
+      expect(
+        streamless([] as string[]).first() satisfies string | undefined,
+      ).toBe(undefined);
     });
     test("defaultTo", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([])
+        streamless([])
           .defaultTo(() => "None")
           .first(controller.signal)
           .split("") satisfies string[],
@@ -26,7 +26,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""])
+        streamless([""])
           .map(() => "None")
           .first(controller.signal) satisfies string | undefined,
       ).toBe(undefined);
@@ -35,7 +35,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""])
+        streamless([""])
           .filter(() => true)
           .first(controller.signal) satisfies string | undefined,
       ).toBe(undefined);
@@ -44,7 +44,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([[""]])
+        streamless([[""]])
           .flat()
           .first(controller.signal) satisfies string | undefined,
       ).toBe(undefined);
@@ -54,7 +54,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([] as string[])
+        streamless([] as string[])
           .fold(
             (): string[] => [],
             (acc, next) => [...acc, next],
@@ -67,7 +67,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([] as string[])
+        streamless([] as string[])
           .reduce(
             (acc: Partial<Record<string, string>>, next) => ({
               ...acc,
@@ -83,7 +83,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""] as string[])
+        streamless([""] as string[])
           .count()
           .first(controller.signal) satisfies number,
       ).toBe(0);
@@ -93,7 +93,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""] as string[])
+        streamless([""] as string[])
           .every(Boolean)
           .first(controller.signal) satisfies boolean,
       ).toBe(true);
@@ -102,7 +102,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""] as string[])
+        streamless([""] as string[])
           .every(Boolean)
           .first(controller.signal) satisfies boolean,
       ).toBe(true);
@@ -111,7 +111,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source(["abc"] as string[])
+        streamless(["abc"] as string[])
           .some(Boolean)
           .first(controller.signal) satisfies boolean,
       ).toBe(false);
@@ -120,7 +120,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source(["abc"] as string[])
+        streamless(["abc"] as string[])
           .batch(() => true)
           .first(controller.signal) satisfies string[],
       ).toStrictEqual([]);
@@ -129,7 +129,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source(["abc"] as string[])
+        streamless(["abc"] as string[])
           .chunkBy(() => true)
           .first(controller.signal) satisfies string[],
       ).toStrictEqual([]);
@@ -138,7 +138,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        (await source([Promise.resolve("")])
+        (await streamless([Promise.resolve("")])
           .resolve()
           .first(controller.signal)) satisfies string | undefined,
       ).toBe(undefined);
@@ -147,7 +147,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        (await source(Promise.resolve(""))
+        (await streamless(Promise.resolve(""))
           .defaultTo(() => Promise.resolve("Placeholder"))
           .resolve()
           .first(controller.signal)) satisfies string,
@@ -157,7 +157,7 @@ describe("first", () => {
       const controller = new AbortController();
       controller.abort();
       expect(
-        source([""]).find(Boolean).first(controller.signal) satisfies
+        streamless([""]).find(Boolean).first(controller.signal) satisfies
           | string
           | undefined,
       ).toBe(undefined);
@@ -165,7 +165,7 @@ describe("first", () => {
   });
   test("get first from async generator", async () => {
     expect(
-      (await source(async function* () {
+      (await streamless(async function* () {
         yield 1;
         yield 2;
       }).first()) satisfies number | undefined,

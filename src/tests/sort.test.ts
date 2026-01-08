@@ -1,10 +1,10 @@
 import { describe, test, expect } from "bun:test";
-import source from "../index.ts";
+import { streamless } from "../";
 
 describe("sort", () => {
   test("sort numbers", () => {
     expect(
-      source([3, 1, 2])
+      streamless([3, 1, 2])
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -12,7 +12,7 @@ describe("sort", () => {
 
   test("sort single", () => {
     expect(
-      source(1)
+      streamless(1)
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([1]);
@@ -20,7 +20,7 @@ describe("sort", () => {
 
   test("sort empty", () => {
     expect(
-      source<number>([])
+      streamless<number>([])
         .sort((a, z) => a - z)
         .toArray(),
     ).toStrictEqual([]);

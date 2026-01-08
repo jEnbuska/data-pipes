@@ -1,12 +1,12 @@
 import { describe, test, expect } from "bun:test";
 import { createProducer } from "../producer.ts";
-import source from "../index.ts";
+import { streamless } from "../";
 
-describe.only("producer", () => {
-  test.skip("producer test", async () => {
+describe("producer", () => {
+  test("producer test", async () => {
     const producer = await createProducer<number>();
     const received: number[] = [];
-    const promise = source(producer)
+    const promise = streamless(producer)
       .forEach((value) => {
         received.push(value);
       })
@@ -20,7 +20,7 @@ describe.only("producer", () => {
   test("producer test with initial", async () => {
     const producer = await createProducer<number>(0);
     const received: number[] = [];
-    const promise = source(producer)
+    const promise = streamless(producer)
       .forEach((value) => received.push(value))
       .take(3)
       .consume();
