@@ -1,4 +1,7 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 /**
@@ -7,9 +10,9 @@ import { InternalStreamless } from "../../utils";
  * streamless([{age: 5, age: 59}]).countBy((next) => next.age).first() // 64
  */
 export function countBy<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   mapper: (next: TInput) => number,
-): ProviderFunction<number> {
+): StreamlessProvider<number> {
   return function* countByGenerator() {
     let acc = 0;
     using generator = InternalStreamless.disposable(source);
@@ -21,9 +24,9 @@ export function countBy<TInput>(
 }
 
 export function countByAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   mapper: (next: TInput) => number,
-): AsyncProviderFunction<number> {
+): AsyncStreamlessProvider<number> {
   return async function* countByAsyncGenerator() {
     let acc = 0;
     using generator = InternalStreamless.disposable(source);

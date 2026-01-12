@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function sort<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): ProviderFunction<TInput, TInput[]> {
+): StreamlessProvider<TInput, TInput[]> {
   return function* sortGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -18,9 +21,9 @@ export function sort<TInput>(
 }
 
 export function sortAsync<TInput = never>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncProviderFunction<TInput, TInput[]> {
+): AsyncStreamlessProvider<TInput, TInput[]> {
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);

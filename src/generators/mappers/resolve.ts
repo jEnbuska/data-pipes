@@ -1,13 +1,50 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function resolve<TInput>(
-  source: ProviderFunction<TInput>,
-): AsyncProviderFunction<TInput extends Promise<infer U> ? U : TInput> {
+  source: StreamlessProvider<TInput>,
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* resolveGenerator() {
     using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {
       yield next as any;
+    }
+  };
+}
+
+export function resolveParallel<TInput>(
+  source: StreamlessProvider<TInput>,
+  count: number | undefined = 50,
+): AsyncStreamlessProvider<Awaited<TInput>> {
+  if (!Number.isInteger(count) || count < 1) {
+    throw new Error(`Invalid count ${count} passed to resolveParallel`);
+  }
+  return async function* resolveParallelGenerator() {
+    using generator = InternalStreamless.disposable(source);
+    const promises = new Map<string, Promise<{ key: string; value: TInput }>>();
+    let nextKey = 0;
+    function fill() {
+      while (promises.size < count) {
+        const next = generator.next();
+        if (next.done) {
+          return;
+        }
+        const key = `${nextKey++}`;
+        promises.set(
+          key,
+          Promise.resolve(next.value).then((value) => ({ key, value })),
+        );
+      }
+    }
+    fill();
+    while (promises.size) {
+      const { key, value } = await Promise.race(promises.values());
+      yield value;
+      promises.delete(key);
+      fill();
     }
   };
 }

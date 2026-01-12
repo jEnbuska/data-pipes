@@ -1,4 +1,7 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 /**
@@ -8,9 +11,9 @@ import { InternalStreamless } from "../../utils";
  * streamless([1,2,3,4].distinctBy(n => n % 2).toArray() // [1,2]
  */
 export function distinctBy<TInput, Value>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   selector: (next: TInput) => Value,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* distinctByGenerator() {
     const set = new Set<Value>();
     using generator = InternalStreamless.disposable(source);
@@ -25,9 +28,9 @@ export function distinctBy<TInput, Value>(
   };
 }
 export function distinctByAsync<TInput, Value>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   selector: (next: TInput) => Value,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
     using generator = InternalStreamless.disposable(source);

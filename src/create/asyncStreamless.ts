@@ -28,30 +28,38 @@ import {
   defaultToAsync,
   foldAsync,
 } from "../generators";
-import { type AsyncStreamless, type AsyncProviderFunction } from "../types";
+import { type AsyncStreamless, type AsyncStreamlessProvider } from "../types";
 import { InternalStreamless } from "../utils";
 import { createInitialGroups } from "../generators/reducers/groupBy";
-import { toArrayAsyncFromReturn } from "../consumers/toArray";
-import asyncStreamlessConsumers from "./asyncStreamlessConsumers";
+import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray";
+import { consumeAsync } from "../consumers/consume";
+import { firstAsync } from "../consumers/first";
 
 export function asyncStreamless<TInput, TDefault = undefined>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   getDefault: () => TDefault,
 ): AsyncStreamless<TInput, TDefault> {
   return {
-    isAsync: true,
-    ...asyncStreamlessConsumers(source, getDefault),
     batch(predicate) {
-      return asyncStreamless(batchAsync(source, predicate), (): TInput[] => []);
+      return asyncStreamless(
+        batchAsync(source, predicate),
+        InternalStreamless.getEmptyList<TInput>,
+      );
     },
     chunkBy(fn) {
-      return asyncStreamless(chunkByAsync(source, fn), (): TInput[] => []);
+      return asyncStreamless(
+        chunkByAsync(source, fn),
+        InternalStreamless.getEmptyList<TInput>,
+      );
     },
     count() {
-      return asyncStreamless(countAsync(source), () => 0);
+      return asyncStreamless(countAsync(source), InternalStreamless.getZero);
     },
     countBy(fn) {
-      return asyncStreamless(countByAsync(source, fn), () => 0);
+      return asyncStreamless(
+        countByAsync(source, fn),
+        InternalStreamless.getZero,
+      );
     },
     defaultTo(getDefault) {
       return asyncStreamless(defaultToAsync(source, getDefault), getDefault);
@@ -59,38 +67,44 @@ export function asyncStreamless<TInput, TDefault = undefined>(
     distinctBy(selector) {
       return asyncStreamless(
         distinctByAsync(source, selector),
-        () => undefined,
+        InternalStreamless.getUndefined,
       );
     },
     distinctUntilChanged(isEqual) {
       return asyncStreamless(
         distinctUntilChangedAsync(source, isEqual),
-        () => undefined,
+        InternalStreamless.getUndefined,
       );
     },
     every(predicate) {
       const everySource = everyAsync(source, predicate);
-      return asyncStreamless(
-        everySource,
-        InternalStreamless.createDefault<true>(true),
-      );
+      return asyncStreamless(everySource, () => true);
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
       return asyncStreamless(
         filterAsync<TInput, TOutput>(source, predicate),
-        () => undefined,
+        InternalStreamless.getUndefined,
       );
     },
     find(predicate) {
-      return asyncStreamless(findAsync(source, predicate), () => undefined);
+      return asyncStreamless(
+        findAsync(source, predicate),
+        InternalStreamless.getUndefined,
+      );
     },
     flat(depth) {
-      return asyncStreamless(flatAsync(source, depth), () => undefined);
+      return asyncStreamless(
+        flatAsync(source, depth),
+        InternalStreamless.getUndefined,
+      );
     },
     flatMap(callback) {
-      return asyncStreamless(flatMapAsync(source, callback), () => undefined);
+      return asyncStreamless(
+        flatMapAsync(source, callback),
+        InternalStreamless.getUndefined,
+      );
     },
     fold(initial, reducer) {
       const initialOnce = InternalStreamless.once(initial);
@@ -111,16 +125,28 @@ export function asyncStreamless<TInput, TDefault = undefined>(
       );
     },
     lift(middleware) {
-      return asyncStreamless(middleware(source), () => undefined);
+      return asyncStreamless(
+        middleware(source),
+        InternalStreamless.getUndefined,
+      );
     },
     map(mapper) {
-      return asyncStreamless(mapAsync(source, mapper), () => undefined);
+      return asyncStreamless(
+        mapAsync(source, mapper),
+        InternalStreamless.getUndefined,
+      );
     },
     max(callback) {
-      return asyncStreamless(maxAsync(source, callback), () => undefined);
+      return asyncStreamless(
+        maxAsync(source, callback),
+        InternalStreamless.getUndefined,
+      );
     },
     min(callback) {
-      return asyncStreamless(minAsync(source, callback), () => undefined);
+      return asyncStreamless(
+        minAsync(source, callback),
+        InternalStreamless.getUndefined,
+      );
     },
     reduce(reducer, initialValue) {
       return asyncStreamless(
@@ -134,16 +160,19 @@ export function asyncStreamless<TInput, TDefault = undefined>(
     skip(count) {
       return asyncStreamless(
         skipAsync(source, count),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     skipLast(count) {
-      return asyncStreamless(skipLastAsync(source, count), () => undefined);
+      return asyncStreamless(
+        skipLastAsync(source, count),
+        InternalStreamless.getUndefined,
+      );
     },
     skipWhile(predicate) {
       return asyncStreamless(
         skipWhileAsync(source, predicate),
-        () => undefined,
+        InternalStreamless.getUndefined,
       );
     },
     some(predicate) {
@@ -154,7 +183,10 @@ export function asyncStreamless<TInput, TDefault = undefined>(
       return asyncStreamlessFromListReturn(sortAsync(source, comparator));
     },
     take(count) {
-      return asyncStreamless(takeAsync(source, count), () => undefined);
+      return asyncStreamless(
+        takeAsync(source, count),
+        InternalStreamless.getUndefined,
+      );
     },
     takeLast(count) {
       return asyncStreamlessFromListReturn(takeLastAsync(source, count));
@@ -162,17 +194,34 @@ export function asyncStreamless<TInput, TDefault = undefined>(
     takeWhile(predicate) {
       return asyncStreamless(
         takeWhileAsync(source, predicate),
-        () => undefined,
+        InternalStreamless.getUndefined,
       );
+    },
+    isAsync: true,
+    [Symbol.toStringTag]: "AsyncStreamless",
+    async *[Symbol.asyncIterator]() {
+      using generator = InternalStreamless.disposable(source);
+      for await (const next of generator) {
+        yield next;
+      }
+    },
+    toArray(signal?: AbortSignal) {
+      return toArrayAsync<TInput>(source, signal);
+    },
+    consume(signal?: AbortSignal) {
+      return consumeAsync<TInput>(source, signal);
+    },
+    first(signal?: AbortSignal) {
+      return firstAsync<TInput, TDefault>(source, getDefault, signal);
     },
   };
 }
 
 function asyncStreamlessFromListReturn<TInput>(
-  source: AsyncProviderFunction<TInput, TInput[]>,
+  source: AsyncStreamlessProvider<TInput, TInput[]>,
 ): AsyncStreamless<TInput> {
   return {
-    ...asyncStreamless(source, () => undefined),
+    ...asyncStreamless(source, InternalStreamless.getUndefined),
     toArray(signal?: AbortSignal) {
       return toArrayAsyncFromReturn<TInput>(source, signal);
     },

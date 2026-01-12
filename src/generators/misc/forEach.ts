@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function forEach<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* forEachGenerator() {
     using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
@@ -15,9 +18,9 @@ export function forEach<TInput>(
 }
 
 export function forEachAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* forEachAsyncGenerator() {
     using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {

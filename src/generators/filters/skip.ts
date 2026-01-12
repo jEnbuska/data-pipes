@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function skip<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   count: number,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* skipGenerator() {
     let skipped = 0;
     using generator = InternalStreamless.disposable(source);
@@ -18,9 +21,9 @@ export function skip<TInput>(
   };
 }
 export function skipAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* skipAsyncGenerator() {
     let skipped = 0;
     using generator = InternalStreamless.disposable(source);

@@ -1,11 +1,14 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function reduce<TInput, TOutput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): ProviderFunction<TOutput> {
+): StreamlessProvider<TOutput> {
   return function* reduceGenerator() {
     let acc = initialValue;
     let index = 0;
@@ -18,10 +21,10 @@ export function reduce<TInput, TOutput>(
 }
 
 export function reduceAsync<TInput, TOutput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): AsyncProviderFunction<TOutput> {
+): AsyncStreamlessProvider<TOutput> {
   return async function* reduceAsyncGenerator() {
     let acc = initialValue;
     using generator = InternalStreamless.disposable(source);

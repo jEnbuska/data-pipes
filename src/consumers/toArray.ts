@@ -1,8 +1,11 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../types";
 import { InternalStreamless } from "../utils";
 
 export function toArray<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
@@ -15,11 +18,11 @@ export function toArray<TInput>(
 }
 
 export async function toArrayAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
   const acc: TInput[] = [];
-  const resolvable = await InternalStreamless.createResolvable<TInput[]>();
+  const resolvable = Promise.withResolvers<TInput[]>();
   if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
@@ -34,7 +37,7 @@ export async function toArrayAsync<TInput>(
   ]);
 }
 export function toArrayFromReturn<TInput>(
-  source: ProviderFunction<TInput, TInput[]>,
+  source: StreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   const generator = source();
@@ -42,15 +45,16 @@ export function toArrayFromReturn<TInput>(
   while (true) {
     if (signal.aborted) return [];
     if (result.done) return result.value ?? [];
+    /* Don't create a new list since the list is return's the list as is */
     result = generator.next();
   }
 }
 
 export async function toArrayAsyncFromReturn<TInput>(
-  source: AsyncProviderFunction<TInput, TInput[]>,
+  source: AsyncStreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<TInput[]> {
-  const resolvable = await InternalStreamless.createResolvable<TInput[]>();
+  const resolvable = Promise.withResolvers<TInput[]>();
   if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([

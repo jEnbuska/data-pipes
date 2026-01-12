@@ -1,12 +1,15 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 export function distinctUntilChanged<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* distinctUntilChangedGenerator() {
     let first = true;
     let previous: TInput;
@@ -22,9 +25,9 @@ export function distinctUntilChanged<TInput>(
 }
 
 export function distinctUntilChangedAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* distinctUntilChangedAsyncGenerator() {
     let first = true;
     let previous: TInput;

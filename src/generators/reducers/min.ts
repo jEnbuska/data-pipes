@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function min<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* minGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
@@ -24,9 +27,9 @@ export function min<TInput>(
 }
 
 export function minAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* minAsyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;

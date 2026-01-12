@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function map<TInput, TOutput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   mapper: (next: TInput) => TOutput,
-): ProviderFunction<TOutput> {
+): StreamlessProvider<TOutput> {
   return function* mapGenerator() {
     using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
@@ -14,9 +17,9 @@ export function map<TInput, TOutput>(
 }
 
 export function mapAsync<TInput, TOutput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   mapper: (next: TInput) => TOutput,
-): AsyncProviderFunction<Awaited<TOutput>> {
+): AsyncStreamlessProvider<Awaited<TOutput>> {
   return async function* mapAsyncGenerator() {
     using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {

@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function takeLast<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   count: number,
-): ProviderFunction<TInput, TInput[]> {
+): StreamlessProvider<TInput, TInput[]> {
   return function* takeLastGenerator() {
     const generator = InternalStreamless.disposable(source);
     const array = [...generator];
@@ -15,9 +18,9 @@ export function takeLast<TInput>(
 }
 
 export function takeLastAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncProviderFunction<TInput, TInput[]> {
+): AsyncStreamlessProvider<TInput, TInput[]> {
   return async function* takeLastAsyncGenerator() {
     const acc: TInput[] = [];
     using generator = InternalStreamless.disposable(source);

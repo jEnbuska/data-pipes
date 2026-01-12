@@ -1,5 +1,4 @@
 import { asyncStreamless } from "./asyncStreamless";
-import syncStreamlessConsumers from "./syncStreamlessConsumers";
 import {
   batch,
   chunkBy,
@@ -31,39 +30,35 @@ import {
   defaultTo,
   fold,
 } from "../generators";
-import { type SyncStreamless, type ProviderFunction } from "../types";
-
+import { type SyncStreamless, type StreamlessProvider } from "../types";
 import { InternalStreamless } from "../utils";
 import { createInitialGroups } from "../generators/reducers/groupBy";
-import { toArrayFromReturn } from "../consumers/toArray";
+import { toArrayFromReturn, toArray } from "../consumers/toArray";
+import { consume, first } from "../consumers";
+import { resolveParallel } from "../generators/mappers/resolve";
 
 export function syncStreamless<TInput, TDefault = undefined>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   getDefault: () => TDefault,
 ): SyncStreamless<TInput, TDefault> {
   return {
-    isAsync: false,
-    ...syncStreamlessConsumers(source, getDefault),
     batch(predicate) {
       return syncStreamless(
         batch(source, predicate),
-        InternalStreamless.createDefault<TInput[]>([]),
+        InternalStreamless.getEmptyList<TInput>,
       );
     },
     chunkBy(fn) {
       return syncStreamless(
         chunkBy(source, fn),
-        InternalStreamless.createDefault<TInput[]>([]),
+        InternalStreamless.getEmptyList<TInput>,
       );
     },
     count() {
-      return syncStreamless(count(source), InternalStreamless.createDefault(0));
+      return syncStreamless(count(source), InternalStreamless.getZero);
     },
     countBy(fn) {
-      return syncStreamless(
-        countBy(source, fn),
-        InternalStreamless.createDefault(0),
-      );
+      return syncStreamless(countBy(source, fn), InternalStreamless.getZero);
     },
     defaultTo(getDefault) {
       return syncStreamless(defaultTo(source, getDefault), getDefault);
@@ -71,45 +66,42 @@ export function syncStreamless<TInput, TDefault = undefined>(
     distinctBy(selector) {
       return syncStreamless(
         distinctBy(source, selector),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     distinctUntilChanged(isEqual) {
       return syncStreamless(
         distinctUntilChanged(source, isEqual),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     every(predicate) {
-      return syncStreamless(
-        every(source, predicate),
-        InternalStreamless.createDefault<true>(true),
-      );
+      return syncStreamless(every(source, predicate), () => true);
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
       return syncStreamless(
         filter<TInput, TOutput>(source, predicate),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     find(predicate) {
       return syncStreamless(
         find(source, predicate),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     flat(depth) {
       return syncStreamless(
         flat(source, depth),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     flatMap(callback) {
       return syncStreamless(
         flatMap(source, callback),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     fold(initial, reducer) {
@@ -130,35 +122,38 @@ export function syncStreamless<TInput, TDefault = undefined>(
     lift(middleware) {
       return syncStreamless(
         middleware(source),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     map(mapper) {
       return syncStreamless(
         map(source, mapper),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     max(callback) {
       return syncStreamless(
         max(source, callback),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     min(callback) {
       return syncStreamless(
         min(source, callback),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     reduce(reducer, initialValue) {
       return syncStreamless(
         reduce(source, reducer, initialValue),
-        InternalStreamless.createDefault(initialValue),
+        () => initialValue,
       );
     },
     resolve() {
       return asyncStreamless(resolve(source), getDefault);
+    },
+    resolveParallel(count = 100) {
+      return asyncStreamless(resolveParallel(source, count), getDefault);
     },
     reverse() {
       return syncStreamlessFromListReturn(reverse(source));
@@ -166,26 +161,23 @@ export function syncStreamless<TInput, TDefault = undefined>(
     skip(count) {
       return syncStreamless(
         skip(source, count),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     skipLast(count) {
       return syncStreamless(
         skipLast(source, count),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     skipWhile(predicate) {
       return syncStreamless(
         skipWhile(source, predicate),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     some(predicate) {
-      return syncStreamless(
-        some(source, predicate),
-        InternalStreamless.createDefault<false>(false),
-      );
+      return syncStreamless(some(source, predicate), () => false);
     },
     sort(comparator) {
       return syncStreamlessFromListReturn(sort(source, comparator));
@@ -193,7 +185,7 @@ export function syncStreamless<TInput, TDefault = undefined>(
     take(count) {
       return syncStreamless(
         take(source, count),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
     },
     takeLast(count) {
@@ -202,17 +194,34 @@ export function syncStreamless<TInput, TDefault = undefined>(
     takeWhile(predicate) {
       return syncStreamless(
         takeWhile(source, predicate),
-        InternalStreamless.createDefault(undefined),
+        InternalStreamless.getUndefined,
       );
+    },
+    isAsync: false,
+    [Symbol.toStringTag]: "SyncStreamless",
+    *[Symbol.iterator]() {
+      using generator = InternalStreamless.disposable(source);
+      for (const next of generator) {
+        yield next;
+      }
+    },
+    toArray(signal?: AbortSignal) {
+      return toArray<TInput>(source, signal);
+    },
+    consume(signal?: AbortSignal) {
+      return consume<TInput>(source, signal);
+    },
+    first(signal?: AbortSignal) {
+      return first<TInput, TDefault>(source, getDefault, signal);
     },
   };
 }
 
 function syncStreamlessFromListReturn<TInput>(
-  source: ProviderFunction<TInput, TInput[]>,
+  source: StreamlessProvider<TInput, TInput[]>,
 ): SyncStreamless<TInput> {
   return {
-    ...syncStreamless(source, InternalStreamless.createDefault(undefined)),
+    ...syncStreamless(source, InternalStreamless.getUndefined),
     toArray(signal) {
       return toArrayFromReturn<TInput>(source, signal);
     },

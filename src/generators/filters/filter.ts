@@ -1,18 +1,21 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function filter<TInput, TOutput extends TInput = TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): ProviderFunction<TOutput>;
+): StreamlessProvider<TOutput>;
 export function filter<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   predicate: (next: TInput) => any,
-): ProviderFunction<TInput>;
+): StreamlessProvider<TInput>;
 export function filter(
-  source: ProviderFunction<unknown>,
+  source: StreamlessProvider<unknown>,
   predicate: (next: unknown) => unknown,
-): ProviderFunction<unknown> {
+): StreamlessProvider<unknown> {
   return function* filterGenerator() {
     using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
@@ -22,17 +25,17 @@ export function filter(
 }
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): AsyncProviderFunction<TOutput>;
+): AsyncStreamlessProvider<TOutput>;
 export function filterAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => any,
-): AsyncProviderFunction<TInput>;
+): AsyncStreamlessProvider<TInput>;
 export function filterAsync(
-  source: AsyncProviderFunction<unknown>,
+  source: AsyncStreamlessProvider<unknown>,
   predicate: (next: unknown) => any,
-): AsyncProviderFunction<unknown> {
+): AsyncStreamlessProvider<unknown> {
   return async function* filterAsyncGenerator() {
     using generator = InternalStreamless.disposable(source);
     for await (const next of generator) {

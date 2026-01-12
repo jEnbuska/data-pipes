@@ -1,11 +1,14 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function fold<TInput, TOutput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): ProviderFunction<TOutput> {
+): StreamlessProvider<TOutput> {
   return function* foldGenerator() {
     let acc = initial();
     let index = 0;
@@ -18,10 +21,10 @@ export function fold<TInput, TOutput>(
 }
 
 export function foldAsync<TInput, TOutput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): AsyncProviderFunction<TOutput> {
+): AsyncStreamlessProvider<TOutput> {
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;

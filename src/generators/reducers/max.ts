@@ -1,10 +1,13 @@
-import { type ProviderFunction, type AsyncProviderFunction } from "../../types";
+import {
+  type StreamlessProvider,
+  type AsyncStreamlessProvider,
+} from "../../types";
 import { InternalStreamless } from "../../utils";
 
 export function max<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): ProviderFunction<TInput> {
+): StreamlessProvider<TInput> {
   return function* maxGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;
@@ -24,9 +27,9 @@ export function max<TInput>(
 }
 
 export function maxAsync<TInput>(
-  source: AsyncProviderFunction<TInput>,
+  source: AsyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncProviderFunction<TInput> {
+): AsyncStreamlessProvider<TInput> {
   return async function* maxGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;

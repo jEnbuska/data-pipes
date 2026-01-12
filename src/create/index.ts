@@ -1,13 +1,13 @@
 import type {
-  AsyncProviderFunction,
+  AsyncStreamlessProvider,
   AsyncStreamless,
-  ProviderFunction,
+  StreamlessProvider,
   SyncStreamless,
 } from "../types";
-import { InternalStreamless } from "../utils";
 import { asyncStreamless } from "./asyncStreamless";
 import { isGeneratorFunction } from "util/types";
 import { syncStreamless } from "./syncStreamless";
+import { InternalStreamless } from "../utils";
 
 /**
  * creates a streamless from the given sources
@@ -34,10 +34,10 @@ import { syncStreamless } from "./syncStreamless";
  */
 
 export function streamless<TInput>(
-  asyncGeneratorFunction: AsyncProviderFunction<TInput>,
+  asyncGeneratorFunction: AsyncStreamlessProvider<TInput>,
 ): AsyncStreamless<TInput>;
 export function streamless<TInput>(
-  source: ProviderFunction<TInput>,
+  source: StreamlessProvider<TInput>,
 ): SyncStreamless<TInput>;
 export function streamless<TInput>(
   asyncIterable: AsyncIterator<TInput>,
@@ -47,15 +47,14 @@ export function streamless<TInput>(
 ): SyncStreamless<TInput>;
 export function streamless<TInput>(value: TInput): SyncStreamless<TInput>;
 export function streamless(source: any) {
-  const returnUndefined = InternalStreamless.createDefault(undefined);
-  if (InternalStreamless.isAsyncGeneratorFunction<any>(source)) {
-    return asyncStreamless(source, returnUndefined);
+  if (isAsyncGeneratorFunction<any>(source)) {
+    return asyncStreamless(source, InternalStreamless.getUndefined);
   }
   if (isGeneratorFunction(source)) {
-    return syncStreamless(source, returnUndefined);
+    return syncStreamless(source, InternalStreamless.getUndefined);
   }
   if (source.asyncIterator) {
-    return asyncStreamless(async function* asyncDatastreamless(
+    return asyncStreamless(async function* createAsyncSource(
       signal?: AbortSignal,
     ): AsyncGenerator<any, void, undefined & void> {
       if (signal?.aborted) return;
@@ -63,9 +62,9 @@ export function streamless(source: any) {
         if (signal?.aborted) return;
         yield next;
       }
-    }, returnUndefined);
+    }, InternalStreamless.getUndefined);
   }
-  return syncStreamless(function* datastreamless(
+  return syncStreamless(function* createSyncSource(
     signal?: AbortSignal,
   ): Generator<any, void, undefined & void> {
     if (signal?.aborted) return;
@@ -77,5 +76,14 @@ export function streamless(source: any) {
       if (signal?.aborted) return;
       yield next;
     }
-  }, returnUndefined);
+  }, InternalStreamless.getUndefined);
+}
+
+function isAsyncGeneratorFunction<TInput>(
+  source: unknown,
+): source is AsyncStreamlessProvider<TInput> {
+  return (
+    Boolean(source) &&
+    Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
+  );
 }
