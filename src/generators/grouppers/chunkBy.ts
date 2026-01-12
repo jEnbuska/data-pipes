@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function chunkBy<TInput, TIdentifier = any>(
   source: StreamlessProvider<TInput>,
@@ -10,7 +10,7 @@ export function chunkBy<TInput, TIdentifier = any>(
 ): StreamlessProvider<TInput[]> {
   return function* chunkByGenerator() {
     const map = new Map<any, TInput[]>();
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);
@@ -26,7 +26,7 @@ export function chunkByAsync<TInput, TIdentifier = any>(
 ): AsyncStreamlessProvider<TInput[]> {
   return async function* chunkByAsyncGenerator() {
     const map = new Map<any, TInput[]>();
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);

@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function min<TInput>(
   source: StreamlessProvider<TInput>,
@@ -11,7 +11,7 @@ export function min<TInput>(
   return function* minGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {
@@ -33,7 +33,7 @@ export function minAsync<TInput>(
   return async function* minAsyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {

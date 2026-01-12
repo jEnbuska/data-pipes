@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function take<TInput>(
   source: StreamlessProvider<TInput>,
@@ -12,7 +12,7 @@ export function take<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       yield next;
       if (!--count) return;
@@ -28,7 +28,7 @@ export function takeAsync<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       yield next;
       if (!--count) return;

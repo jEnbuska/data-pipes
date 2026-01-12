@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function max<TInput>(
   source: StreamlessProvider<TInput>,
@@ -11,7 +11,7 @@ export function max<TInput>(
   return function* maxGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
@@ -33,7 +33,7 @@ export function maxAsync<TInput>(
   return async function* maxGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {

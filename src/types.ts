@@ -63,7 +63,13 @@ export type SyncStreamless<
   /** Resolve the promise one by one */
   resolve(): AsyncStreamless<Awaited<TInput>, TDefault>;
   /** Resolve n (count) number of promises at parallel (default 50), this might change order of the values,
-   * depending on time it takes for them to be resolved */
+   * depending on time it takes for them to be resolved
+   * @example
+   * streamless(userIds)
+   *  .map((userId) => findUserById(userId))
+   *  .resolveParallel(10) // Run's 10 findUsersById at the same time, when one user is resolved it triggers next to be run
+   *  .toArray()
+   * */
   resolveParallel(count?: number): AsyncStreamless<Awaited<TInput>, TDefault>;
 };
 
@@ -301,10 +307,10 @@ type StreamlessFunctions<
     ): Streamless<TInput, TAsync>;
     /**
      * takes each item produced by the generator and maps it to a number using the callback.
-     * Finally it yields the item with the lowest number to the next operation.
+     * Finally, it yields the item with the lowest number to the next operation.
      *
      * @example
-     * streamless(2,1,3,4)
+     * streamless([2,1,3,4])
      *  .min(n => n)
      *  .first() // 1
      */
@@ -373,7 +379,7 @@ type StreamlessFunctions<
    * @example
    * streamless([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    using generator =  InternalStreamless.disposable(source);
+   *    using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
    *     yield next * 2;
    *    }
@@ -383,20 +389,20 @@ type StreamlessFunctions<
    * @example
    * streamless([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *   using generator =  InternalStreamless.disposable(source);
-    for (const next of generator) {
-   *    if (next < 0) continue;
-   *     yield next;
+   *    using generator = InternalStreamless.disposable(source);
+   *    for (const next of generator) {
+   *      if (next < 0) continue;
+   *      yield next;
    *    }
    *   })
-   *   .toArray() // [1, 2, 4]
+   *  .toArray() // [1, 2, 4]
    *
    * @example
    * streamless("a", "b", "c")
    *  .lift(function* joinStrings(source) {
    *    return function() {
    *      const acc: string[] = [];
-   *      using generator =  InternalStreamless.disposable(source);
+   *      using generator = InternalStreamless.disposable(source);
     for (const next of generator) {
    *       acc.push(next);
    *      }
@@ -409,8 +415,13 @@ type StreamlessFunctions<
       middleware: TAsync extends true
         ? (
             source: AsyncStreamlessProvider<TInput>,
-          ) => AsyncStreamlessProvider<TOutput>
-        : (source: StreamlessProvider<TInput>) => StreamlessProvider<TOutput>,
+          ) => AsyncStreamlessProvider<
+            TOutput,
+            void | undefined | Promise<void | undefined>
+          >
+        : (
+            source: StreamlessProvider<TInput>,
+          ) => StreamlessProvider<TOutput, void | undefined>,
     ): Streamless<TOutput, TAsync>;
 
     countBy(fn: (next: TInput) => number): Streamless<number, TAsync, number>;

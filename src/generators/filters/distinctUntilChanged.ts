@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
@@ -13,7 +13,7 @@ export function distinctUntilChanged<TInput>(
   return function* distinctUntilChangedGenerator() {
     let first = true;
     let previous: TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;
@@ -31,7 +31,7 @@ export function distinctUntilChangedAsync<TInput>(
   return async function* distinctUntilChangedAsyncGenerator() {
     let first = true;
     let previous: TInput;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;

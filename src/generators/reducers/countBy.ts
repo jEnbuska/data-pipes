@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
@@ -15,7 +15,7 @@ export function countBy<TInput>(
 ): StreamlessProvider<number> {
   return function* countByGenerator() {
     let acc = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       acc += mapper(next);
     }
@@ -29,7 +29,7 @@ export function countByAsync<TInput>(
 ): AsyncStreamlessProvider<number> {
   return async function* countByAsyncGenerator() {
     let acc = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       acc += mapper(next);
     }

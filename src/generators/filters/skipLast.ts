@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function skipLast<TInput>(
   source: StreamlessProvider<TInput>,
@@ -11,7 +11,7 @@ export function skipLast<TInput>(
   return function* skipLastGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       buffer.push(next);
       if (skipped < count) {
@@ -30,7 +30,7 @@ export function skipLastAsync<TInput>(
   return async function* skipLastAsyncGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       buffer.push(next);
       if (skipped < count) {

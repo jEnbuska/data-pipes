@@ -2,7 +2,7 @@ import {
   type AsyncStreamlessProvider,
   type StreamlessProvider,
 } from "../types";
-import { InternalStreamless } from "../utils";
+import { _internalStreamless } from "../utils";
 
 export function consume<TInput>(
   source: StreamlessProvider<TInput>,
@@ -24,7 +24,7 @@ export async function consumeAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve());
   return Promise.race([
     resolvable.promise,
-    InternalStreamless.invoke(async function () {
+    _internalStreamless.invoke(async function () {
       for await (const _ of source()) {
         if (signal?.aborted) return resolvable.promise;
       }

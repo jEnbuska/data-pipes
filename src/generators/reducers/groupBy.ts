@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
@@ -15,7 +15,7 @@ export function groupBy(
 ): StreamlessProvider<any> {
   return function* groupByGenerator() {
     const record = createInitialGroups(groups);
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -34,7 +34,7 @@ export function groupByAsync(
 ): AsyncStreamlessProvider<any> {
   return async function* groupByAsyncGenerator() {
     const record = createInitialGroups(groups);
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

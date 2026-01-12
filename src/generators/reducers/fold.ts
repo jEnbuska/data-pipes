@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function fold<TInput, TOutput>(
   source: StreamlessProvider<TInput>,
@@ -12,7 +12,7 @@ export function fold<TInput, TOutput>(
   return function* foldGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -28,7 +28,7 @@ export function foldAsync<TInput, TOutput>(
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       acc = fold(acc, next, index++);
     }

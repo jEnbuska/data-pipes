@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 /**
  * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -16,7 +16,7 @@ export function distinctBy<TInput, Value>(
 ): StreamlessProvider<TInput> {
   return function* distinctByGenerator() {
     const set = new Set<Value>();
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const key = selector(next);
       if (set.has(key)) {
@@ -33,7 +33,7 @@ export function distinctByAsync<TInput, Value>(
 ): AsyncStreamlessProvider<TInput> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       const key = selector(next);
       if (set.has(key)) continue;

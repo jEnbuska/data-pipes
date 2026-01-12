@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function sort<TInput>(
   source: StreamlessProvider<TInput>,
@@ -11,7 +11,7 @@ export function sort<TInput>(
   return function* sortGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }
@@ -27,7 +27,7 @@ export function sortAsync<TInput = never>(
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }

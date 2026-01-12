@@ -21,7 +21,7 @@ function disposable(
     },
   });
 }
-export const InternalStreamless = {
+export const _internalStreamless = {
   invoke<T>(cb: () => T) {
     return cb();
   },

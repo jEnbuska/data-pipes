@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 /**
  * yields the default value if the generator does not produce any items
@@ -15,7 +15,7 @@ export function defaultTo<TInput, TDefault>(
 ): StreamlessProvider<TInput | TDefault> {
   return function* defaultToGenerator() {
     let empty = true;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       yield next;
       empty = false;
@@ -32,7 +32,7 @@ export function defaultToAsync<TInput, TDefault>(
 ): AsyncStreamlessProvider<TInput | TDefault> {
   return async function* defaultToAsyncGenerator() {
     let empty = true;
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       yield next;
       empty = false;

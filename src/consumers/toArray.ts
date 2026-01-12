@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../types";
-import { InternalStreamless } from "../utils";
+import { _internalStreamless } from "../utils";
 
 export function toArray<TInput>(
   source: StreamlessProvider<TInput>,
@@ -27,7 +27,7 @@ export async function toArrayAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    InternalStreamless.invoke(async function () {
+    _internalStreamless.invoke(async function () {
       for await (const next of source()) {
         if (signal.aborted) return [];
         acc.push(next);
@@ -36,6 +36,7 @@ export async function toArrayAsync<TInput>(
     }),
   ]);
 }
+
 export function toArrayFromReturn<TInput>(
   source: StreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
@@ -59,7 +60,7 @@ export async function toArrayAsyncFromReturn<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    InternalStreamless.invoke(async function () {
+    _internalStreamless.invoke(async function () {
       const generator = source();
       let result = await generator.next();
       while (true) {

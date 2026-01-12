@@ -1,5 +1,5 @@
 import type { StreamlessProvider, AsyncStreamlessProvider } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function batch<TInput>(
   source: StreamlessProvider<TInput>,
@@ -7,7 +7,7 @@ export function batch<TInput>(
 ): StreamlessProvider<TInput[]> {
   return function* batchGenerator() {
     let acc: TInput[] = [];
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) {
@@ -28,7 +28,7 @@ export function batchAsync<TInput>(
 ): AsyncStreamlessProvider<TInput[]> {
   return async function* batchGenerator() {
     let acc: TInput[] = [];
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) continue;

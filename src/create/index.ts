@@ -7,7 +7,7 @@ import type {
 import { asyncStreamless } from "./asyncStreamless";
 import { isGeneratorFunction } from "util/types";
 import { syncStreamless } from "./syncStreamless";
-import { InternalStreamless } from "../utils";
+import { _internalStreamless } from "../utils";
 
 /**
  * creates a streamless from the given sources
@@ -48,10 +48,10 @@ export function streamless<TInput>(
 export function streamless<TInput>(value: TInput): SyncStreamless<TInput>;
 export function streamless(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
-    return asyncStreamless(source, InternalStreamless.getUndefined);
+    return asyncStreamless(source, _internalStreamless.getUndefined);
   }
   if (isGeneratorFunction(source)) {
-    return syncStreamless(source, InternalStreamless.getUndefined);
+    return syncStreamless(source, _internalStreamless.getUndefined);
   }
   if (source.asyncIterator) {
     return asyncStreamless(async function* createAsyncSource(
@@ -62,7 +62,7 @@ export function streamless(source: any) {
         if (signal?.aborted) return;
         yield next;
       }
-    }, InternalStreamless.getUndefined);
+    }, _internalStreamless.getUndefined);
   }
   return syncStreamless(function* createSyncSource(
     signal?: AbortSignal,
@@ -76,7 +76,7 @@ export function streamless(source: any) {
       if (signal?.aborted) return;
       yield next;
     }
-  }, InternalStreamless.getUndefined);
+  }, _internalStreamless.getUndefined);
 }
 
 function isAsyncGeneratorFunction<TInput>(

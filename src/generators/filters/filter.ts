@@ -2,7 +2,7 @@ import {
   type StreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
-import { InternalStreamless } from "../../utils";
+import { _internalStreamless } from "../../utils";
 
 export function filter<TInput, TOutput extends TInput = TInput>(
   source: StreamlessProvider<TInput>,
@@ -17,7 +17,7 @@ export function filter(
   predicate: (next: unknown) => unknown,
 ): StreamlessProvider<unknown> {
   return function* filterGenerator() {
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -37,7 +37,7 @@ export function filterAsync(
   predicate: (next: unknown) => any,
 ): AsyncStreamlessProvider<unknown> {
   return async function* filterAsyncGenerator() {
-    using generator = InternalStreamless.disposable(source);
+    using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }
