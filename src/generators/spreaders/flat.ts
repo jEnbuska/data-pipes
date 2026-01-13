@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function flat<TInput, const Depth extends number = 1>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   depth?: Depth,
-): StreamlessProvider<FlatArray<TInput[], Depth>> {
+): SyncStreamlessProvider<FlatArray<TInput[], Depth>> {
   return function* flatGenerator() {
     depth = depth ?? (1 as Depth);
     using generator = _internalStreamless.disposable(source);

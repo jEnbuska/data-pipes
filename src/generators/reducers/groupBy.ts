@@ -1,5 +1,5 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
@@ -9,10 +9,10 @@ export function createInitialGroups(groups: any[] = []) {
 }
 
 export function groupBy(
-  source: StreamlessProvider<any>,
+  source: SyncStreamlessProvider<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): StreamlessProvider<any> {
+): SyncStreamlessProvider<any> {
   return function* groupByGenerator() {
     const record = createInitialGroups(groups);
     using generator = _internalStreamless.disposable(source);

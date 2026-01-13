@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function take<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   count: number,
-): StreamlessProvider<TInput> {
+): SyncStreamlessProvider<TInput> {
   return function* takeGenerator() {
     if (count <= 0) {
       return;

@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function skipLast<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   count: number,
-): StreamlessProvider<TInput> {
+): SyncStreamlessProvider<TInput> {
   return function* skipLastGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;

@@ -7,7 +7,7 @@ describe("flatMap", () => {
     expect(
       streamless([1, 2, 3])
         .flatMap((it) => it)
-        .toArray() satisfies number[],
+        .collect() satisfies number[],
     ).toStrictEqual([1, 2, 3]);
   });
 
@@ -27,7 +27,7 @@ describe("flatMap", () => {
   } = createTestSets(numbers);
   test("from single", () => {
     expect(
-      fromSingle.flatMap((next) => next).toArray() satisfies Array<
+      fromSingle.flatMap((next) => next).collect() satisfies Array<
         number | number[]
       >,
     ).toEqual(expected[0]);
@@ -37,7 +37,7 @@ describe("flatMap", () => {
     expect(
       await (fromResolvedPromises
         .flatMap((next) => next)
-        .toArray() satisfies Promise<Array<number | number[]>>),
+        .collect() satisfies Promise<Array<number | number[]>>),
     ).toStrictEqual(expected);
   });
 
@@ -45,7 +45,7 @@ describe("flatMap", () => {
     expect(
       await (fromAsyncGenerator
         .flatMap((next) => next)
-        .toArray() satisfies Promise<Array<number | number[]>>),
+        .collect() satisfies Promise<Array<number | number[]>>),
     ).toStrictEqual(expected);
   });
 
@@ -54,13 +54,13 @@ describe("flatMap", () => {
       (await fromPromises
         .resolve()
         .flatMap((next) => next)
-        .toArray()) satisfies Array<number | number[]>,
+        .collect()) satisfies Array<number | number[]>,
     ).toStrictEqual(expected);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.flatMap((next) => next).toArray() satisfies Array<
+      fromGenerator.flatMap((next) => next).collect() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual(expected);
@@ -68,7 +68,7 @@ describe("flatMap", () => {
 
   test("from array", () => {
     expect(
-      fromArray.flatMap((next) => next).toArray() satisfies Array<
+      fromArray.flatMap((next) => next).collect() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual(expected);
@@ -76,7 +76,7 @@ describe("flatMap", () => {
 
   test("from empty", () => {
     expect(
-      fromEmpty.flatMap((next) => next).toArray() satisfies Array<
+      fromEmpty.flatMap((next) => next).collect() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual([]);
@@ -84,7 +84,7 @@ describe("flatMap", () => {
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.flatMap((next) => next).toArray() satisfies Promise<
+      await (fromEmptyAsync.flatMap((next) => next).collect() satisfies Promise<
         Array<number | number[]>
       >),
     ).toStrictEqual([]);

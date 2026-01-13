@@ -13,14 +13,13 @@ import { filter, filterAsync } from "./filters/filter";
 import { find, findAsync } from "./finders/find";
 import { flat, flatAsync } from "./spreaders/flat";
 import { flatMap, flatMapAsync } from "./spreaders/flatMap";
-import { forEach, forEachAsync } from "./misc/forEach";
 import { groupBy, groupByAsync } from "./reducers/groupBy";
 import { fold, foldAsync } from "./reducers/fold";
-import { map, mapAsync } from "./mappers/map";
+import { map, mapAsync } from "./misc/map";
 import { max, maxAsync } from "./reducers/max";
 import { min, minAsync } from "./reducers/min";
 import { reduce, reduceAsync } from "./reducers/reduce";
-import { resolve } from "./mappers/resolve";
+import { resolve, resolveParallel } from "./misc/resolve";
 import { reverse, reverseAsync } from "./sorters/reverse";
 import { skip, skipAsync } from "./filters/skip";
 import { skipLast, skipLastAsync } from "./filters/skipLast";
@@ -30,6 +29,7 @@ import { sort, sortAsync } from "./sorters/sort";
 import { take, takeAsync } from "./filters/take";
 import { takeLast, takeLastAsync } from "./filters/takeLast";
 import { takeWhile, takeWhileAsync } from "./filters/takeWhile";
+import { tap, tapAsync } from "./misc/tap";
 
 export {
   fold,
@@ -58,8 +58,8 @@ export {
   flatAsync,
   flatMap,
   flatMapAsync,
-  forEach,
-  forEachAsync,
+  tap,
+  tapAsync,
   groupBy,
   groupByAsync,
   map,
@@ -89,4 +89,5 @@ export {
   takeLastAsync,
   takeWhile,
   takeWhileAsync,
+  resolveParallel,
 };

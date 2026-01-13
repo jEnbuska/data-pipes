@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function every<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): StreamlessProvider<boolean> {
+): SyncStreamlessProvider<boolean> {
   return function* everyGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

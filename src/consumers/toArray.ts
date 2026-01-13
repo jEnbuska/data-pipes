@@ -1,11 +1,11 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../types";
 import { _internalStreamless } from "../utils";
 
 export function toArray<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
@@ -38,7 +38,7 @@ export async function toArrayAsync<TInput>(
 }
 
 export function toArrayFromReturn<TInput>(
-  source: StreamlessProvider<TInput, TInput[]>,
+  source: SyncStreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   const generator = source();

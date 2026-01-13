@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function flatMap<TInput, TOutput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): StreamlessProvider<TOutput> {
+): SyncStreamlessProvider<TOutput> {
   return function* flatMapGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
@@ -24,7 +24,7 @@ export function flatMap<TInput, TOutput>(
 export function flatMapAsync<TInput, TOutput>(
   source: AsyncStreamlessProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): AsyncStreamlessProvider<Awaited<TOutput>> {
+): AsyncStreamlessProvider<TOutput> {
   return async function* flatMapAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {

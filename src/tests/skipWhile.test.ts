@@ -6,21 +6,21 @@ describe("skipWhile", () => {
   test("skipWhile negative", () => {
     const array = streamless(numbers)
       .skipWhile((n) => n < 0)
-      .toArray();
+      .collect();
     expect(array).toStrictEqual([0, 1, 2]);
   });
 
   test("skipWhile always", () => {
     const array = streamless(numbers)
       .skipWhile(() => true)
-      .toArray();
+      .collect();
     expect(array).toStrictEqual([]);
   });
 
   test("skipWhile never", () => {
     const array = streamless(numbers)
       .skipWhile(() => false)
-      .toArray();
+      .collect();
     expect(array).toStrictEqual(numbers);
   });
 });

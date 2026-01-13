@@ -1,14 +1,14 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function fold<TInput, TOutput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): StreamlessProvider<TOutput> {
+): SyncStreamlessProvider<TOutput> {
   return function* foldGenerator() {
     let acc = initial();
     let index = 0;

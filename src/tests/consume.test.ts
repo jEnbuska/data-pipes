@@ -7,7 +7,7 @@ describe("consume", () => {
   test("chainable to consume", () => {
     const consumed: number[] = [];
     streamless(numbers)
-      .forEach((value) => consumed.push(value satisfies number))
+      .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);
   });
@@ -17,7 +17,7 @@ describe("consume", () => {
     await streamless(numbers)
       .map((value) => Promise.resolve(value))
       .resolve()
-      .forEach((value) => consumed.push(value satisfies number))
+      .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);
   });
@@ -29,7 +29,7 @@ describe("consume", () => {
         yield value;
       }
     })
-      .forEach((value) => consumed.push(value satisfies number))
+      .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);
   });

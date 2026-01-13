@@ -1,14 +1,14 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function reduce<TInput, TOutput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): StreamlessProvider<TOutput> {
+): SyncStreamlessProvider<TOutput> {
   return function* reduceGenerator() {
     let acc = initialValue;
     let index = 0;

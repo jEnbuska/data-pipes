@@ -1,21 +1,21 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function filter<TInput, TOutput extends TInput = TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): StreamlessProvider<TOutput>;
+): SyncStreamlessProvider<TOutput>;
 export function filter<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => any,
-): StreamlessProvider<TInput>;
+): SyncStreamlessProvider<TInput>;
 export function filter(
-  source: StreamlessProvider<unknown>,
+  source: SyncStreamlessProvider<unknown>,
   predicate: (next: unknown) => unknown,
-): StreamlessProvider<unknown> {
+): SyncStreamlessProvider<unknown> {
   return function* filterGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

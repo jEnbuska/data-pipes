@@ -1,13 +1,15 @@
 import type {
   AsyncStreamlessProvider,
-  AsyncStreamless,
-  StreamlessProvider,
-  SyncStreamless,
+  SyncStreamlessProvider,
+  IterableAsyncStreamless,
+  IterableSyncStreamless,
+  SingleSyncStreamless,
 } from "../types";
-import { asyncStreamless } from "./asyncStreamless";
 import { isGeneratorFunction } from "util/types";
-import { syncStreamless } from "./syncStreamless";
-import { _internalStreamless } from "../utils";
+import { iterableAsyncStreamless } from "./iterableAsyncStreamless";
+import { iterableSyncStreamless } from "./iterableSyncStreamless";
+import { singleSyncStreamless } from "./singleSyncStreamless";
+import { _internalStreamless } from "../utils.ts";
 
 /**
  * creates a streamless from the given sources
@@ -19,42 +21,44 @@ import { _internalStreamless } from "../utils";
  *  .filter(filterUsers)
  *  .map(mapUsers)
  *  .groupBy()
- *  .toArray() // ...
+ *  .collect() // ...
  *
  * @example
  * streamless([1,2,3])
  * .map(n => n * 2)
- * .toArray() // [2,4,6]
+ * .collect() // [2,4,6]
  *
  * @example
  * streamless(1)
  * .map(n => n * 2)
- * .toArray() // [2]
+ * .collect() // [2]
  *
  */
 
 export function streamless<TInput>(
   asyncGeneratorFunction: AsyncStreamlessProvider<TInput>,
-): AsyncStreamless<TInput>;
+): IterableAsyncStreamless<TInput>;
 export function streamless<TInput>(
-  source: StreamlessProvider<TInput>,
-): SyncStreamless<TInput>;
+  source: SyncStreamlessProvider<TInput>,
+): IterableSyncStreamless<TInput>;
 export function streamless<TInput>(
   asyncIterable: AsyncIterator<TInput>,
-): AsyncStreamless<TInput>;
+): IterableAsyncStreamless<TInput>;
 export function streamless<TInput>(
   iterable: Iterable<TInput>,
-): SyncStreamless<TInput>;
-export function streamless<TInput>(value: TInput): SyncStreamless<TInput>;
+): IterableSyncStreamless<TInput>;
+export function streamless<TInput>(
+  value: TInput,
+): SingleSyncStreamless<TInput, undefined>;
 export function streamless(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
-    return asyncStreamless(source, _internalStreamless.getUndefined);
+    return iterableAsyncStreamless(source);
   }
   if (isGeneratorFunction(source)) {
-    return syncStreamless(source, _internalStreamless.getUndefined);
+    return iterableSyncStreamless(source);
   }
   if (source.asyncIterator) {
-    return asyncStreamless(async function* createAsyncSource(
+    return iterableAsyncStreamless(async function* createAsyncSource(
       signal?: AbortSignal,
     ): AsyncGenerator<any, void, undefined & void> {
       if (signal?.aborted) return;
@@ -62,21 +66,22 @@ export function streamless(source: any) {
         if (signal?.aborted) return;
         yield next;
       }
+    });
+  }
+  if (!source[Symbol.iterator]) {
+    return singleSyncStreamless(function* singleSyncStreamlessProvider() {
+      yield source;
     }, _internalStreamless.getUndefined);
   }
-  return syncStreamless(function* createSyncSource(
+  return iterableSyncStreamless(function* createSyncSource(
     signal?: AbortSignal,
   ): Generator<any, void, undefined & void> {
     if (signal?.aborted) return;
-    if (!source[Symbol.iterator]) {
-      yield source;
-      return undefined;
-    }
     for (const next of source) {
       if (signal?.aborted) return;
       yield next;
     }
-  }, _internalStreamless.getUndefined);
+  });
 }
 
 function isAsyncGeneratorFunction<TInput>(

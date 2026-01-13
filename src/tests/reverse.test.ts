@@ -3,7 +3,7 @@ import streamless from "../";
 
 describe("reverse", () => {
   test("chainable - numbers", () => {
-    const array = streamless([1, 2, 3]).reverse().toArray();
+    const array = streamless([1, 2, 3]).reverse().collect();
     expect(array).toStrictEqual([3, 2, 1]);
   });
 });

@@ -13,10 +13,23 @@ describe("lift", () => {
           }
         };
       })
-      .toArray();
+      .collect();
     expect(array).toStrictEqual([2, 4, 6]);
   });
 
+  test("lift single", () => {
+    const array = streamless(1)
+      .lift(function multiplyByTwo(source) {
+        return function* () {
+          using generator = _internalStreamless.disposable(source);
+          for (const next of generator) {
+            yield next * 2;
+          }
+        };
+      })
+      .collect() satisfies number[];
+    expect(array).toStrictEqual([2]);
+  });
   test("lift filter", () => {
     const array = streamless([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
@@ -28,7 +41,7 @@ describe("lift", () => {
           }
         };
       })
-      .toArray();
+      .collect();
     expect(array).toStrictEqual([1, 2, 4]);
   });
 
@@ -44,25 +57,7 @@ describe("lift", () => {
           yield acc.join(".");
         };
       })
-      .first() satisfies string | undefined;
-    expect(text).toStrictEqual("a.b.c");
-  });
-
-  test("async lift aggregate with return", async () => {
-    const text = (await streamless(["a", "b", "c"])
-      .resolve()
-      .lift(function joinStrings(source) {
-        return async function* () {
-          const acc: string[] = [];
-          using generator = _internalStreamless.disposable(source);
-          for await (const next of generator) {
-            acc.push(next);
-          }
-          yield acc.join(".");
-        };
-      })
-      .defaultTo(() => "")
-      .first()) satisfies string;
-    expect(text).toStrictEqual("a.b.c");
+      .collect() satisfies string[];
+    expect(text).toStrictEqual(["a.b.c"]);
   });
 });

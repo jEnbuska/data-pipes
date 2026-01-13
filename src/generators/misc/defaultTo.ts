@@ -1,5 +1,5 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
@@ -10,9 +10,9 @@ import { _internalStreamless } from "../../utils";
  * streamless([1,2,3].filter(it => it > 3).defaultTo(0).first() // 0
  */
 export function defaultTo<TInput, TDefault>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   getDefault: () => TDefault,
-): StreamlessProvider<TInput | TDefault> {
+): SyncStreamlessProvider<TInput | TDefault> {
   return function* defaultToGenerator() {
     let empty = true;
     using generator = _internalStreamless.disposable(source);

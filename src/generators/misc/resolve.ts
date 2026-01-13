@@ -1,11 +1,11 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function resolve<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
 ): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* resolveGenerator() {
     using generator = _internalStreamless.disposable(source);
@@ -16,8 +16,8 @@ export function resolve<TInput>(
 }
 
 export function resolveParallel<TInput>(
-  source: StreamlessProvider<TInput>,
-  count: number | undefined = 50,
+  source: SyncStreamlessProvider<TInput>,
+  count: number,
 ): AsyncStreamlessProvider<Awaited<TInput>> {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error(`Invalid count ${count} passed to resolveParallel`);
@@ -43,7 +43,7 @@ export function resolveParallel<TInput>(
 
     while (promises.size) {
       const { key, value } = await Promise.race(promises.values());
-      yield value;
+      yield value as any;
       promises.delete(key);
       const next = generator.next();
       if (next.done) continue;

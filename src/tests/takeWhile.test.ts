@@ -6,9 +6,9 @@ describe("takeWhile", () => {
   test("takeWhile negative", () => {
     const callback = mock(() => {});
     const result = streamless(numbers)
-      .forEach(callback)
+      .tap(callback)
       .takeWhile((n) => n < 0)
-      .toArray();
+      .collect();
     expect(result).toStrictEqual([-2, -1]);
     expect(callback).toHaveBeenCalledTimes(3);
   });
@@ -16,9 +16,9 @@ describe("takeWhile", () => {
   test("takeWhile always", () => {
     const callback = mock(() => {});
     const result = streamless(numbers)
-      .forEach(callback)
+      .tap(callback)
       .takeWhile(() => true)
-      .toArray();
+      .collect();
     expect(result).toStrictEqual(numbers);
     expect(callback).toHaveBeenCalledTimes(numbers.length);
   });
@@ -26,9 +26,9 @@ describe("takeWhile", () => {
   test("takeWhile never", () => {
     const callback = mock(() => {});
     const array = streamless(numbers)
-      .forEach(callback)
+      .tap(callback)
       .takeWhile(() => false)
-      .toArray();
+      .collect();
     expect(array).toStrictEqual([]);
     expect(callback).toHaveBeenCalledTimes(1);
   });

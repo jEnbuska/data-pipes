@@ -1,5 +1,5 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
@@ -7,9 +7,9 @@ import { _internalStreamless } from "../../utils";
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 export function distinctUntilChanged<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): StreamlessProvider<TInput> {
+): SyncStreamlessProvider<TInput> {
   return function* distinctUntilChangedGenerator() {
     let first = true;
     let previous: TInput;

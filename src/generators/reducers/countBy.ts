@@ -1,5 +1,5 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
@@ -7,12 +7,12 @@ import { _internalStreamless } from "../../utils";
 /**
  * counts the number of items produced by the generator and then yields the total to the next operation.
  * @example
- * streamless([{age: 5, age: 59}]).countBy((next) => next.age).first() // 64
+ * streamless([{age: 5, age: 59}]).countBy((next) => next.age).collect() // 64
  */
 export function countBy<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   mapper: (next: TInput) => number,
-): StreamlessProvider<number> {
+): SyncStreamlessProvider<number> {
   return function* countByGenerator() {
     let acc = 0;
     using generator = _internalStreamless.disposable(source);

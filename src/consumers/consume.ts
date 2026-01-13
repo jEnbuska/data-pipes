@@ -1,11 +1,11 @@
 import {
   type AsyncStreamlessProvider,
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
 } from "../types";
 import { _internalStreamless } from "../utils";
 
 export function consume<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;

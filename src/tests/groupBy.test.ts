@@ -13,7 +13,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = streamless([1, 2, 3])
         .groupBy((x) => x)
-        .first();
+        .collect();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -28,7 +28,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = streamless([1, 2, 3])
         .groupBy((x) => x, [1, 2, 4])
-        .first();
+        .collect();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -41,7 +41,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => x % 2)
-        .first();
+        .collect();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -55,7 +55,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"])
-        .first() satisfies
+        .collect() satisfies
         | (Record<"even" | "other", number[]> &
             Partial<Record<"odd", number[]>>)
         | undefined;
@@ -71,7 +71,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = streamless([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"))
-        .first();
+        .collect();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -80,7 +80,6 @@ describe("groupBy", () => {
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -92,17 +91,10 @@ describe("groupBy", () => {
     odd: number[];
     even: number[];
   };
-  test("from single", () => {
-    expect(
-      fromSingle.groupBy(getKey).first() satisfies
-        | Partial<ExpectedReturnType>
-        | undefined,
-    ).toEqual({ odd: [1] });
-  });
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises.groupBy(getKey).first() satisfies Promise<
+      await (fromResolvedPromises.groupBy(getKey).collect() satisfies Promise<
         Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -110,7 +102,7 @@ describe("groupBy", () => {
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.groupBy(getKey).first() satisfies Promise<
+      await (fromAsyncGenerator.groupBy(getKey).collect() satisfies Promise<
         Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -118,7 +110,7 @@ describe("groupBy", () => {
 
   test("from promises", async () => {
     expect(
-      (await fromPromises.resolve().groupBy(getKey).first()) satisfies
+      (await fromPromises.resolve().groupBy(getKey).collect()) satisfies
         | Partial<ExpectedReturnType>
         | undefined,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -128,7 +120,7 @@ describe("groupBy", () => {
     expect(
       fromGenerator
         .groupBy(getKey)
-        .first() satisfies Partial<ExpectedReturnType> | void,
+        .collect() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
@@ -136,7 +128,7 @@ describe("groupBy", () => {
     expect(
       fromArray
         .groupBy(getKey)
-        .first() satisfies Partial<ExpectedReturnType> | void,
+        .collect() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
@@ -144,7 +136,7 @@ describe("groupBy", () => {
     expect(
       fromEmpty
         .groupBy(getKey)
-        .first() satisfies Partial<ExpectedReturnType> | void,
+        .collect() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({});
   });
 
@@ -152,7 +144,7 @@ describe("groupBy", () => {
     expect(
       await (fromEmptyAsync
         .groupBy(getKey)
-        .first() satisfies Promise<Partial<ExpectedReturnType> | void>),
+        .collect() satisfies Promise<Partial<ExpectedReturnType> | void>),
     ).toStrictEqual({});
   });
 });

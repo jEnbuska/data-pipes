@@ -1,10 +1,10 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../types";
 
 export function first<TInput, TDefault>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): TInput | TDefault {

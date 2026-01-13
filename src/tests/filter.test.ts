@@ -7,7 +7,7 @@ describe("filter", () => {
     expect(
       streamless([1, 2, 3, 4])
         .filter((n) => n % 2)
-        .toArray(),
+        .collect(),
     ).toStrictEqual([1, 3]);
   });
 
@@ -17,7 +17,6 @@ describe("filter", () => {
   }
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -25,15 +24,10 @@ describe("filter", () => {
     fromEmpty,
     fromEmptyAsync,
   } = createTestSets(numbers);
-  test("from single", () => {
-    expect(fromSingle.filter(module2).toArray() satisfies number[]).toEqual([
-      numbers[0],
-    ]);
-  });
 
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises.filter(module2).toArray() satisfies Promise<
+      await (fromResolvedPromises.filter(module2).collect() satisfies Promise<
         number[]
       >),
     ).toStrictEqual([1, 3]);
@@ -41,7 +35,7 @@ describe("filter", () => {
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.filter(module2).toArray() satisfies Promise<
+      await (fromAsyncGenerator.filter(module2).collect() satisfies Promise<
         number[]
       >),
     ).toStrictEqual([1, 3]);
@@ -52,31 +46,31 @@ describe("filter", () => {
       (await fromPromises
         .resolve()
         .filter(module2)
-        .toArray()) satisfies number[],
+        .collect()) satisfies number[],
     ).toStrictEqual([1, 3]);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.filter(module2).toArray() satisfies number[],
+      fromGenerator.filter(module2).collect() satisfies number[],
     ).toStrictEqual([1, 3]);
   });
 
   test("from array", () => {
     expect(
-      fromArray.filter(module2).toArray() satisfies number[],
+      fromArray.filter(module2).collect() satisfies number[],
     ).toStrictEqual([1, 3]);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.filter(module2).toArray() satisfies number[],
+      fromEmpty.filter(module2).collect() satisfies number[],
     ).toStrictEqual([]);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.filter(module2).toArray() satisfies Promise<
+      await (fromEmptyAsync.filter(module2).collect() satisfies Promise<
         number[]
       >),
     ).toStrictEqual([]);

@@ -1,13 +1,13 @@
 import {
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
   type AsyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function takeLast<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   count: number,
-): StreamlessProvider<TInput, TInput[]> {
+): SyncStreamlessProvider<TInput, TInput[]> {
   return function* takeLastGenerator() {
     const generator = _internalStreamless.disposable(source);
     const array = [...generator];

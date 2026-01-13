@@ -2,10 +2,10 @@ import { describe, test, mock, expect } from "bun:test";
 import streamless from "../";
 import { createTestSets } from "./utils/createTestSets";
 
-describe("forEach", () => {
+describe("tap", () => {
   test("chainable single value", () => {
     const callback = mock((n: number) => expect(n).toBe(1));
-    streamless(1).forEach(callback).consume();
+    streamless(1).tap(callback).consume();
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
@@ -19,7 +19,7 @@ describe("forEach", () => {
   test("with multiple", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    streamless(args).forEach(callback).consume();
+    streamless(args).tap(callback).consume();
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
@@ -37,7 +37,7 @@ describe("forEach", () => {
   test("from single", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    fromSingle.forEach(callback).consume() satisfies void;
+    fromSingle.tap(callback).consume() satisfies void;
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
@@ -46,7 +46,7 @@ describe("forEach", () => {
     const callback = createCallback(args);
 
     await (fromResolvedPromises
-      .forEach(callback)
+      .tap(callback)
       .consume() satisfies Promise<void>);
 
     expect(callback).toHaveBeenCalledTimes(2);
@@ -56,44 +56,42 @@ describe("forEach", () => {
     const args = [1, 2];
     const callback = createCallback(args);
 
-    await (fromAsyncGenerator
-      .forEach(callback)
-      .consume() satisfies Promise<void>);
+    await (fromAsyncGenerator.tap(callback).consume() satisfies Promise<void>);
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
   test("from promises", async () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    (await fromPromises.resolve().forEach(callback).consume()) satisfies void;
+    (await fromPromises.resolve().tap(callback).consume()) satisfies void;
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
   test("from generator", async () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    fromGenerator.forEach(callback).consume() satisfies void;
+    fromGenerator.tap(callback).consume() satisfies void;
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
   test("from array", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    fromArray.forEach(callback).consume() satisfies void;
+    fromArray.tap(callback).consume() satisfies void;
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
   test("from empty", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    fromEmpty.forEach(callback).consume() satisfies void;
+    fromEmpty.tap(callback).consume() satisfies void;
     expect(callback).toHaveBeenCalledTimes(0);
   });
 
   test("from empty async", async () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    await (fromEmptyAsync.forEach(callback).consume() satisfies Promise<void>);
+    await (fromEmptyAsync.tap(callback).consume() satisfies Promise<void>);
     expect(callback).toHaveBeenCalledTimes(0);
   });
 });

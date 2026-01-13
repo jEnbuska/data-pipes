@@ -1,13 +1,13 @@
 import {
   type AsyncStreamlessProvider,
-  type StreamlessProvider,
+  type SyncStreamlessProvider,
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
 export function takeWhile<TInput>(
-  source: StreamlessProvider<TInput>,
+  source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): StreamlessProvider<TInput> {
+): SyncStreamlessProvider<TInput> {
   return function* takeWhileAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

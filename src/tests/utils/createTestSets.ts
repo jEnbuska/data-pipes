@@ -14,6 +14,7 @@ export function createTestSets<T>(array: T[]) {
     }),
     fromArray: streamless(array),
     fromSingle: streamless(array[0]),
+    fromSingleAsync: streamless(array[0]).resolve(),
     fromPromises: streamless(array).map((next) => Promise.resolve(next)),
     fromResolvedPromises: streamless(array)
       .map((next) => Promise.resolve(next))

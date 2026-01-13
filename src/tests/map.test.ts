@@ -16,21 +16,21 @@ describe("map", () => {
   const modulo4 = (n: number) => n % 4;
   test("from resolver promises", async () => {
     expect(
-      await (fromResolvedPromises.map(modulo4).toArray() satisfies Promise<
+      await (fromResolvedPromises.map(modulo4).collect() satisfies Promise<
         number[]
       >),
     ).toStrictEqual(expected);
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4).toArray() satisfies number[]).toEqual(
-      expected.slice(0, 1),
+    expect(fromSingle.map(modulo4).collect() satisfies number | void).toEqual(
+      expected[0],
     );
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.map(modulo4).toArray() satisfies Promise<
+      await (fromAsyncGenerator.map(modulo4).collect() satisfies Promise<
         number[]
       >),
     ).toStrictEqual(expected);
@@ -40,31 +40,31 @@ describe("map", () => {
     const first = fromPromises
       .resolve()
       .map(modulo4)
-      .toArray() satisfies Promise<number[]>;
+      .collect() satisfies Promise<number[]>;
     expect(await first).toStrictEqual(expected);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.map(modulo4).toArray() satisfies number[],
+      fromGenerator.map(modulo4).collect() satisfies number[],
     ).toStrictEqual(expected);
   });
 
   test("from array", () => {
-    expect(fromArray.map(modulo4).toArray() satisfies number[]).toStrictEqual(
+    expect(fromArray.map(modulo4).collect() satisfies number[]).toStrictEqual(
       expected,
     );
   });
 
   test("from empty", () => {
-    expect(fromEmpty.map(modulo4).toArray() satisfies number[]).toStrictEqual(
+    expect(fromEmpty.map(modulo4).collect() satisfies number[]).toStrictEqual(
       [],
     );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.map(modulo4).toArray() satisfies Promise<number[]>),
+      await (fromEmptyAsync.map(modulo4).collect() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

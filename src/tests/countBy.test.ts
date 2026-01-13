@@ -7,29 +7,13 @@ describe("countBy", () => {
     expect(
       streamless<number>([])
         .countBy((next) => next)
-        .first(),
+        .collect(),
     ).toBe(0);
-  });
-  test("countBy with identity", () => {
-    expect(
-      streamless(1)
-        .countBy((next) => next)
-        .first(),
-    ).toBe(1);
-  });
-
-  test("countBy by with selector identity", () => {
-    expect(
-      streamless({ value: 5 })
-        .countBy((next) => next.value)
-        .first(),
-    ).toBe(5);
   });
 
   const objects = [{ value: 1 }, { value: 2 }, { value: 3 }];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -37,17 +21,12 @@ describe("countBy", () => {
     fromEmpty,
     fromEmptyAsync,
   } = createTestSets(objects);
-  test("from single", () => {
-    expect(
-      fromSingle.countBy((next) => next.value).first() satisfies number | void,
-    ).toEqual(objects[0].value);
-  });
 
   test("from resolver promises", async () => {
     expect(
       await (fromResolvedPromises
         .countBy((next) => next.value)
-        .first() satisfies Promise<number | void>),
+        .collect() satisfies Promise<number>),
     ).toBe(6);
   });
 
@@ -55,7 +34,7 @@ describe("countBy", () => {
     expect(
       await (fromAsyncGenerator
         .countBy((next) => next.value)
-        .first() satisfies Promise<number | void>),
+        .collect() satisfies Promise<number>),
     ).toBe(6);
   });
 
@@ -64,27 +43,25 @@ describe("countBy", () => {
       await fromPromises
         .resolve()
         .countBy((next) => next.value)
-        .first(),
+        .collect(),
     ).toBe(6);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.countBy((next) => next.value).first() satisfies
-        | number
-        | void,
+      fromGenerator.countBy((next) => next.value).collect() satisfies number,
     ).toBe(6);
   });
 
   test("from array", () => {
     expect(
-      fromArray.countBy((next) => next.value).first() satisfies number | void,
+      fromArray.countBy((next) => next.value).collect() satisfies number,
     ).toBe(6);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.countBy((next) => next.value).first() satisfies number | void,
+      fromEmpty.countBy((next) => next.value).collect() satisfies number,
     ).toBe(0);
   });
 
@@ -92,7 +69,28 @@ describe("countBy", () => {
     expect(
       await (fromEmptyAsync
         .countBy((next) => next.value)
-        .first() satisfies Promise<number | void>),
+        .collect() satisfies Promise<number>),
+    ).toBe(0);
+  });
+
+  test("from aborted", () => {
+    const controller = new AbortController();
+    controller.abort();
+    expect(
+      streamless([1, 2, 3])
+        .countBy((next) => next)
+        .collect(controller.signal) satisfies number,
+    ).toBe(0);
+  });
+
+  test("from aborted async", async () => {
+    const controller = new AbortController();
+    controller.abort();
+    expect(
+      (await streamless([1, 2, 3])
+        .resolve()
+        .countBy((next) => next)
+        .collect(controller.signal)) satisfies number,
     ).toBe(0);
   });
 });
