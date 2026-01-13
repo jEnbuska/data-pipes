@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function take<TInput>(
+export function takeSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   count: number,
 ): SyncStreamlessProvider<TInput> {
-  return function* takeGenerator() {
+  return function* takeSyncGenerator() {
     if (count <= 0) {
       return;
     }

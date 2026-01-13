@@ -3,7 +3,7 @@ import {
   type AsyncStreamlessProvider,
 } from "../types";
 
-export function first<TInput, TDefault>(
+export function firstSync<TInput, TDefault>(
   source: SyncStreamlessProvider<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,

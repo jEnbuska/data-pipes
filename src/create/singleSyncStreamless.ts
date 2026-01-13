@@ -1,8 +1,15 @@
 import type { SingleSyncStreamless, SyncStreamlessProvider } from "../types";
-import { find, flat, flatMap, map, tap, resolve } from "../generators";
+import {
+  findSync,
+  flatSync,
+  flatMapSync,
+  mapSync,
+  tapSync,
+  resolve,
+} from "../generators";
 import { _internalStreamless } from "../utils";
-import { first } from "../consumers/first";
-import { consume } from "../consumers/consume";
+import { firstSync } from "../consumers/first";
+import { consumeSync } from "../consumers/consume";
 import { iterableSyncStreamless } from "./iterableSyncStreamless";
 import { singleAsyncStreamless } from "./singleAsyncStreamless";
 
@@ -15,34 +22,34 @@ export function singleSyncStreamless<TInput, TDefault>(
       return singleSyncStreamless(source, getDefault);
     },
     tap(callback) {
-      return singleSyncStreamless(tap(source, callback), getDefault);
+      return singleSyncStreamless(tapSync(source, callback), getDefault);
     },
     lift(middleware) {
       return iterableSyncStreamless(middleware(source));
     },
     find(predicate: (next: TInput) => boolean) {
       return singleSyncStreamless(
-        find(source, predicate),
+        findSync(source, predicate),
         _internalStreamless.getUndefined,
       );
     },
     flat(depth) {
-      return iterableSyncStreamless(flat(source, depth));
+      return iterableSyncStreamless(flatSync(source, depth));
     },
     flatMap(callback) {
-      return iterableSyncStreamless(flatMap(source, callback));
+      return iterableSyncStreamless(flatMapSync(source, callback));
     },
     map(mapper) {
       return singleSyncStreamless(
-        map(source, mapper),
+        mapSync(source, mapper),
         _internalStreamless.getUndefined,
       );
     },
     collect(signal?: AbortSignal) {
-      return first<TInput, TDefault>(source, getDefault, signal);
+      return firstSync<TInput, TDefault>(source, getDefault, signal);
     },
     consume(signal?: AbortSignal) {
-      return consume<TInput>(source, signal);
+      return consumeSync<TInput>(source, signal);
     },
     [Symbol.toStringTag]: "SingleSyncStreamless",
     resolve() {

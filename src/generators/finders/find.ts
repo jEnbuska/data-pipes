@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function find<TInput>(
+export function findSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): SyncStreamlessProvider<TInput> {
-  return function* findGenerator() {
+  return function* findSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       if (predicate(next)) return yield next;

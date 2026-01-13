@@ -7,7 +7,7 @@ import { _internalStreamless } from "../../utils";
 export function resolve<TInput>(
   source: SyncStreamlessProvider<TInput>,
 ): AsyncStreamlessProvider<Awaited<TInput>> {
-  return async function* resolveGenerator() {
+  return async function* resolveSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       yield next as any;

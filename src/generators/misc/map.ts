@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function map<TInput, TOutput>(
+export function mapSync<TInput, TOutput>(
   source: SyncStreamlessProvider<TInput>,
   mapper: (next: TInput) => TOutput,
 ): SyncStreamlessProvider<TOutput> {
-  return function* mapGenerator() {
+  return function* mapSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       yield mapper(next);

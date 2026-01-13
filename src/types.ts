@@ -175,10 +175,10 @@ export type IterableStreamless<
    *
    * @example
    * streamless([3,2,1])
-   *  .sort((a, z) => a - z)
+   *  .toSorted((a, z) => a - z)
    *  .collect() // [1,2,3]
    */
-  sort(
+  toSorted(
     compareFn?: (a: TInput, b: TInput) => number,
   ): Streamless<TAsync, true, TInput>;
   /**
@@ -301,10 +301,10 @@ export type IterableStreamless<
    * yields the items in reverse order after the generator is consumed
    * @example
    * streamless([1,2,3])
-   *  .reverse()
+   *  .toReverse()
    *  .collect() // [3,2,1]
    */
-  reverse(): Streamless<TAsync, true, TInput>;
+  toReverse(): Streamless<TAsync, true, TInput>;
 };
 
 type CommonStreamless<

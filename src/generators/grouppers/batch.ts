@@ -4,11 +4,11 @@ import type {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function batch<TInput>(
+export function batchSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   predicate: (acc: TInput[]) => boolean,
 ): SyncStreamlessProvider<TInput[]> {
-  return function* batchGenerator() {
+  return function* batchSyncGenerator() {
     let acc: TInput[] = [];
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

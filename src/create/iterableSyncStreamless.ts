@@ -1,39 +1,39 @@
 import type { SyncStreamlessProvider, IterableSyncStreamless } from "../types";
 import { _internalStreamless } from "../utils";
 import {
-  flat,
-  map,
-  tap,
-  chunkBy,
-  batch,
-  distinctBy,
-  distinctUntilChanged,
-  every,
-  filter,
-  fold,
-  groupBy,
-  max,
-  min,
-  reduce,
-  reverse,
-  skip,
-  skipLast,
-  skipWhile,
-  some,
-  sort,
-  take,
-  takeLast,
-  takeWhile,
-  flatMap,
-  find,
-  countBy,
-  count,
+  flatSync,
+  mapSync,
+  tapSync,
+  chunkBySync,
+  batchSync,
+  distinctBySync,
+  distinctUntilChangedSync,
+  everySync,
+  filterSync,
+  foldSync,
+  groupBySync,
+  maxSync,
+  minSync,
+  reduceSync,
+  toReverseSync,
+  skipSync,
+  skipLastSync,
+  skipWhileSync,
+  someSync,
+  toSortedSync,
+  takeSync,
+  takeLastSync,
+  takeWhileSync,
+  flatMapSync,
+  findSync,
+  countBySync,
+  countSync,
   resolve,
   resolveParallel,
 } from "../generators";
-import { toArrayFromReturn, toArray } from "../consumers/toArray";
+import { toArraySyncFromReturn, toArraySync } from "../consumers/toArray";
 import { createInitialGroups } from "../generators/reducers/groupBy";
-import { consume } from "../consumers";
+import { consumeSync } from "../consumers";
 import { iterableAsyncStreamless } from "./iterableAsyncStreamless";
 import { singleSyncStreamless } from "./singleSyncStreamless";
 
@@ -57,68 +57,73 @@ export function iterableSyncStreamless<TInput>(
     },
     find(predicate: (next: TInput) => boolean) {
       return singleSyncStreamless(
-        find(source, predicate),
+        findSync(source, predicate),
         _internalStreamless.getUndefined,
       );
     },
     flat(depth) {
-      return iterableSyncStreamless(flat(source, depth));
+      return iterableSyncStreamless(flatSync(source, depth));
     },
     flatMap(callback) {
-      return iterableSyncStreamless(flatMap(source, callback));
+      return iterableSyncStreamless(flatMapSync(source, callback));
     },
     map(mapper) {
-      return iterableSyncStreamless(map(source, mapper));
+      return iterableSyncStreamless(mapSync(source, mapper));
     },
     collect(signal?: AbortSignal) {
-      return toArray<TInput>(source, signal);
+      return toArraySync<TInput>(source, signal);
     },
     consume(signal?: AbortSignal) {
-      return consume<TInput>(source, signal);
+      return consumeSync<TInput>(source, signal);
     },
     [Symbol.toStringTag]: "IterableSyncStreamless",
     tap(callback) {
-      return iterableSyncStreamless(tap(source, callback));
+      return iterableSyncStreamless(tapSync(source, callback));
     },
     lift(middleware) {
       return iterableSyncStreamless(middleware(source));
     },
     countBy(fn) {
       return singleSyncStreamless(
-        countBy(source, fn),
+        countBySync(source, fn),
         _internalStreamless.getZero,
       );
     },
     count() {
-      return singleSyncStreamless(count(source), _internalStreamless.getZero);
+      return singleSyncStreamless(
+        countSync(source),
+        _internalStreamless.getZero,
+      );
     },
     chunkBy(fn) {
-      return iterableSyncStreamless(chunkBy(source, fn));
+      return iterableSyncStreamless(chunkBySync(source, fn));
     },
     batch(predicate) {
-      return iterableSyncStreamless(batch(source, predicate));
+      return iterableSyncStreamless(batchSync(source, predicate));
     },
     distinctBy(selector) {
-      return iterableSyncStreamless(distinctBy(source, selector));
+      return iterableSyncStreamless(distinctBySync(source, selector));
     },
     distinctUntilChanged(isEqual) {
-      return iterableSyncStreamless(distinctUntilChanged(source, isEqual));
+      return iterableSyncStreamless(distinctUntilChangedSync(source, isEqual));
     },
     every(predicate) {
       return singleSyncStreamless(
-        every(source, predicate),
+        everySync(source, predicate),
         _internalStreamless.getTrue,
       );
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return iterableSyncStreamless(filter<TInput, TOutput>(source, predicate));
+      return iterableSyncStreamless(
+        filterSync<TInput, TOutput>(source, predicate),
+      );
     },
     fold(initial, reducer) {
       const initialOnce = _internalStreamless.once(initial);
       return singleSyncStreamless(
-        fold(source, initialOnce, reducer),
+        foldSync(source, initialOnce, reducer),
         initialOnce,
       );
     },
@@ -126,69 +131,70 @@ export function iterableSyncStreamless<TInput>(
       keySelector: (next: TInput) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
-      return singleSyncStreamless(groupBy(source, keySelector, groups), () =>
-        Object.fromEntries(createInitialGroups(groups ?? [])),
+      return singleSyncStreamless(
+        groupBySync(source, keySelector, groups),
+        () => Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
     max(callback) {
       return singleSyncStreamless(
-        max(source, callback),
+        maxSync(source, callback),
         _internalStreamless.getUndefined,
       );
     },
     min(callback) {
       return singleSyncStreamless(
-        min(source, callback),
+        minSync(source, callback),
         _internalStreamless.getUndefined,
       );
     },
     reduce(reducer, initialValue) {
       return singleSyncStreamless(
-        reduce(source, reducer, initialValue),
+        reduceSync(source, reducer, initialValue),
         () => initialValue,
       );
     },
-    reverse() {
-      const toArraySource = reverse(source);
+    toReverse() {
+      const toArraySource = toReverseSync(source);
       return iterableSyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn<TInput>(toArraySource, signal);
         },
       });
     },
     skip(count) {
-      return iterableSyncStreamless(skip(source, count));
+      return iterableSyncStreamless(skipSync(source, count));
     },
     skipLast(count) {
-      return iterableSyncStreamless(skipLast(source, count));
+      return iterableSyncStreamless(skipLastSync(source, count));
     },
     skipWhile(predicate) {
-      return iterableSyncStreamless(skipWhile(source, predicate));
+      return iterableSyncStreamless(skipWhileSync(source, predicate));
     },
     some(predicate) {
-      return singleSyncStreamless(some(source, predicate), () => false);
+      return singleSyncStreamless(someSync(source, predicate), () => false);
     },
-    sort(comparator) {
-      const toArraySource = sort(source, comparator);
+    toSorted(comparator) {
+      const toArraySource = toSortedSync(source, comparator);
       return iterableSyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn<TInput>(toArraySource, signal);
         },
       });
     },
     take(count) {
-      return iterableSyncStreamless(take(source, count));
+      return iterableSyncStreamless(takeSync(source, count));
     },
     takeLast(count) {
-      const toArraySource = takeLast(source, count);
+      const toArraySource = takeLastSync(source, count);
       return iterableSyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn<TInput>(toArraySource, signal);
         },
       });
     },
     takeWhile(predicate) {
-      return iterableSyncStreamless(takeWhile(source, predicate));
+      return iterableSyncStreamless(takeWhileSync(source, predicate));
     },
   };
 }

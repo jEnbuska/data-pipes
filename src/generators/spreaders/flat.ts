@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function flat<TInput, const Depth extends number = 1>(
+export function flatSync<TInput, const Depth extends number = 1>(
   source: SyncStreamlessProvider<TInput>,
   depth?: Depth,
 ): SyncStreamlessProvider<FlatArray<TInput[], Depth>> {
-  return function* flatGenerator() {
+  return function* flatSyncGenerator() {
     depth = depth ?? (1 as Depth);
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

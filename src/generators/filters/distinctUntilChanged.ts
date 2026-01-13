@@ -6,11 +6,11 @@ import { _internalStreamless } from "../../utils";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
-export function distinctUntilChanged<TInput>(
+export function distinctUntilChangedSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
 ): SyncStreamlessProvider<TInput> {
-  return function* distinctUntilChangedGenerator() {
+  return function* distinctUntilChangedSyncGenerator() {
     let first = true;
     let previous: TInput;
     using generator = _internalStreamless.disposable(source);

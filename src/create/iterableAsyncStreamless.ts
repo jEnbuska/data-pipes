@@ -23,12 +23,12 @@ import {
   maxAsync,
   minAsync,
   reduceAsync,
-  reverseAsync,
+  toReverseAsync,
   skipAsync,
   skipLastAsync,
   skipWhileAsync,
   someAsync,
-  sortAsync,
+  toSortedAsync,
   takeAsync,
   takeLastAsync,
   takeWhileAsync,
@@ -151,8 +151,8 @@ export function iterableAsyncStreamless<TInput>(
         () => initialValue,
       );
     },
-    reverse() {
-      const toArraySource = reverseAsync(source);
+    toReverse() {
+      const toArraySource = toReverseAsync(source);
       return iterableAsyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(toArraySource, signal);
@@ -171,8 +171,8 @@ export function iterableAsyncStreamless<TInput>(
     some(predicate) {
       return singleAsyncStreamless(someAsync(source, predicate), () => false);
     },
-    sort(comparator) {
-      const toArraySource = sortAsync(source, comparator);
+    toSorted(comparator) {
+      const toArraySource = toSortedAsync(source, comparator);
       return iterableAsyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(toArraySource, signal);

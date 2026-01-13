@@ -1,5 +1,5 @@
-import { consume } from "./consume";
-import { first } from "./first";
-import { toArray } from "./toArray";
+import { consumeSync } from "./consume";
+import { firstSync } from "./first";
+import { toArraySync } from "./toArray";
 
-export { consume, first, toArray };
+export { consumeSync, firstSync, toArraySync };

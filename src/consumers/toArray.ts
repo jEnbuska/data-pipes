@@ -4,7 +4,7 @@ import {
 } from "../types";
 import { _internalStreamless } from "../utils";
 
-export function toArray<TInput>(
+export function toArraySync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
@@ -37,7 +37,7 @@ export async function toArrayAsync<TInput>(
   ]) as any;
 }
 
-export function toArrayFromReturn<TInput>(
+export function toArraySyncFromReturn<TInput>(
   source: SyncStreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {

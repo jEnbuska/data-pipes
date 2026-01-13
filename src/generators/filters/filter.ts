@@ -4,19 +4,19 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function filter<TInput, TOutput extends TInput = TInput>(
+export function filterSync<TInput, TOutput extends TInput = TInput>(
   source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
 ): SyncStreamlessProvider<TOutput>;
-export function filter<TInput>(
+export function filterSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => any,
 ): SyncStreamlessProvider<TInput>;
-export function filter(
+export function filterSync(
   source: SyncStreamlessProvider<unknown>,
   predicate: (next: unknown) => unknown,
 ): SyncStreamlessProvider<unknown> {
-  return function* filterGenerator() {
+  return function* filterSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       if (predicate(next)) yield next;

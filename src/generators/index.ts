@@ -1,93 +1,93 @@
-import { batch, batchAsync } from "./grouppers/batch";
-import { chunkBy, chunkByAsync } from "./grouppers/chunkBy";
-import { count, countAsync } from "./reducers/count";
-import { countBy, countByAsync } from "./reducers/countBy";
-import { defaultTo, defaultToAsync } from "./misc/defaultTo";
-import { distinctBy, distinctByAsync } from "./filters/distinctBy";
+import { batchSync, batchAsync } from "./grouppers/batch";
+import { chunkBySync, chunkByAsync } from "./grouppers/chunkBy";
+import { countSync, countAsync } from "./reducers/count";
+import { countBySync, countByAsync } from "./reducers/countBy";
+import { defaultToSync, defaultToAsync } from "./misc/defaultTo";
+import { distinctBySync, distinctByAsync } from "./filters/distinctBy";
 import {
-  distinctUntilChanged,
+  distinctUntilChangedSync,
   distinctUntilChangedAsync,
 } from "./filters/distinctUntilChanged";
-import { every, everyAsync } from "./finders/every";
-import { filter, filterAsync } from "./filters/filter";
-import { find, findAsync } from "./finders/find";
-import { flat, flatAsync } from "./spreaders/flat";
-import { flatMap, flatMapAsync } from "./spreaders/flatMap";
-import { groupBy, groupByAsync } from "./reducers/groupBy";
-import { fold, foldAsync } from "./reducers/fold";
-import { map, mapAsync } from "./misc/map";
-import { max, maxAsync } from "./reducers/max";
-import { min, minAsync } from "./reducers/min";
-import { reduce, reduceAsync } from "./reducers/reduce";
+import { everySync, everyAsync } from "./finders/every";
+import { filterSync, filterAsync } from "./filters/filter";
+import { findSync, findAsync } from "./finders/find";
+import { flatSync, flatAsync } from "./spreaders/flat";
+import { flatMapSync, flatMapAsync } from "./spreaders/flatMap";
+import { groupBySync, groupByAsync } from "./reducers/groupBy";
+import { foldSync, foldAsync } from "./reducers/fold";
+import { mapSync, mapAsync } from "./misc/map";
+import { maxSync, maxAsync } from "./reducers/max";
+import { minSync, minAsync } from "./reducers/min";
+import { reduceSync, reduceAsync } from "./reducers/reduce";
 import { resolve, resolveParallel } from "./misc/resolve";
-import { reverse, reverseAsync } from "./sorters/reverse";
-import { skip, skipAsync } from "./filters/skip";
-import { skipLast, skipLastAsync } from "./filters/skipLast";
-import { skipWhile, skipWhileAsync } from "./filters/skipWhile";
-import { some, someAsync } from "./finders/some";
-import { sort, sortAsync } from "./sorters/sort";
-import { take, takeAsync } from "./filters/take";
-import { takeLast, takeLastAsync } from "./filters/takeLast";
-import { takeWhile, takeWhileAsync } from "./filters/takeWhile";
-import { tap, tapAsync } from "./misc/tap";
+import { toReverseSync, toReverseAsync } from "./sorters/toReverse.ts";
+import { skipSync, skipAsync } from "./filters/skip";
+import { skipLastSync, skipLastAsync } from "./filters/skipLast";
+import { skipWhileSync, skipWhileAsync } from "./filters/skipWhile";
+import { someSync, someAsync } from "./finders/some";
+import { toSortedSync, toSortedAsync } from "./sorters/toSorted.ts";
+import { takeSync, takeAsync } from "./filters/take";
+import { takeLastSync, takeLastAsync } from "./filters/takeLast";
+import { takeWhileSync, takeWhileAsync } from "./filters/takeWhile";
+import { tapSync, tapAsync } from "./misc/tap";
 
 export {
-  fold,
+  foldSync,
   foldAsync,
-  batch,
+  batchSync,
   batchAsync,
-  chunkBy,
+  chunkBySync,
   chunkByAsync,
-  count,
+  countSync,
   countAsync,
-  countBy,
+  countBySync,
   countByAsync,
-  defaultTo,
+  defaultToSync,
   defaultToAsync,
-  distinctBy,
+  distinctBySync,
   distinctByAsync,
-  distinctUntilChanged,
+  distinctUntilChangedSync,
   distinctUntilChangedAsync,
-  every,
+  everySync,
   everyAsync,
-  filter,
+  filterSync,
   filterAsync,
-  find,
+  findSync,
   findAsync,
-  flat,
+  flatSync,
   flatAsync,
-  flatMap,
+  flatMapSync,
   flatMapAsync,
-  tap,
+  tapSync,
   tapAsync,
-  groupBy,
+  groupBySync,
   groupByAsync,
-  map,
+  mapSync,
   mapAsync,
-  max,
+  maxSync,
   maxAsync,
-  min,
+  minSync,
   minAsync,
-  reduce,
+  reduceSync,
   reduceAsync,
   resolve,
-  reverse,
-  reverseAsync,
-  skip,
+  toReverseSync,
+  toReverseAsync,
+  skipSync,
   skipAsync,
-  skipLast,
+  skipLastSync,
   skipLastAsync,
-  skipWhile,
+  skipWhileSync,
   skipWhileAsync,
-  some,
+  someSync,
   someAsync,
-  sort,
-  sortAsync,
-  take,
+  toSortedSync,
+  toSortedAsync,
+  takeSync,
   takeAsync,
-  takeLast,
+  takeLastSync,
   takeLastAsync,
-  takeWhile,
+  takeWhileSync,
   takeWhileAsync,
   resolveParallel,
 };

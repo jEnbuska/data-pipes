@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function skipLast<TInput>(
+export function skipLastSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   count: number,
 ): SyncStreamlessProvider<TInput> {
-  return function* skipLastGenerator() {
+  return function* skipLastSyncGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;
     using generator = _internalStreamless.disposable(source);

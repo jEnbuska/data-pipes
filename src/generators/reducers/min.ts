@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function min<TInput>(
+export function minSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
 ): SyncStreamlessProvider<TInput> {
-  return function* minGenerator() {
+  return function* minSyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;
     using generator = _internalStreamless.disposable(source);

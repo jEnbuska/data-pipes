@@ -4,12 +4,12 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function reduce<TInput, TOutput>(
+export function reduceSync<TInput, TOutput>(
   source: SyncStreamlessProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
 ): SyncStreamlessProvider<TOutput> {
-  return function* reduceGenerator() {
+  return function* reduceSyncGenerator() {
     let acc = initialValue;
     let index = 0;
     using generator = _internalStreamless.disposable(source);

@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function flatMap<TInput, TOutput>(
+export function flatMapSync<TInput, TOutput>(
   source: SyncStreamlessProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
 ): SyncStreamlessProvider<TOutput> {
-  return function* flatMapGenerator() {
+  return function* flatMapSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       const out = flatMapper(next);

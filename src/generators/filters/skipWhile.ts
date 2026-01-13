@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function skipWhile<TInput>(
+export function skipWhileSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): SyncStreamlessProvider<TInput> {
-  return function* skipWhileGenerator() {
+  return function* skipWhileSyncGenerator() {
     let skip = true;
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

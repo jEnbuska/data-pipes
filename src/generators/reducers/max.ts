@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function max<TInput>(
+export function maxSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
 ): SyncStreamlessProvider<TInput> {
-  return function* maxGenerator() {
+  return function* maxSyncGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;
     using generator = _internalStreamless.disposable(source);

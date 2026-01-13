@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function chunkBy<TInput, TIdentifier = any>(
+export function chunkBySync<TInput, TIdentifier = any>(
   source: SyncStreamlessProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
 ): SyncStreamlessProvider<TInput[]> {
-  return function* chunkByGenerator() {
+  return function* chunkBySyncGenerator() {
     const map = new Map<any, TInput[]>();
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 import { createTestSets } from "./utils/createTestSets";
 
-describe("toArray", () => {
+describe("array collect tests", () => {
   const numbers = [1, 2, 3];
   test("array test set", async () => {
     const {

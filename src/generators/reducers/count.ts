@@ -4,15 +4,10 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-/**
- * counts the number of items produced by the generator and then yields the total to the next operation.
- * @example
- * streamless([1,2,3])count().collect() // 3
- */
-export function count<TInput>(
+export function countSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
 ): SyncStreamlessProvider<number> {
-  return function* countGenerator() {
+  return function* countSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     yield [...generator].length;
   };

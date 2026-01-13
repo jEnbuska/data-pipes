@@ -4,12 +4,12 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function fold<TInput, TOutput>(
+export function foldSync<TInput, TOutput>(
   source: SyncStreamlessProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
 ): SyncStreamlessProvider<TOutput> {
-  return function* foldGenerator() {
+  return function* foldSyncGenerator() {
     let acc = initial();
     let index = 0;
     using generator = _internalStreamless.disposable(source);

@@ -4,17 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-/**
- * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
- *
- * @example
- * streamless([1,2,3,4].distinctBy(n => n % 2).collect() // [1,2]
- */
-export function distinctBy<TInput, Value>(
+export function distinctBySync<TInput, Value>(
   source: SyncStreamlessProvider<TInput>,
   selector: (next: TInput) => Value,
 ): SyncStreamlessProvider<TInput> {
-  return function* distinctByGenerator() {
+  return function* distinctBySyncGenerator() {
     const set = new Set<Value>();
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

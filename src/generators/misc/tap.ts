@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function tap<TInput>(
+export function tapSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   consumer: (next: TInput) => unknown,
 ): SyncStreamlessProvider<TInput> {
-  return function* tapGenerator() {
+  return function* tapSyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {
       consumer(next);

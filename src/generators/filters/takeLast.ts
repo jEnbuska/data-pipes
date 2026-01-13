@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function takeLast<TInput>(
+export function takeLastSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   count: number,
 ): SyncStreamlessProvider<TInput, TInput[]> {
-  return function* takeLastGenerator() {
+  return function* takeLastSyncGenerator() {
     const generator = _internalStreamless.disposable(source);
     const array = [...generator];
     const list = array.slice(Math.max(array.length - count, 0));

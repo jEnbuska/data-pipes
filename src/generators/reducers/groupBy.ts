@@ -8,12 +8,12 @@ export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
 }
 
-export function groupBy(
+export function groupBySync(
   source: SyncStreamlessProvider<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
 ): SyncStreamlessProvider<any> {
-  return function* groupByGenerator() {
+  return function* groupBySyncGenerator() {
     const record = createInitialGroups(groups);
     using generator = _internalStreamless.disposable(source);
     for (const next of generator) {

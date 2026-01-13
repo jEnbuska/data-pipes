@@ -4,7 +4,7 @@ import {
 } from "../types";
 import { _internalStreamless } from "../utils";
 
-export function consume<TInput>(
+export function consumeSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
 ): void {

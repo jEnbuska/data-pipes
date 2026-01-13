@@ -4,11 +4,11 @@ import {
 } from "../../types";
 import { _internalStreamless } from "../../utils";
 
-export function sort<TInput>(
+export function toSortedSync<TInput>(
   source: SyncStreamlessProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
 ): SyncStreamlessProvider<TInput, TInput[]> {
-  return function* sortGenerator() {
+  return function* sortSyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
     using generator = _internalStreamless.disposable(source);
@@ -20,7 +20,7 @@ export function sort<TInput>(
   };
 }
 
-export function sortAsync<TInput = never>(
+export function toSortedAsync<TInput = never>(
   source: AsyncStreamlessProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
 ): AsyncStreamlessProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
@@ -36,6 +36,12 @@ export function sortAsync<TInput = never>(
   };
 }
 
+function createJsonComparable(value: any) {
+  const { stack } = new Error("");
+  console.warn(`Streamless:\nCreating Object tack trace using JSON.stringify for comparison at:
+${stack}\nNote this might be quite heavy operation and the sort result might be unpredictable`);
+  return JSON.stringify(value);
+}
 export function defaultCompare(a: unknown, b: unknown): number {
   // Numbers: handle NaN, undefined, null last
   if (typeof a === "number" && typeof b === "number") {
@@ -51,9 +57,10 @@ export function defaultCompare(a: unknown, b: unknown): number {
   if (typeof a === "string" && typeof b === "string") {
     return a < b ? -1 : a > b ? 1 : 0;
   }
+
   // Fallback: JSON string compare to keep deterministic
-  const sa = a === undefined || a === null ? "\uffff" : JSON.stringify(a);
-  const sb = b === undefined || b === null ? "\uffff" : JSON.stringify(b);
+  const sa = a === undefined || a === null ? "\uffff" : createJsonComparable(a);
+  const sb = b === undefined || b === null ? "\uffff" : createJsonComparable(b);
   return sa < sb ? -1 : sa > sb ? 1 : 0;
 }
 
