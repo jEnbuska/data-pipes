@@ -20,14 +20,14 @@ export function reverse<TInput>(
 
 export function reverseAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
-): AsyncStreamlessProvider<TInput, TInput[]> {
+): AsyncStreamlessProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* reverseAsyncGenerator() {
     const acc: TInput[] = [];
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       acc.unshift(next);
     }
-    yield* acc;
-    return acc;
+    yield* acc as Array<Awaited<TInput>>;
+    return acc as Array<Awaited<TInput>>;
   };
 }

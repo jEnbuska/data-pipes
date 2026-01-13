@@ -20,9 +20,9 @@ export function toArray<TInput>(
 export async function toArrayAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   signal = new AbortController().signal,
-): Promise<TInput[]> {
+): Promise<Array<Awaited<TInput>>> {
   const acc: TInput[] = [];
-  const resolvable = Promise.withResolvers<TInput[]>();
+  const resolvable = Promise.withResolvers<Array<Awaited<TInput>>>();
   if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
@@ -34,7 +34,7 @@ export async function toArrayAsync<TInput>(
       }
       return acc;
     }),
-  ]);
+  ]) as any;
 }
 
 export function toArrayFromReturn<TInput>(
@@ -51,12 +51,12 @@ export function toArrayFromReturn<TInput>(
   }
 }
 
-export async function toArrayAsyncFromReturn<TInput>(
+export function toArrayAsyncFromReturn<TInput>(
   source: AsyncStreamlessProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
-): Promise<TInput[]> {
-  const resolvable = Promise.withResolvers<TInput[]>();
-  if (signal.aborted) return [];
+): Promise<Array<Awaited<TInput>>> {
+  const resolvable = Promise.withResolvers<any[]>();
+  if (signal.aborted) return Promise.resolve([]);
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
@@ -69,5 +69,5 @@ export async function toArrayAsyncFromReturn<TInput>(
         result = await generator.next();
       }
     }),
-  ]);
+  ]) as Promise<Array<Awaited<TInput>>>;
 }

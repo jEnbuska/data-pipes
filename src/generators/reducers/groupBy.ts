@@ -31,7 +31,7 @@ export function groupByAsync(
   source: AsyncStreamlessProvider<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): AsyncStreamlessProvider<any> {
+): AsyncStreamlessProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator() {
     const record = createInitialGroups(groups);
     using generator = _internalStreamless.disposable(source);

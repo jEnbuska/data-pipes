@@ -24,7 +24,7 @@ export function flatMap<TInput, TOutput>(
 export function flatMapAsync<TInput, TOutput>(
   source: AsyncStreamlessProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): AsyncStreamlessProvider<TOutput> {
+): AsyncStreamlessProvider<Awaited<TOutput>> {
   return async function* flatMapAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {

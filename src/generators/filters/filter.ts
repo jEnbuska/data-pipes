@@ -27,11 +27,11 @@ export function filter(
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
   source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): AsyncStreamlessProvider<TOutput>;
+): AsyncStreamlessProvider<Awaited<TOutput>>;
 export function filterAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => any,
-): AsyncStreamlessProvider<TInput>;
+): AsyncStreamlessProvider<Awaited<TInput>>;
 export function filterAsync(
   source: AsyncStreamlessProvider<unknown>,
   predicate: (next: unknown) => any,

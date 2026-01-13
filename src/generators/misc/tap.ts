@@ -20,7 +20,7 @@ export function tap<TInput>(
 export function tapAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* tapAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {

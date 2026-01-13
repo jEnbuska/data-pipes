@@ -1,9 +1,7 @@
-export type Await<T> = T extends Promise<infer R> ? R : T;
-
 export type AsyncStreamlessProvider<
   TOutput,
-  TReturn = unknown,
-> = () => AsyncGenerator<Awaited<TOutput>, TReturn, undefined & void>;
+  TReturn = unknown | void,
+> = () => AsyncGenerator<TOutput, TReturn, undefined & void>;
 
 export type SyncStreamlessProvider<
   TOutput,
@@ -40,7 +38,7 @@ export type SingleSyncStreamless<TInput, TDefault> = CommonStreamless<
 export type SingleAsyncStreamless<TInput, TDefault> = CommonStreamless<
   true,
   false,
-  TInput,
+  Awaited<TInput>,
   TDefault
 > & {
   [Symbol.toStringTag]: `SingleAsyncStreamless`;
@@ -65,12 +63,12 @@ export type IterableSyncStreamless<TInput> = IterableStreamless<
 
 export type IterableAsyncStreamless<TInput> = IterableStreamless<
   true,
-  TInput
+  Awaited<TInput>
 > & {
   [Symbol.asyncIterator](): AsyncIterableIterator<TInput>;
   [Symbol.toStringTag]: `IterableAsyncStreamless`;
   consume(signal?: AbortSignal): Promise<void>;
-  collect(signal?: AbortSignal): Promise<TInput[]>;
+  collect(signal?: AbortSignal): Promise<Array<Awaited<TInput>>>;
 };
 
 export type IterableStreamless<
@@ -423,15 +421,18 @@ type CommonStreamless<
     predicate: (next: TInput) => next is TOutput,
   ): Streamless<TAsync, false, TOutput, undefined>;
   lift<TOutput = never>(
-    middleware: TAsync extends true
-      ? (
-          source: AsyncStreamlessProvider<TInput>,
-        ) => AsyncStreamlessProvider<
-          TOutput,
-          void | undefined | Promise<void | undefined>
-        >
-      : (
-          source: SyncStreamlessProvider<TInput>,
-        ) => SyncStreamlessProvider<TOutput, void | undefined>,
+    middleware: StreamlessLiftMiddleware<TAsync, TInput, TOutput>,
   ): Streamless<TAsync, true, TOutput>;
 };
+
+export type StreamlessLiftMiddleware<TAsync, TInput, TOutput> =
+  TAsync extends true
+    ? (
+        source: AsyncStreamlessProvider<TInput>,
+      ) => AsyncStreamlessProvider<
+        Awaited<TOutput>,
+        void | undefined | Promise<void | undefined>
+      >
+    : (
+        source: SyncStreamlessProvider<TInput>,
+      ) => SyncStreamlessProvider<Awaited<TOutput>, void | undefined>;

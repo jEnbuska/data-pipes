@@ -24,13 +24,13 @@ export function flat<TInput, const Depth extends number = 1>(
 export function flatAsync<TInput, const Depth extends number = 1>(
   source: AsyncStreamlessProvider<TInput>,
   depth?: Depth,
-): AsyncStreamlessProvider<FlatArray<TInput[], Depth>> {
+): AsyncStreamlessProvider<Awaited<FlatArray<TInput[], Depth>>> {
   return async function* flatGenerator() {
     depth = depth ?? (1 as Depth);
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
-        yield next;
+        yield next as any;
         continue;
       }
       yield* next.flat(depth - 1) as any;

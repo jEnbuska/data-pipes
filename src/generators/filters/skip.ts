@@ -23,7 +23,7 @@ export function skip<TInput>(
 export function skipAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* skipAsyncGenerator() {
     let skipped = 0;
     using generator = _internalStreamless.disposable(source);

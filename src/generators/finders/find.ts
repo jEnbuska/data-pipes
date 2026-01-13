@@ -19,7 +19,7 @@ export function find<TInput>(
 export function findAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* findAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {

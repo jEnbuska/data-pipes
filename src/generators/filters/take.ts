@@ -23,7 +23,7 @@ export function take<TInput>(
 export function takeAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* takeAsyncGenerator() {
     if (count <= 0) {
       return;

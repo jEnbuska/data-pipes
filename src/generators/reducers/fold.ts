@@ -24,7 +24,7 @@ export function foldAsync<TInput, TOutput>(
   source: AsyncStreamlessProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): AsyncStreamlessProvider<TOutput> {
+): AsyncStreamlessProvider<Awaited<TOutput>> {
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;

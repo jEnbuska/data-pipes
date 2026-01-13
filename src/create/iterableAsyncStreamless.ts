@@ -39,7 +39,7 @@ import { createInitialGroups } from "../generators/reducers/groupBy";
 import { singleAsyncStreamless } from "./singleAsyncStreamless";
 
 export function iterableAsyncStreamless<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncStreamlessProvider<Awaited<TInput>>,
   overrides: Partial<IterableAsyncStreamless<TInput>> = {},
 ): IterableAsyncStreamless<TInput> {
   return {
@@ -50,7 +50,7 @@ export function iterableAsyncStreamless<TInput>(
         yield next;
       }
     },
-    find(predicate: (next: TInput) => boolean) {
+    find(predicate: (next: Awaited<TInput>) => boolean) {
       return singleAsyncStreamless(
         findAsync(source, predicate),
         _internalStreamless.getUndefined,
@@ -125,7 +125,7 @@ export function iterableAsyncStreamless<TInput>(
       );
     },
     groupBy(
-      keySelector: (next: TInput) => PropertyKey,
+      keySelector: (next: any) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
       return singleAsyncStreamless(
@@ -155,7 +155,7 @@ export function iterableAsyncStreamless<TInput>(
       const toArraySource = reverseAsync(source);
       return iterableAsyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayAsyncFromReturn<TInput>(toArraySource, signal);
+          return toArrayAsyncFromReturn(toArraySource, signal);
         },
       });
     },
@@ -175,7 +175,7 @@ export function iterableAsyncStreamless<TInput>(
       const toArraySource = sortAsync(source, comparator);
       return iterableAsyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayAsyncFromReturn<TInput>(toArraySource, signal);
+          return toArrayAsyncFromReturn(toArraySource, signal);
         },
       });
     },
@@ -186,7 +186,7 @@ export function iterableAsyncStreamless<TInput>(
       const toArraySource = takeLastAsync(source, count);
       return iterableAsyncStreamless(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArrayAsyncFromReturn<TInput>(toArraySource, signal);
+          return toArrayAsyncFromReturn(toArraySource, signal);
         },
       });
     },

@@ -24,7 +24,7 @@ export function reduceAsync<TInput, TOutput>(
   source: AsyncStreamlessProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): AsyncStreamlessProvider<TOutput> {
+): AsyncStreamlessProvider<Awaited<TOutput>> {
   return async function* reduceAsyncGenerator() {
     let acc = initialValue;
     using generator = _internalStreamless.disposable(source);

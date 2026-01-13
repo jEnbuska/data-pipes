@@ -1,6 +1,7 @@
 import {
   type AsyncStreamlessProvider,
   type SingleAsyncStreamless,
+  type StreamlessLiftMiddleware,
 } from "../types";
 import { firstAsync } from "../consumers/first";
 import { _internalStreamless } from "../utils";
@@ -16,7 +17,7 @@ import { iterableAsyncStreamless } from "./iterableAsyncStreamless";
 
 const stringTag = "SingleAsyncStreamless";
 export function singleAsyncStreamless<TInput, TDefault>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncStreamlessProvider<Awaited<TInput>>,
   getDefault: () => TDefault,
 ): SingleAsyncStreamless<TInput, TDefault> {
   return {
@@ -28,10 +29,12 @@ export function singleAsyncStreamless<TInput, TDefault>(
     tap(callback) {
       return singleAsyncStreamless(tapAsync(source, callback), getDefault);
     },
-    lift(middleware) {
-      return iterableAsyncStreamless(middleware(source));
+    lift<TOutput>(
+      middleware: StreamlessLiftMiddleware<true, Awaited<TInput>, TOutput>,
+    ) {
+      return iterableAsyncStreamless<TOutput>(middleware(source));
     },
-    find(predicate: (next: TInput) => boolean) {
+    find(predicate: (next: Awaited<TInput>) => boolean) {
       return singleAsyncStreamless(
         findAsync(source, predicate),
         _internalStreamless.getUndefined,
@@ -50,10 +53,10 @@ export function singleAsyncStreamless<TInput, TDefault>(
       );
     },
     collect(signal?: AbortSignal) {
-      return firstAsync<TInput, TDefault>(source, getDefault, signal);
+      return firstAsync(source, getDefault, signal);
     },
     consume(signal?: AbortSignal) {
-      return consumeAsync<TInput>(source, signal);
+      return consumeAsync(source, signal);
     },
     [Symbol.toStringTag]: stringTag,
   };

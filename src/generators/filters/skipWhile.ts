@@ -22,7 +22,7 @@ export function skipWhile<TInput>(
 export function skipWhileAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* skipWhileAsyncGenerator() {
     let skip = true;
     using generator = _internalStreamless.disposable(source);

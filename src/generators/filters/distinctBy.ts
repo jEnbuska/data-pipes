@@ -30,7 +30,7 @@ export function distinctBy<TInput, Value>(
 export function distinctByAsync<TInput, Value>(
   source: AsyncStreamlessProvider<TInput>,
   selector: (next: TInput) => Value,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
     using generator = _internalStreamless.disposable(source);

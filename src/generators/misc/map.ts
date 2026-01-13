@@ -19,7 +19,7 @@ export function map<TInput, TOutput>(
 export function mapAsync<TInput, TOutput>(
   source: AsyncStreamlessProvider<TInput>,
   mapper: (next: TInput) => TOutput,
-): AsyncStreamlessProvider<TOutput> {
+): AsyncStreamlessProvider<Awaited<TOutput>> {
   return async function* mapAsyncGenerator() {
     using generator = _internalStreamless.disposable(source);
     for await (const next of generator) {

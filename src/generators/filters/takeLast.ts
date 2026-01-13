@@ -20,7 +20,7 @@ export function takeLast<TInput>(
 export function takeLastAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<TInput, TInput[]> {
+): AsyncStreamlessProvider<Awaited<TInput>, TInput[]> {
   return async function* takeLastAsyncGenerator() {
     const acc: TInput[] = [];
     using generator = _internalStreamless.disposable(source);

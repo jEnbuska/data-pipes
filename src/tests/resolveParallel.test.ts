@@ -18,12 +18,12 @@ describe("parallel", () => {
   test(
     "Parallel with all at once",
     async () => {
-      const result = (await streamless([500, 404, 100, 300, 200])
+      const result = await (streamless([500, 404, 100, 300, 200])
         .map(async (it) => {
           return await sleep(it).then(() => it);
         })
         .resolveParallel(5)
-        .collect()) satisfies number[];
+        .collect() satisfies Promise<number[]>);
 
       expect(result).toStrictEqual([100, 200, 300, 404, 500]);
     },

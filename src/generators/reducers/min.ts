@@ -29,7 +29,7 @@ export function min<TInput>(
 export function minAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* minAsyncGenerator() {
     let currentMin: undefined | number;
     let current: undefined | TInput;

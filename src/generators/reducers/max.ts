@@ -29,7 +29,7 @@ export function max<TInput>(
 export function maxAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* maxGenerator() {
     let currentMax: undefined | number;
     let current: undefined | TInput;

@@ -27,7 +27,7 @@ export function distinctUntilChanged<TInput>(
 export function distinctUntilChangedAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* distinctUntilChangedAsyncGenerator() {
     let first = true;
     let previous: TInput;

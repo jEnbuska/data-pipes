@@ -23,7 +23,7 @@ export function sort<TInput>(
 export function sortAsync<TInput = never>(
   source: AsyncStreamlessProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncStreamlessProvider<TInput, TInput[]> {
+): AsyncStreamlessProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -31,8 +31,8 @@ export function sortAsync<TInput = never>(
     for await (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }
-    yield* acc;
-    return acc;
+    yield* acc as Array<Awaited<TInput>>;
+    return acc as Array<Awaited<TInput>>;
   };
 }
 
@@ -61,19 +61,14 @@ function createIndexFinder<TInput>(
   arr: TInput[],
   comparator: (a: TInput, b: TInput) => number,
 ) {
-  return function findIndex(
-    next: TInput,
-    low = 0,
-    high = arr.length - 1,
-    cursor = Math.floor((low + high) / 2),
-  ) {
-    if (low >= high) {
+  return function findIndex(next: TInput, low = 0, high = arr.length - 1) {
+    if (low > high) {
       return low;
     }
-    const mid = Math.floor((high + low) / 2);
-    const diff = comparator(next, arr[cursor]);
+    const mid = Math.floor((low + high) / 2);
+    const diff = comparator(next, arr[mid]);
     if (diff < 0) {
-      return findIndex(next, low, mid);
+      return findIndex(next, low, mid - 1);
     }
     return findIndex(next, mid + 1, high);
   };

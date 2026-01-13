@@ -26,7 +26,7 @@ export function skipLast<TInput>(
 export function skipLastAsync<TInput>(
   source: AsyncStreamlessProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<TInput> {
+): AsyncStreamlessProvider<Awaited<TInput>> {
   return async function* skipLastAsyncGenerator() {
     const buffer: TInput[] = [];
     let skipped = 0;
