@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
 import { createTestSets } from "./utils/createTestSets";
-import streamless from "../";
+import yielded from "../";
 
 describe("find", () => {
   test("find first", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .find((it) => it === 1)
         .collect(),
     ).toStrictEqual(1);
@@ -13,7 +13,7 @@ describe("find", () => {
 
   test("find second", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .find((it) => it === 2)
         .collect() satisfies number | undefined,
     ).toStrictEqual(2);
@@ -21,7 +21,7 @@ describe("find", () => {
 
   test("find last", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .find((it) => it === 3)
         .collect(),
     ).toStrictEqual(3);
@@ -29,7 +29,7 @@ describe("find", () => {
 
   test("find none", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .find((it) => it === 4)
         .collect(),
     ).toStrictEqual(undefined);

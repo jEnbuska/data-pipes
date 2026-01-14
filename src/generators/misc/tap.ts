@@ -1,15 +1,15 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function tapSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): SyncStreamlessProvider<TInput> {
+): SyncYieldedProvider<TInput> {
   return function* tapSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       consumer(next);
       yield next;
@@ -18,11 +18,11 @@ export function tapSync<TInput>(
 }
 
 export function tapAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* tapAsyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       consumer(next);
       yield next;

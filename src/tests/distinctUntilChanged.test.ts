@@ -1,15 +1,15 @@
 import { describe, test, expect } from "bun:test";
-import streamless from "../";
+import yielded from "../";
 import { createTestSets } from "./utils/createTestSets";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(streamless([]).distinctUntilChanged().collect()).toStrictEqual([]);
+    expect(yielded([]).distinctUntilChanged().collect()).toStrictEqual([]);
   });
 
   test("all unique", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
         .collect(),
     ).toStrictEqual([1, 2, 3]);
@@ -17,7 +17,7 @@ describe("distinctUntilChanged", () => {
 
   test("similar consecutive values", () => {
     expect(
-      streamless([1, 1, 2, 3, 3, 4]).distinctUntilChanged().collect(),
+      yielded([1, 1, 2, 3, 3, 4]).distinctUntilChanged().collect(),
     ).toStrictEqual([1, 2, 3, 4]);
   });
 

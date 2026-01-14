@@ -1,21 +1,21 @@
 import type {
-  AsyncStreamlessProvider,
-  SyncStreamlessProvider,
-  IterableAsyncStreamless,
-  IterableSyncStreamless,
-  SingleSyncStreamless,
+  AsyncYieldedProvider,
+  SyncYieldedProvider,
+  IterableAsyncYielded,
+  IterableSyncYielded,
+  SingleSyncYielded,
 } from "../types";
 import { isGeneratorFunction } from "util/types";
-import { iterableAsyncStreamless } from "./iterableAsyncStreamless";
-import { iterableSyncStreamless } from "./iterableSyncStreamless";
-import { singleSyncStreamless } from "./singleSyncStreamless";
-import { _internalStreamless } from "../utils.ts";
+import { iterableAsyncYielded } from "./iterableAsyncYielded";
+import { iterableSyncYielded } from "./iterableSyncYielded";
+import { singleSyncYielded } from "./singleSyncYielded";
+import { _internalYielded } from "../utils.ts";
 
 /**
- * creates a streamless from the given sources
+ * creates a yielded from the given sources
  *
  * @example
- * streamless(async function*() {
+ * yielded(async function*() {
  *   yield * getUsersByGroup(groupId);
  * })
  *  .filter(filterUsers)
@@ -24,41 +24,45 @@ import { _internalStreamless } from "../utils.ts";
  *  .collect() // ...
  *
  * @example
- * streamless([1,2,3])
+ * yielded([1,2,3])
  * .map(n => n * 2)
  * .collect() // [2,4,6]
  *
  * @example
- * streamless(1)
+ * yielded(1)
  * .map(n => n * 2)
  * .collect() // [2]
  *
  */
 
-export function streamless<TInput>(
-  asyncGeneratorFunction: AsyncStreamlessProvider<TInput>,
-): IterableAsyncStreamless<TInput>;
-export function streamless<TInput>(
-  source: SyncStreamlessProvider<TInput>,
-): IterableSyncStreamless<TInput>;
-export function streamless<TInput>(
+export function yielded<TInput>(
+  asyncGeneratorFunction: AsyncYieldedProvider<TInput>,
+): IterableAsyncYielded<TInput>;
+export function yielded<TInput>(
+  source: SyncYieldedProvider<TInput>,
+): IterableSyncYielded<TInput>;
+export function yielded<TInput>(
   asyncIterable: AsyncIterator<TInput>,
-): IterableAsyncStreamless<TInput>;
-export function streamless<TInput>(
+): IterableAsyncYielded<TInput>;
+export function yielded<TInput>(
   iterable: Iterable<TInput>,
-): IterableSyncStreamless<TInput>;
-export function streamless<TInput>(
+): IterableSyncYielded<TInput>;
+export function yielded<TInput>(
+  callback: () => TInput,
+): SingleSyncYielded<TInput, undefined>;
+export function yielded<TInput>(
   value: TInput,
-): SingleSyncStreamless<TInput, undefined>;
-export function streamless(source: any) {
+): SingleSyncYielded<TInput, undefined>;
+
+export function yielded(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
-    return iterableAsyncStreamless(source);
+    return iterableAsyncYielded(source);
   }
   if (isGeneratorFunction(source)) {
-    return iterableSyncStreamless(source);
+    return iterableSyncYielded(source);
   }
   if (source.asyncIterator) {
-    return iterableAsyncStreamless(async function* createAsyncSource(
+    return iterableAsyncYielded(async function* createAsyncSource(
       signal?: AbortSignal,
     ): AsyncGenerator<any, void, undefined & void> {
       if (signal?.aborted) return;
@@ -68,12 +72,17 @@ export function streamless(source: any) {
       }
     });
   }
-  if (!source[Symbol.iterator]) {
-    return singleSyncStreamless(function* singleSyncStreamlessProvider() {
-      yield source;
-    }, _internalStreamless.getUndefined);
+  if (typeof source === "function") {
+    return singleSyncYielded(function* singleSyncYieldedProvider() {
+      yield source();
+    }, _internalYielded.getUndefined);
   }
-  return iterableSyncStreamless(function* createSyncSource(
+  if (!source[Symbol.iterator]) {
+    return singleSyncYielded(function* singleSyncYieldedProvider() {
+      yield source;
+    }, _internalYielded.getUndefined);
+  }
+  return iterableSyncYielded(function* createSyncSource(
     signal?: AbortSignal,
   ): Generator<any, void, undefined & void> {
     if (signal?.aborted) return;
@@ -86,7 +95,7 @@ export function streamless(source: any) {
 
 function isAsyncGeneratorFunction<TInput>(
   source: unknown,
-): source is AsyncStreamlessProvider<TInput> {
+): source is AsyncYieldedProvider<TInput> {
   return (
     Boolean(source) &&
     Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"

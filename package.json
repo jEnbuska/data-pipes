@@ -1,5 +1,5 @@
 {
-  "name": "streamless",
+  "name": "yielded",
   "module": "./src/index.ts",
   "type": "module",
   "types": "types",

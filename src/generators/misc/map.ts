@@ -1,15 +1,15 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function mapSync<TInput, TOutput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   mapper: (next: TInput) => TOutput,
-): SyncStreamlessProvider<TOutput> {
+): SyncYieldedProvider<TOutput> {
   return function* mapSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       yield mapper(next);
     }
@@ -17,11 +17,11 @@ export function mapSync<TInput, TOutput>(
 }
 
 export function mapAsync<TInput, TOutput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   mapper: (next: TInput) => TOutput,
-): AsyncStreamlessProvider<Awaited<TOutput>> {
+): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* mapAsyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       yield mapper(next);
     }

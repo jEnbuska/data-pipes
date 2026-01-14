@@ -1,12 +1,12 @@
 import { describe, test, expect } from "bun:test";
-import { streamless } from "../create";
+import { yielded } from "../create";
 import { sleep } from "bun";
 
 describe("parallel", () => {
   test(
     "Parallel with empty list",
     async () => {
-      const result = (await streamless([] as number[])
+      const result = (await yielded([] as number[])
         .map((it) => it)
         .resolveParallel(10)
         .collect()) satisfies number[];
@@ -18,7 +18,7 @@ describe("parallel", () => {
   test(
     "Parallel with all at once",
     async () => {
-      const result = await (streamless([500, 404, 100, 300, 200])
+      const result = await (yielded([500, 404, 100, 300, 200])
         .map(async (it) => {
           return await sleep(it).then(() => it);
         })
@@ -33,7 +33,7 @@ describe("parallel", () => {
   test(
     "Parallel with 3 parallel count",
     async () => {
-      const result = (await streamless([550, 450, 300, 10, 100])
+      const result = (await yielded([550, 450, 300, 10, 100])
         .map(async (it) => sleep(it).then(() => it))
         .resolveParallel(3)
         .collect()) satisfies number[];

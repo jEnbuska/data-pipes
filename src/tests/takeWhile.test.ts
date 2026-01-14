@@ -1,11 +1,11 @@
 import { describe, test, expect, mock } from "bun:test";
-import streamless from "../";
+import yielded from "../";
 
 describe("takeWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];
   test("takeWhile negative", () => {
     const callback = mock(() => {});
-    const result = streamless(numbers)
+    const result = yielded(numbers)
       .tap(callback)
       .takeWhile((n) => n < 0)
       .collect();
@@ -15,7 +15,7 @@ describe("takeWhile", () => {
 
   test("takeWhile always", () => {
     const callback = mock(() => {});
-    const result = streamless(numbers)
+    const result = yielded(numbers)
       .tap(callback)
       .takeWhile(() => true)
       .collect();
@@ -25,7 +25,7 @@ describe("takeWhile", () => {
 
   test("takeWhile never", () => {
     const callback = mock(() => {});
-    const array = streamless(numbers)
+    const array = yielded(numbers)
       .tap(callback)
       .takeWhile(() => false)
       .collect();

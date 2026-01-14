@@ -1,3 +1,3 @@
-import { streamless } from "./create";
+import { yielded } from "./create";
 
-export default streamless;
+export default yielded;

@@ -1,15 +1,15 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function takeLastSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   count: number,
-): SyncStreamlessProvider<TInput, TInput[]> {
+): SyncYieldedProvider<TInput, TInput[]> {
   return function* takeLastSyncGenerator() {
-    const generator = _internalStreamless.disposable(source);
+    const generator = _internalYielded.disposable(source);
     const array = [...generator];
     const list = array.slice(Math.max(array.length - count, 0));
     yield* list;
@@ -18,12 +18,12 @@ export function takeLastSync<TInput>(
 }
 
 export function takeLastAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<Awaited<TInput>, TInput[]> {
+): AsyncYieldedProvider<Awaited<TInput>, TInput[]> {
   return async function* takeLastAsyncGenerator() {
     const acc: TInput[] = [];
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc.push(next);
     }

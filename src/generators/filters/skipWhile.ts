@@ -1,16 +1,16 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function skipWhileSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): SyncStreamlessProvider<TInput> {
+): SyncYieldedProvider<TInput> {
   return function* skipWhileSyncGenerator() {
     let skip = true;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       if (skip && predicate(next)) continue;
       skip = false;
@@ -20,12 +20,12 @@ export function skipWhileSync<TInput>(
 }
 
 export function skipWhileAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* skipWhileAsyncGenerator() {
     let skip = true;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       if (skip && predicate(next)) continue;
       skip = false;

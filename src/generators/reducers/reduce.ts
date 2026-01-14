@@ -1,18 +1,18 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function reduceSync<TInput, TOutput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): SyncStreamlessProvider<TOutput> {
+): SyncYieldedProvider<TOutput> {
   return function* reduceSyncGenerator() {
     let acc = initialValue;
     let index = 0;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc = reducer(acc, next, index++);
     }
@@ -21,13 +21,13 @@ export function reduceSync<TInput, TOutput>(
 }
 
 export function reduceAsync<TInput, TOutput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
-): AsyncStreamlessProvider<Awaited<TOutput>> {
+): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* reduceAsyncGenerator() {
     let acc = initialValue;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     let index = 0;
     for await (const next of generator) {
       acc = reducer(acc, next, index++);

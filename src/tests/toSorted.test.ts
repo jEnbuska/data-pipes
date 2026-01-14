@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
-import streamless from "../";
+import yielded from "../";
 import { sleep } from "bun";
 
 describe("toSorted", () => {
   test("sort numbers", () => {
     expect(
-      streamless([3, 1, 2])
+      yielded([3, 1, 2])
         .toSorted((a, z) => a - z)
         .collect(),
     ).toStrictEqual([1, 2, 3]);
@@ -13,14 +13,14 @@ describe("toSorted", () => {
 
   test("sort empty", () => {
     expect(
-      streamless<number>([])
+      yielded<number>([])
         .toSorted((a, z) => a - z)
         .collect(),
     ).toStrictEqual([]);
   });
   test("sort resolver", async () => {
     expect(
-      await (streamless<number>([2, 1, 3])
+      await (yielded<number>([2, 1, 3])
         .map((value) => Promise.resolve(value))
         .resolve()
         .toSorted((a, z) => a - z)
@@ -30,7 +30,7 @@ describe("toSorted", () => {
 
   test("sort resolver parallel partial", async () => {
     expect(
-      await (streamless<number>([500, 30, 100, 50])
+      await (yielded<number>([500, 30, 100, 50])
         .map((value) => sleep(value).then(() => value))
         .resolveParallel(3)
         .toSorted((a, z) => a - z)
@@ -40,7 +40,7 @@ describe("toSorted", () => {
 
   test("sort resolver parallel all", async () => {
     expect(
-      await (streamless<number>([500, 30, 100, 50])
+      await (yielded<number>([500, 30, 100, 50])
         .map((value) => sleep(value).then(() => value))
         .resolveParallel(10)
         .toSorted((a, z) => a - z)

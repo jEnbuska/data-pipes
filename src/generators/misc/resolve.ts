@@ -1,14 +1,14 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function resolve<TInput>(
-  source: SyncStreamlessProvider<TInput>,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+  source: SyncYieldedProvider<TInput>,
+): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* resolveSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       yield next as any;
     }
@@ -16,14 +16,14 @@ export function resolve<TInput>(
 }
 
 export function resolveParallel<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   count: number,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<TInput>> {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error(`Invalid count ${count} passed to resolveParallel`);
   }
   return async function* resolveParallelGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     const promises = new Map<string, Promise<{ key: string; value: TInput }>>();
     let nextKey = 0;
     function add(value: TInput) {

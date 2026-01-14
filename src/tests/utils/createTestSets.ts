@@ -1,22 +1,22 @@
-import streamless from "../../";
+import yielded from "../../";
 
 export function createTestSets<T>(array: T[]) {
   return {
-    fromEmpty: streamless<T>([]),
-    fromEmptyAsync: streamless<T>(async function* () {}),
-    fromAsyncGenerator: streamless(async function* () {
+    fromEmpty: yielded<T>([]),
+    fromEmptyAsync: yielded<T>(async function* () {}),
+    fromAsyncGenerator: yielded(async function* () {
       for await (const value of array) {
         yield value;
       }
     }),
-    fromGenerator: streamless(function* () {
+    fromGenerator: yielded(function* () {
       yield* array;
     }),
-    fromArray: streamless(array),
-    fromSingle: streamless(array[0]),
-    fromSingleAsync: streamless(array[0]).resolve(),
-    fromPromises: streamless(array).map((next) => Promise.resolve(next)),
-    fromResolvedPromises: streamless(array)
+    fromArray: yielded(array),
+    fromSingle: yielded(array[0]),
+    fromSingleAsync: yielded(array[0]).resolve(),
+    fromPromises: yielded(array).map((next) => Promise.resolve(next)),
+    fromResolvedPromises: yielded(array)
       .map((next) => Promise.resolve(next))
       .resolve()
       .map((next) => Promise.resolve(next)),

@@ -1,15 +1,15 @@
 import {
-  type AsyncStreamlessProvider,
-  type SyncStreamlessProvider,
+  type AsyncYieldedProvider,
+  type SyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function toReverseSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
-): SyncStreamlessProvider<TInput, TInput[]> {
+  source: SyncYieldedProvider<TInput>,
+): SyncYieldedProvider<TInput, TInput[]> {
   return function* reverseSyncGenerator() {
     const acc: TInput[] = [];
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc.unshift(next);
     }
@@ -19,11 +19,11 @@ export function toReverseSync<TInput>(
 }
 
 export function toReverseAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
-): AsyncStreamlessProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
+  source: AsyncYieldedProvider<TInput>,
+): AsyncYieldedProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* reverseAsyncGenerator() {
     const acc: TInput[] = [];
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc.unshift(next);
     }

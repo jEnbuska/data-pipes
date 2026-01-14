@@ -1,21 +1,21 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
 }
 
 export function groupBySync(
-  source: SyncStreamlessProvider<any>,
+  source: SyncYieldedProvider<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): SyncStreamlessProvider<any> {
+): SyncYieldedProvider<any> {
   return function* groupBySyncGenerator() {
     const record = createInitialGroups(groups);
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -28,13 +28,13 @@ export function groupBySync(
 }
 
 export function groupByAsync(
-  source: AsyncStreamlessProvider<any>,
+  source: AsyncYieldedProvider<any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): AsyncStreamlessProvider<Awaited<any>> {
+): AsyncYieldedProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator() {
     const record = createInitialGroups(groups);
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

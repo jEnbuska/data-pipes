@@ -1,21 +1,17 @@
 import { describe, test, expect } from "bun:test";
-import streamless from "../";
+import yielded from "../";
 import { createTestSets } from "./utils/createTestSets";
 
 describe("every", () => {
   test("has every", () => {
-    expect(streamless([true, true, true]).every(Boolean).collect()).toBe(true);
+    expect(yielded([true, true, true]).every(Boolean).collect()).toBe(true);
   });
   test("has none", () => {
-    expect(streamless([false, false, false]).every(Boolean).collect()).toBe(
-      false,
-    );
+    expect(yielded([false, false, false]).every(Boolean).collect()).toBe(false);
   });
 
   test("has some", () => {
-    expect(streamless([false, false, false]).every(Boolean).collect()).toBe(
-      false,
-    );
+    expect(yielded([false, false, false]).every(Boolean).collect()).toBe(false);
   });
 
   const numbers = [1, 2, 3, 4];

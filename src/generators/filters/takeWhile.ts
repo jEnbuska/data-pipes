@@ -1,15 +1,15 @@
 import {
-  type AsyncStreamlessProvider,
-  type SyncStreamlessProvider,
+  type AsyncYieldedProvider,
+  type SyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function takeWhileSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): SyncStreamlessProvider<TInput> {
+): SyncYieldedProvider<TInput> {
   return function* takeWhileSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       if (!predicate(next)) return;
       yield next;
@@ -17,11 +17,11 @@ export function takeWhileSync<TInput>(
   };
 }
 export function takeWhileAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* takeWhileAsyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       if (!predicate(next)) return;
       yield next;

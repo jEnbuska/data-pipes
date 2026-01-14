@@ -1,18 +1,18 @@
-import type { AsyncStreamlessProvider, SyncStreamlessProvider } from "./types";
+import type { AsyncYieldedProvider, SyncYieldedProvider } from "./types";
 
-function disposable<P extends SyncStreamlessProvider<any>>(
+function disposable<P extends SyncYieldedProvider<any>>(
   source: P,
 ): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
-function disposable<P extends AsyncStreamlessProvider<any>>(
+function disposable<P extends AsyncYieldedProvider<any>>(
   source: P,
 ): ReturnType<P> & {
   [Symbol.dispose]: () => void;
 };
 
 function disposable(
-  source: SyncStreamlessProvider<any> | AsyncStreamlessProvider<any>,
+  source: SyncYieldedProvider<any> | AsyncYieldedProvider<any>,
 ) {
   const generator = source();
   return Object.assign(generator, {
@@ -21,7 +21,7 @@ function disposable(
     },
   });
 }
-export const _internalStreamless = {
+export const _internalYielded = {
   invoke<T>(cb: () => T) {
     return cb();
   },

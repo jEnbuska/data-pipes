@@ -1,16 +1,13 @@
-import type {
-  SyncStreamlessProvider,
-  AsyncStreamlessProvider,
-} from "../../types";
-import { _internalStreamless } from "../../utils";
+import type { SyncYieldedProvider, AsyncYieldedProvider } from "../../types";
+import { _internalYielded } from "../../utils";
 
 export function batchSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   predicate: (acc: TInput[]) => boolean,
-): SyncStreamlessProvider<TInput[]> {
+): SyncYieldedProvider<TInput[]> {
   return function* batchSyncGenerator() {
     let acc: TInput[] = [];
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) {
@@ -26,12 +23,12 @@ export function batchSync<TInput>(
 }
 
 export function batchAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   predicate: (batch: TInput[]) => boolean,
-): AsyncStreamlessProvider<TInput[]> {
+): AsyncYieldedProvider<TInput[]> {
   return async function* batchGenerator() {
     let acc: TInput[] = [];
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) continue;

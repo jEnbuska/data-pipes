@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
 import { createTestSets } from "./utils/createTestSets";
-import streamless from "../";
+import yielded from "../";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
     expect(
-      streamless<number>([])
+      yielded<number>([])
         .countBy((next) => next)
         .collect(),
     ).toBe(0);
@@ -77,7 +77,7 @@ describe("countBy", () => {
     const controller = new AbortController();
     controller.abort();
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .countBy((next) => next)
         .collect(controller.signal) satisfies number,
     ).toBe(0);
@@ -87,7 +87,7 @@ describe("countBy", () => {
     const controller = new AbortController();
     controller.abort();
     expect(
-      (await streamless([1, 2, 3])
+      (await yielded([1, 2, 3])
         .resolve()
         .countBy((next) => next)
         .collect(controller.signal)) satisfies number,

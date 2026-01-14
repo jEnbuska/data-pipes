@@ -1,11 +1,11 @@
 import { describe, test, expect } from "bun:test";
 import { createTestSets } from "./utils/createTestSets";
-import streamless from "../";
+import yielded from "../";
 
 describe("filter", () => {
   test("chainable", () => {
     expect(
-      streamless([1, 2, 3, 4])
+      yielded([1, 2, 3, 4])
         .filter((n) => n % 2)
         .collect(),
     ).toStrictEqual([1, 3]);

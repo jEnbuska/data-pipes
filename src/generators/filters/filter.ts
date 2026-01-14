@@ -1,23 +1,23 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function filterSync<TInput, TOutput extends TInput = TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): SyncStreamlessProvider<TOutput>;
+): SyncYieldedProvider<TOutput>;
 export function filterSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => any,
-): SyncStreamlessProvider<TInput>;
+): SyncYieldedProvider<TInput>;
 export function filterSync(
-  source: SyncStreamlessProvider<unknown>,
+  source: SyncYieldedProvider<unknown>,
   predicate: (next: unknown) => unknown,
-): SyncStreamlessProvider<unknown> {
+): SyncYieldedProvider<unknown> {
   return function* filterSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -25,19 +25,19 @@ export function filterSync(
 }
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): AsyncStreamlessProvider<Awaited<TOutput>>;
+): AsyncYieldedProvider<Awaited<TOutput>>;
 export function filterAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => any,
-): AsyncStreamlessProvider<Awaited<TInput>>;
+): AsyncYieldedProvider<Awaited<TInput>>;
 export function filterAsync(
-  source: AsyncStreamlessProvider<unknown>,
+  source: AsyncYieldedProvider<unknown>,
   predicate: (next: unknown) => any,
-): AsyncStreamlessProvider<unknown> {
+): AsyncYieldedProvider<unknown> {
   return async function* filterAsyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }

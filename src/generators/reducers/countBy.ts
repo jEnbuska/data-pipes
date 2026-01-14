@@ -1,16 +1,16 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function countBySync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   mapper: (next: TInput) => number,
-): SyncStreamlessProvider<number> {
+): SyncYieldedProvider<number> {
   return function* countSyncByGenerator() {
     let acc = 0;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc += mapper(next);
     }
@@ -19,12 +19,12 @@ export function countBySync<TInput>(
 }
 
 export function countByAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   mapper: (next: TInput) => number,
-): AsyncStreamlessProvider<number> {
+): AsyncYieldedProvider<number> {
   return async function* countByAsyncGenerator() {
     let acc = 0;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc += mapper(next);
     }

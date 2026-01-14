@@ -1,11 +1,8 @@
-import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
-} from "../types";
-import { _internalStreamless } from "../utils";
+import { type SyncYieldedProvider, type AsyncYieldedProvider } from "../types";
+import { _internalYielded } from "../utils";
 
 export function toArraySync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
@@ -18,7 +15,7 @@ export function toArraySync<TInput>(
 }
 
 export async function toArrayAsync<TInput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const acc: TInput[] = [];
@@ -27,7 +24,7 @@ export async function toArrayAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalStreamless.invoke(async function () {
+    _internalYielded.invoke(async function () {
       for await (const next of source()) {
         if (signal.aborted) return [];
         acc.push(next);
@@ -38,7 +35,7 @@ export async function toArrayAsync<TInput>(
 }
 
 export function toArraySyncFromReturn<TInput>(
-  source: SyncStreamlessProvider<TInput, TInput[]>,
+  source: SyncYieldedProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   const generator = source();
@@ -52,7 +49,7 @@ export function toArraySyncFromReturn<TInput>(
 }
 
 export function toArrayAsyncFromReturn<TInput>(
-  source: AsyncStreamlessProvider<TInput, TInput[]>,
+  source: AsyncYieldedProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const resolvable = Promise.withResolvers<any[]>();
@@ -60,7 +57,7 @@ export function toArrayAsyncFromReturn<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalStreamless.invoke(async function () {
+    _internalYielded.invoke(async function () {
       const generator = source();
       let result = await generator.next();
       while (true) {

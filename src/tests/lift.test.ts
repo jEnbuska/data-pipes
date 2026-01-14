@@ -1,13 +1,13 @@
 import { describe, test, expect } from "bun:test";
-import streamless from "../";
-import { _internalStreamless } from "../utils";
+import yielded from "../";
+import { _internalYielded } from "../utils";
 
 describe("lift", () => {
   test("lift mapper", () => {
-    const array = streamless([1, 2, 3])
+    const array = yielded([1, 2, 3])
       .lift(function multiplyByTwo(source) {
         return function* () {
-          using generator = _internalStreamless.disposable(source);
+          using generator = _internalYielded.disposable(source);
           for (const next of generator) {
             yield next * 2;
           }
@@ -18,10 +18,10 @@ describe("lift", () => {
   });
 
   test("lift single", () => {
-    const array = streamless(1)
+    const array = yielded(1)
       .lift(function multiplyByTwo(source) {
         return function* () {
-          using generator = _internalStreamless.disposable(source);
+          using generator = _internalYielded.disposable(source);
           for (const next of generator) {
             yield next * 2;
           }
@@ -31,10 +31,10 @@ describe("lift", () => {
     expect(array).toStrictEqual([2]);
   });
   test("lift filter", () => {
-    const array = streamless([-2, 1, 2, -3, 4])
+    const array = yielded([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
         return function* () {
-          using generator = _internalStreamless.disposable(source);
+          using generator = _internalYielded.disposable(source);
           for (const next of generator) {
             if (next < 0) continue;
             yield next;
@@ -46,11 +46,11 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = streamless(["a", "b", "c"])
+    const text = yielded(["a", "b", "c"])
       .lift(function joinStrings(source) {
         return function* () {
           const acc: string[] = [];
-          using generator = _internalStreamless.disposable(source);
+          using generator = _internalYielded.disposable(source);
           for (const next of generator) {
             acc.push(next);
           }

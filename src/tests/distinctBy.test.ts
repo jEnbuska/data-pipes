@@ -1,12 +1,12 @@
 import { describe, test, expect } from "bun:test";
 import { createTestSets } from "./utils/createTestSets";
-import streamless from "../";
+import yielded from "../";
 
 describe("distinctBy", () => {
   const module2Predicate = (it: number) => it % 2;
   test("empty", () => {
     expect(
-      streamless([])
+      yielded([])
         .distinctBy((it) => it)
         .collect(),
     ).toStrictEqual([]);
@@ -14,7 +14,7 @@ describe("distinctBy", () => {
 
   test("all unique", () => {
     expect(
-      streamless([1, 2, 3])
+      yielded([1, 2, 3])
         .distinctBy((it) => it)
         .collect(),
     ).toStrictEqual([1, 2, 3]);
@@ -22,7 +22,7 @@ describe("distinctBy", () => {
 
   test("by module 2", () => {
     expect(
-      streamless([1, 2, 3, 4])
+      yielded([1, 2, 3, 4])
         .distinctBy((it) => it % 2)
         .collect(),
     ).toStrictEqual([1, 2]);

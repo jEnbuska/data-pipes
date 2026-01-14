@@ -1,16 +1,16 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function distinctBySync<TInput, Value>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   selector: (next: TInput) => Value,
-): SyncStreamlessProvider<TInput> {
+): SyncYieldedProvider<TInput> {
   return function* distinctBySyncGenerator() {
     const set = new Set<Value>();
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       const key = selector(next);
       if (set.has(key)) {
@@ -22,12 +22,12 @@ export function distinctBySync<TInput, Value>(
   };
 }
 export function distinctByAsync<TInput, Value>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   selector: (next: TInput) => Value,
-): AsyncStreamlessProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* distinctByAsyncGenerator() {
     const set = new Set<Value>();
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       const key = selector(next);
       if (set.has(key)) continue;

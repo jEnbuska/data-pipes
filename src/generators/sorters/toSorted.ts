@@ -1,17 +1,17 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function toSortedSync<TInput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): SyncStreamlessProvider<TInput, TInput[]> {
+): SyncYieldedProvider<TInput, TInput[]> {
   return function* sortSyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }
@@ -21,13 +21,13 @@ export function toSortedSync<TInput>(
 }
 
 export function toSortedAsync<TInput = never>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncStreamlessProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
+): AsyncYieldedProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* sortAsyncGenerator() {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }
@@ -38,7 +38,7 @@ export function toSortedAsync<TInput = never>(
 
 function createJsonComparable(value: any) {
   const { stack } = new Error("");
-  console.warn(`Streamless:\nCreating Object tack trace using JSON.stringify for comparison at:
+  console.warn(`Yielded:\nCreating Object tack trace using JSON.stringify for comparison at:
 ${stack}\nNote this might be quite heavy operation and the sort result might be unpredictable`);
   return JSON.stringify(value);
 }

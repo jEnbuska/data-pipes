@@ -1,18 +1,18 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function foldSync<TInput, TOutput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): SyncStreamlessProvider<TOutput> {
+): SyncYieldedProvider<TOutput> {
   return function* foldSyncGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -21,14 +21,14 @@ export function foldSync<TInput, TOutput>(
 }
 
 export function foldAsync<TInput, TOutput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): AsyncStreamlessProvider<Awaited<TOutput>> {
+): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* foldGenerator() {
     let acc = initial();
     let index = 0;
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       acc = fold(acc, next, index++);
     }

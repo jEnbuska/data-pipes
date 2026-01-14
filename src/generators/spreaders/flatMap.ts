@@ -1,15 +1,15 @@
 import {
-  type SyncStreamlessProvider,
-  type AsyncStreamlessProvider,
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
 } from "../../types";
-import { _internalStreamless } from "../../utils";
+import { _internalYielded } from "../../utils";
 
 export function flatMapSync<TInput, TOutput>(
-  source: SyncStreamlessProvider<TInput>,
+  source: SyncYieldedProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): SyncStreamlessProvider<TOutput> {
+): SyncYieldedProvider<TOutput> {
   return function* flatMapSyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
@@ -22,11 +22,11 @@ export function flatMapSync<TInput, TOutput>(
 }
 
 export function flatMapAsync<TInput, TOutput>(
-  source: AsyncStreamlessProvider<TInput>,
+  source: AsyncYieldedProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): AsyncStreamlessProvider<Awaited<TOutput>> {
+): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* flatMapAsyncGenerator() {
-    using generator = _internalStreamless.disposable(source);
+    using generator = _internalYielded.disposable(source);
     for await (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {

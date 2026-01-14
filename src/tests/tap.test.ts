@@ -1,11 +1,11 @@
 import { describe, test, mock, expect } from "bun:test";
-import streamless from "../";
+import yielded from "../";
 import { createTestSets } from "./utils/createTestSets";
 
 describe("tap", () => {
   test("chainable single value", () => {
     const callback = mock((n: number) => expect(n).toBe(1));
-    streamless(1).tap(callback).consume();
+    yielded(1).tap(callback).consume();
     expect(callback).toHaveBeenCalledTimes(1);
   });
 
@@ -19,7 +19,7 @@ describe("tap", () => {
   test("with multiple", () => {
     const args = [1, 2];
     const callback = createCallback(args);
-    streamless(args).tap(callback).consume();
+    yielded(args).tap(callback).consume();
     expect(callback).toHaveBeenCalledTimes(2);
   });
 
