@@ -13,13 +13,13 @@ export type Yielded<
   TDefault = TInput,
 > = TIterable extends true
   ? TAsync extends true
-    ? IterableAsyncYielded<TInput>
-    : IterableSyncYielded<TInput>
+    ? AsyncIterableYielded<TInput>
+    : SyncIterableYielded<TInput>
   : TAsync extends true
-    ? SingleAsyncYielded<TInput, TDefault>
-    : SingleSyncYielded<TInput, TDefault>;
+    ? AsyncSingleYielded<TInput, TDefault>
+    : SyncSingleYielded<TInput, TDefault>;
 
-export type SingleSyncYielded<TInput, TDefault> = CommonYielded<
+export type SyncSingleYielded<TInput, TDefault> = CommonYielded<
   false,
   false,
   TInput,
@@ -31,9 +31,9 @@ export type SingleSyncYielded<TInput, TDefault> = CommonYielded<
   collect(signal?: AbortSignal): TInput | TDefault;
   defaultTo<TDefault>(
     getDefault: () => TDefault,
-  ): Pick<SingleSyncYielded<TInput, TDefault>, "collect">;
+  ): Pick<SyncSingleYielded<TInput, TDefault>, "collect">;
 };
-export type SingleAsyncYielded<TInput, TDefault> = CommonYielded<
+export type AsyncSingleYielded<TInput, TDefault> = CommonYielded<
   true,
   false,
   Awaited<TInput>,
@@ -44,10 +44,10 @@ export type SingleAsyncYielded<TInput, TDefault> = CommonYielded<
   collect(signal?: AbortSignal): Promise<TInput | TDefault>;
   defaultTo<TDefault>(
     getDefault: () => TDefault,
-  ): Pick<SingleAsyncYielded<TInput, TDefault>, "collect">;
+  ): Pick<AsyncSingleYielded<TInput, TDefault>, "collect">;
 };
 
-export type IterableSyncYielded<TInput> = IterableYielded<false, TInput> & {
+export type SyncIterableYielded<TInput> = IterableYielded<false, TInput> & {
   resolve(): Yielded<true, true, TInput>;
   resolveParallel(count: number): Yielded<true, true, TInput>;
   [Symbol.iterator](): IterableIterator<TInput>;
@@ -56,12 +56,12 @@ export type IterableSyncYielded<TInput> = IterableYielded<false, TInput> & {
   collect(signal?: AbortSignal): TInput[];
 };
 
-export type IterableAsyncYielded<TInput> = IterableYielded<
+export type AsyncIterableYielded<TInput> = IterableYielded<
   true,
   Awaited<TInput>
 > & {
   [Symbol.asyncIterator](): AsyncIterableIterator<TInput>;
-  [Symbol.toStringTag]: `IterableAsyncYielded`;
+  [Symbol.toStringTag]: `AsyncIterableYielded`;
   consume(signal?: AbortSignal): Promise<void>;
   collect(signal?: AbortSignal): Promise<Array<Awaited<TInput>>>;
 };

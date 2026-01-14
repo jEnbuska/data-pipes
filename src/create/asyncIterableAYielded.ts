@@ -1,4 +1,4 @@
-import { type YieldedAsyncProvider, type IterableAsyncYielded } from "../types";
+import { type YieldedAsyncProvider, type AsyncIterableYielded } from "../types";
 import { _internalY } from "../utils";
 import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray";
 import {
@@ -32,13 +32,13 @@ import {
 } from "../generators";
 import { consumeAsync } from "../consumers/consume";
 import { createInitialGroups } from "../generators/reducers/groupBy";
-import { singleAsyncYielded } from "./singleAsyncYielded";
+import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 import { liftAsync } from "../generators/misc/lift";
 
-export function iterableAsyncYielded<TInput>(
+export function asyncIterableAYielded<TInput>(
   provider: YieldedAsyncProvider<Awaited<TInput>>,
-  overrides: Partial<IterableAsyncYielded<TInput>> = {},
-): IterableAsyncYielded<TInput> {
+  overrides: Partial<AsyncIterableYielded<TInput>> = {},
+): AsyncIterableYielded<TInput> {
   return {
     ...overrides,
     async *[Symbol.asyncIterator]() {
@@ -52,19 +52,19 @@ export function iterableAsyncYielded<TInput>(
       }
     },
     find(predicate: (next: Awaited<TInput>) => boolean) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         findAsync(provider, predicate),
         _internalY.getUndefined,
       );
     },
     flat(depth) {
-      return iterableAsyncYielded(flatAsync(provider, depth));
+      return asyncIterableAYielded(flatAsync(provider, depth));
     },
     flatMap(callback) {
-      return iterableAsyncYielded(flatMapAsync(provider, callback));
+      return asyncIterableAYielded(flatMapAsync(provider, callback));
     },
     map(mapper) {
-      return iterableAsyncYielded(mapAsync(provider, mapper));
+      return asyncIterableAYielded(mapAsync(provider, mapper));
     },
     collect(signal?: AbortSignal) {
       return toArrayAsync(provider, signal);
@@ -72,33 +72,35 @@ export function iterableAsyncYielded<TInput>(
     consume(signal?: AbortSignal) {
       return consumeAsync<TInput>(provider, signal);
     },
-    [Symbol.toStringTag]: "IterableAsyncYielded",
+    [Symbol.toStringTag]: "AsyncIterableYielded",
     tap(callback) {
-      return iterableAsyncYielded(tapAsync(provider, callback));
+      return asyncIterableAYielded(tapAsync(provider, callback));
     },
     lift(middleware) {
-      return iterableAsyncYielded(liftAsync(provider, middleware));
+      return asyncIterableAYielded(liftAsync(provider, middleware));
     },
     countBy(fn) {
-      return singleAsyncYielded(countByAsync(provider, fn), _internalY.getZero);
+      return asyncSingleYielded(countByAsync(provider, fn), _internalY.getZero);
     },
     count() {
-      return singleAsyncYielded(countAsync(provider), _internalY.getZero);
+      return asyncSingleYielded(countAsync(provider), _internalY.getZero);
     },
     chunkBy(fn) {
-      return iterableAsyncYielded(chunkByAsync(provider, fn));
+      return asyncIterableAYielded(chunkByAsync(provider, fn));
     },
     batch(predicate) {
-      return iterableAsyncYielded(batchAsync(provider, predicate));
+      return asyncIterableAYielded(batchAsync(provider, predicate));
     },
     distinctBy(selector) {
-      return iterableAsyncYielded(distinctByAsync(provider, selector));
+      return asyncIterableAYielded(distinctByAsync(provider, selector));
     },
     distinctUntilChanged(isEqual) {
-      return iterableAsyncYielded(distinctUntilChangedAsync(provider, isEqual));
+      return asyncIterableAYielded(
+        distinctUntilChangedAsync(provider, isEqual),
+      );
     },
     every(predicate) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         everyAsync(provider, predicate),
         _internalY.getTrue,
       );
@@ -106,11 +108,11 @@ export function iterableAsyncYielded<TInput>(
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return iterableAsyncYielded(filterAsync(provider, predicate));
+      return asyncIterableAYielded(filterAsync(provider, predicate));
     },
     fold(initial, reducer) {
       const initialOnce = _internalY.once(initial);
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         foldAsync(provider, initialOnce, reducer),
         initialOnce,
       );
@@ -119,70 +121,70 @@ export function iterableAsyncYielded<TInput>(
       keySelector: (next: any) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         groupByAsync(provider, keySelector, groups),
         () => Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
     max(callback) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         maxAsync(provider, callback),
         _internalY.getUndefined,
       );
     },
     min(callback) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         minAsync(provider, callback),
         _internalY.getUndefined,
       );
     },
     reduce(reducer, initialValue) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         reduceAsync(provider, reducer, initialValue),
         () => initialValue,
       );
     },
     toReverse() {
       const reverseProvider = toReverseAsync(provider);
-      return iterableAsyncYielded(reverseProvider, {
+      return asyncIterableAYielded(reverseProvider, {
         collect(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(reverseProvider, signal);
         },
       });
     },
     skip(count) {
-      return iterableAsyncYielded(skipAsync(provider, count));
+      return asyncIterableAYielded(skipAsync(provider, count));
     },
     skipLast(count) {
-      return iterableAsyncYielded(skipLastAsync(provider, count));
+      return asyncIterableAYielded(skipLastAsync(provider, count));
     },
     skipWhile(predicate) {
-      return iterableAsyncYielded(skipWhileAsync(provider, predicate));
+      return asyncIterableAYielded(skipWhileAsync(provider, predicate));
     },
     some(predicate) {
-      return singleAsyncYielded(someAsync(provider, predicate), () => false);
+      return asyncSingleYielded(someAsync(provider, predicate), () => false);
     },
     toSorted(comparator) {
       const sortedProvider = toSortedAsync(provider, comparator);
-      return iterableAsyncYielded(sortedProvider, {
+      return asyncIterableAYielded(sortedProvider, {
         collect(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(sortedProvider, signal);
         },
       });
     },
     take(count) {
-      return iterableAsyncYielded(takeAsync(provider, count));
+      return asyncIterableAYielded(takeAsync(provider, count));
     },
     takeLast(count) {
       const takeLastProvider = takeLastAsync(provider, count);
-      return iterableAsyncYielded(takeLastProvider, {
+      return asyncIterableAYielded(takeLastProvider, {
         collect(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(takeLastProvider, signal);
         },
       });
     },
     takeWhile(predicate) {
-      return iterableAsyncYielded(takeWhileAsync(provider, predicate));
+      return asyncIterableAYielded(takeWhileAsync(provider, predicate));
     },
   };
 }

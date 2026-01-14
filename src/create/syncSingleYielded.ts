@@ -1,4 +1,4 @@
-import { type SingleSyncYielded, type YieldedSyncProvider } from "../types";
+import { type YieldedSyncProvider, type SyncSingleYielded } from "../types";
 import {
   findSync,
   flatSync,
@@ -9,15 +9,15 @@ import {
 } from "../generators";
 import { firstSync } from "../consumers/first";
 import { consumeSync } from "../consumers/consume";
-import { iterableSyncYielded } from "./iterableSyncYielded";
-import { singleAsyncYielded } from "./singleAsyncYielded";
+import { syncIterableYielded } from "./syncIterableYielded.ts";
+import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 import { liftSync } from "../generators/misc/lift";
 import { _internalY } from "../utils";
 
-export function singleSyncYielded<TInput, TDefault>(
+export function syncSingleYielded<TInput, TDefault>(
   provider: YieldedSyncProvider<TInput>,
   getDefault: () => TDefault,
-): SingleSyncYielded<TInput, TDefault> {
+): SyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
       return {
@@ -27,25 +27,25 @@ export function singleSyncYielded<TInput, TDefault>(
       };
     },
     tap(callback) {
-      return singleSyncYielded(tapSync(provider, callback), getDefault);
+      return syncSingleYielded(tapSync(provider, callback), getDefault);
     },
     lift(middleware) {
-      return iterableSyncYielded(liftSync(provider, middleware));
+      return syncIterableYielded(liftSync(provider, middleware));
     },
     find(predicate: (next: TInput) => boolean) {
-      return singleSyncYielded(
+      return syncSingleYielded(
         findSync(provider, predicate),
         _internalY.getUndefined,
       );
     },
     flat(depth) {
-      return iterableSyncYielded(flatSync(provider, depth));
+      return syncIterableYielded(flatSync(provider, depth));
     },
     flatMap(callback) {
-      return iterableSyncYielded(flatMapSync(provider, callback));
+      return syncIterableYielded(flatMapSync(provider, callback));
     },
     map(mapper) {
-      return singleSyncYielded(
+      return syncSingleYielded(
         mapSync(provider, mapper),
         _internalY.getUndefined,
       );
@@ -58,7 +58,7 @@ export function singleSyncYielded<TInput, TDefault>(
     },
     [Symbol.toStringTag]: "SingleSyncYielded",
     resolve() {
-      return singleAsyncYielded(resolve(provider), _internalY.getUndefined);
+      return asyncSingleYielded(resolve(provider), _internalY.getUndefined);
     },
   };
 }

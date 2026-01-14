@@ -1,4 +1,4 @@
-import { type YieldedAsyncProvider, type SingleAsyncYielded } from "../types";
+import { type YieldedAsyncProvider, type AsyncSingleYielded } from "../types";
 import { firstAsync } from "../consumers/first";
 import { _internalY } from "../utils";
 import { consumeAsync } from "../consumers/consume";
@@ -9,14 +9,14 @@ import {
   mapAsync,
   tapAsync,
 } from "../generators";
-import { iterableAsyncYielded } from "./iterableAsyncYielded";
+import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 import { liftAsync } from "../generators/misc/lift";
 
 const stringTag = "SingleAsyncYielded";
-export function singleAsyncYielded<TInput, TDefault>(
+export function asyncSingleYielded<TInput, TDefault>(
   provider: YieldedAsyncProvider<Awaited<TInput>>,
   getDefault: () => TDefault,
-): SingleAsyncYielded<TInput, TDefault> {
+): AsyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
       return {
@@ -26,25 +26,25 @@ export function singleAsyncYielded<TInput, TDefault>(
       };
     },
     tap(callback) {
-      return singleAsyncYielded(tapAsync(provider, callback), getDefault);
+      return asyncSingleYielded(tapAsync(provider, callback), getDefault);
     },
     lift(middleware) {
-      return iterableAsyncYielded(liftAsync(provider, middleware));
+      return asyncIterableAYielded(liftAsync(provider, middleware));
     },
     find(predicate: (next: Awaited<TInput>) => boolean) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         findAsync(provider, predicate),
         _internalY.getUndefined,
       );
     },
     flat(depth) {
-      return iterableAsyncYielded(flatAsync(provider, depth));
+      return asyncIterableAYielded(flatAsync(provider, depth));
     },
     flatMap(callback) {
-      return iterableAsyncYielded(flatMapAsync(provider, callback));
+      return asyncIterableAYielded(flatMapAsync(provider, callback));
     },
     map(mapper) {
-      return singleAsyncYielded(
+      return asyncSingleYielded(
         mapAsync(provider, mapper),
         _internalY.getUndefined,
       );

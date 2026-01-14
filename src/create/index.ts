@@ -1,14 +1,14 @@
 import {
+  type AsyncIterableYielded,
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
-  type IterableAsyncYielded,
-  type IterableSyncYielded,
-  type SingleSyncYielded,
+  type SyncIterableYielded,
+  type SyncSingleYielded,
 } from "../types";
 import { isGeneratorFunction } from "util/types";
-import { iterableAsyncYielded } from "./iterableAsyncYielded";
-import { iterableSyncYielded } from "./iterableSyncYielded";
-import { singleSyncYielded } from "./singleSyncYielded";
+import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
+import { syncIterableYielded } from "./syncIterableYielded.ts";
+import { syncSingleYielded } from "./syncSingleYielded.ts";
 import { _internalY } from "../utils";
 
 /**
@@ -37,31 +37,31 @@ import { _internalY } from "../utils";
 
 function yielded<TInput>(
   asyncGeneratorFunction: YieldedAsyncProvider<TInput>,
-): IterableAsyncYielded<TInput>;
+): AsyncIterableYielded<TInput>;
 function yielded<TInput>(
   provider: YieldedSyncProvider<TInput>,
-): IterableSyncYielded<TInput>;
+): SyncIterableYielded<TInput>;
 function yielded<TInput>(
   asyncIterable: AsyncIterator<TInput>,
-): IterableAsyncYielded<TInput>;
+): AsyncIterableYielded<TInput>;
 function yielded<TInput>(
   iterable: Iterable<TInput>,
-): IterableSyncYielded<TInput>;
+): SyncIterableYielded<TInput>;
 function yielded<TInput>(
   callback: (signal: AbortSignal) => TInput,
-): SingleSyncYielded<TInput, undefined>;
-function yielded<TInput>(value: TInput): SingleSyncYielded<TInput, undefined>;
+): SyncSingleYielded<TInput, undefined>;
+function yielded<TInput>(value: TInput): SyncSingleYielded<TInput, undefined>;
 
 function yielded(provider: any) {
   if (isAsyncGeneratorFunction<any>(provider)) {
-    return iterableAsyncYielded(provider);
+    return asyncIterableAYielded(provider);
   }
   if (isGeneratorFunction(provider)) {
-    return iterableSyncYielded(provider);
+    return syncIterableYielded(provider);
   }
   if (provider.asyncIterator) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return iterableAsyncYielded(async function* createAsyncSource(
+    return asyncIterableAYielded(async function* createAsyncSource(
       signal: any,
     ): AsyncGenerator<any, void, undefined & void> {
       if (signal?.aborted) return;
@@ -72,17 +72,17 @@ function yielded(provider: any) {
     });
   }
   if (typeof provider === "function") {
-    return singleSyncYielded(function* singleYieldedSyncProvider(signal) {
+    return syncSingleYielded(function* singleYieldedSyncProvider(signal) {
       yield provider(signal);
     }, _internalY.getUndefined);
   }
   if (!provider[Symbol.iterator]) {
-    return singleSyncYielded(function* singleYieldedSyncProvider(signal) {
+    return syncSingleYielded(function* singleYieldedSyncProvider(signal) {
       if (signal.aborted) return;
       yield provider;
     }, _internalY.getUndefined);
   }
-  return iterableSyncYielded(function* createSyncSource(signal): Generator<
+  return syncIterableYielded(function* createSyncSource(signal): Generator<
     any,
     void,
     undefined & void
