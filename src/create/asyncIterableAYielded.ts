@@ -1,42 +1,42 @@
-import {
-  type YieldedAsyncProvider,
-  type AsyncIterableYielded,
-} from "../types.ts";
-import { _internalY } from "../utils.ts";
-import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray.ts";
 import { consumeAsync } from "../consumers/consume.ts";
+import { toArrayAsync, toArrayAsyncFromReturn } from "../consumers/toArray.ts";
+import { distinctByAsync } from "../generators/filters/distinctBy.ts";
+import { distinctUntilChangedAsync } from "../generators/filters/distinctUntilChanged.ts";
+import { filterAsync } from "../generators/filters/filter.ts";
+import { skipAsync } from "../generators/filters/skip.ts";
+import { skipLastAsync } from "../generators/filters/skipLast.ts";
+import { skipWhileAsync } from "../generators/filters/skipWhile.ts";
+import { takeAsync } from "../generators/filters/take.ts";
+import { takeLastAsync } from "../generators/filters/takeLast.ts";
+import { takeWhileAsync } from "../generators/filters/takeWhile.ts";
+import { everyAsync } from "../generators/finders/every.ts";
+import { findAsync } from "../generators/finders/find.ts";
+import { someAsync } from "../generators/finders/some.ts";
+import { batchAsync } from "../generators/grouppers/batch.ts";
+import { chunkByAsync } from "../generators/grouppers/chunkBy.ts";
+import { liftAsync } from "../generators/misc/lift.ts";
+import { mapAsync } from "../generators/misc/map.ts";
+import { tapAsync } from "../generators/misc/tap.ts";
+import { countAsync } from "../generators/reducers/count.ts";
+import { countByAsync } from "../generators/reducers/countBy.ts";
+import { foldAsync } from "../generators/reducers/fold.ts";
 import {
   createInitialGroups,
   groupByAsync,
 } from "../generators/reducers/groupBy.ts";
-import { asyncSingleYielded } from "./asyncSingleYielded.ts";
-import { liftAsync } from "../generators/misc/lift.ts";
-import { findAsync } from "../generators/finders/find.ts";
-import { flatAsync } from "../generators/spreaders/flat.ts";
-import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
-import { mapAsync } from "../generators/misc/map.ts";
-import { tapAsync } from "../generators/misc/tap.ts";
-import { countByAsync } from "../generators/reducers/countBy.ts";
-import { countAsync } from "../generators/reducers/count.ts";
-import { chunkByAsync } from "../generators/grouppers/chunkBy.ts";
-import { batchAsync } from "../generators/grouppers/batch.ts";
-import { distinctByAsync } from "../generators/filters/distinctBy.ts";
-import { distinctUntilChangedAsync } from "../generators/filters/distinctUntilChanged.ts";
-import { everyAsync } from "../generators/finders/every.ts";
-import { filterAsync } from "../generators/filters/filter.ts";
-import { foldAsync } from "../generators/reducers/fold.ts";
 import { maxAsync } from "../generators/reducers/max.ts";
 import { minAsync } from "../generators/reducers/min.ts";
 import { reduceAsync } from "../generators/reducers/reduce.ts";
 import { toReverseAsync } from "../generators/sorters/toReverse.ts";
-import { skipAsync } from "../generators/filters/skip.ts";
-import { skipLastAsync } from "../generators/filters/skipLast.ts";
-import { skipWhileAsync } from "../generators/filters/skipWhile.ts";
-import { someAsync } from "../generators/finders/some.ts";
 import { toSortedAsync } from "../generators/sorters/toSorted.ts";
-import { takeAsync } from "../generators/filters/take.ts";
-import { takeLastAsync } from "../generators/filters/takeLast.ts";
-import { takeWhileAsync } from "../generators/filters/takeWhile.ts";
+import { flatAsync } from "../generators/spreaders/flat.ts";
+import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
+import {
+  type AsyncIterableYielded,
+  type YieldedAsyncProvider,
+} from "../types.ts";
+import { _internalY } from "../utils.ts";
+import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 
 const stringTag = "AsyncIterableYielded";
 export function asyncIterableAYielded<TInput>(
@@ -45,6 +45,7 @@ export function asyncIterableAYielded<TInput>(
 ): AsyncIterableYielded<TInput> {
   return {
     ...overrides,
+    [Symbol.toStringTag]: stringTag,
     async *[Symbol.asyncIterator]() {
       const signal = new AbortController().signal;
       using generator = _internalY.getDisposableAsyncGenerator(
@@ -55,45 +56,20 @@ export function asyncIterableAYielded<TInput>(
         yield next;
       }
     },
-    find(predicate: (next: Awaited<TInput>) => boolean) {
-      return asyncSingleYielded(
-        findAsync(provider, predicate),
-        _internalY.getUndefined,
-      );
-    },
-    flat(depth) {
-      return asyncIterableAYielded(flatAsync(provider, depth));
-    },
-    flatMap(callback) {
-      return asyncIterableAYielded(flatMapAsync(provider, callback));
-    },
-    map(mapper) {
-      return asyncIterableAYielded(mapAsync(provider, mapper));
-    },
-    resolve(signal?: AbortSignal) {
-      return toArrayAsync(provider, signal);
-    },
-    consume(signal?: AbortSignal) {
-      return consumeAsync<TInput>(provider, signal);
-    },
-    [Symbol.toStringTag]: stringTag,
-    tap(callback) {
-      return asyncIterableAYielded(tapAsync(provider, callback));
-    },
-    lift(middleware) {
-      return asyncIterableAYielded(liftAsync(provider, middleware));
-    },
-    countBy(fn) {
-      return asyncSingleYielded(countByAsync(provider, fn), _internalY.getZero);
-    },
-    count() {
-      return asyncSingleYielded(countAsync(provider), _internalY.getZero);
+    batch(predicate) {
+      return asyncIterableAYielded(batchAsync(provider, predicate));
     },
     chunkBy(fn) {
       return asyncIterableAYielded(chunkByAsync(provider, fn));
     },
-    batch(predicate) {
-      return asyncIterableAYielded(batchAsync(provider, predicate));
+    consume(signal?: AbortSignal) {
+      return consumeAsync<TInput>(provider, signal);
+    },
+    count() {
+      return asyncSingleYielded(countAsync(provider), _internalY.getZero);
+    },
+    countBy(fn) {
+      return asyncSingleYielded(countByAsync(provider, fn), _internalY.getZero);
     },
     distinctBy(selector) {
       return asyncIterableAYielded(distinctByAsync(provider, selector));
@@ -116,6 +92,18 @@ export function asyncIterableAYielded<TInput>(
         filterAsync<TInput, TOutput>(provider, predicate),
       );
     },
+    find(predicate: (next: Awaited<TInput>) => boolean) {
+      return asyncSingleYielded(
+        findAsync(provider, predicate),
+        _internalY.getUndefined,
+      );
+    },
+    flat(depth) {
+      return asyncIterableAYielded(flatAsync(provider, depth));
+    },
+    flatMap(callback) {
+      return asyncIterableAYielded(flatMapAsync(provider, callback));
+    },
     fold(initial, reducer) {
       const initialOnce = _internalY.once(initial);
       return asyncSingleYielded(
@@ -131,6 +119,12 @@ export function asyncIterableAYielded<TInput>(
         groupByAsync(provider, keySelector, groups),
         () => Object.fromEntries(createInitialGroups(groups ?? [])),
       );
+    },
+    lift(middleware) {
+      return asyncIterableAYielded(liftAsync(provider, middleware));
+    },
+    map(mapper) {
+      return asyncIterableAYielded(mapAsync(provider, mapper));
     },
     max(callback) {
       return asyncSingleYielded(
@@ -150,13 +144,8 @@ export function asyncIterableAYielded<TInput>(
         () => initialValue,
       );
     },
-    toReverse() {
-      const reverseProvider = toReverseAsync(provider);
-      return asyncIterableAYielded(reverseProvider, {
-        resolve(signal?: AbortSignal) {
-          return toArrayAsyncFromReturn(reverseProvider, signal);
-        },
-      });
+    resolve(signal?: AbortSignal) {
+      return toArrayAsync(provider, signal);
     },
     skip(count) {
       return asyncIterableAYielded(skipAsync(provider, count));
@@ -169,14 +158,6 @@ export function asyncIterableAYielded<TInput>(
     },
     some(predicate) {
       return asyncSingleYielded(someAsync(provider, predicate), () => false);
-    },
-    toSorted(comparator) {
-      const sortedProvider = toSortedAsync(provider, comparator);
-      return asyncIterableAYielded(sortedProvider, {
-        resolve(signal?: AbortSignal) {
-          return toArrayAsyncFromReturn(sortedProvider, signal);
-        },
-      });
     },
     take(count) {
       return asyncIterableAYielded(takeAsync(provider, count));
@@ -191,6 +172,25 @@ export function asyncIterableAYielded<TInput>(
     },
     takeWhile(predicate) {
       return asyncIterableAYielded(takeWhileAsync(provider, predicate));
+    },
+    tap(callback) {
+      return asyncIterableAYielded(tapAsync(provider, callback));
+    },
+    toReverse() {
+      const reverseProvider = toReverseAsync(provider);
+      return asyncIterableAYielded(reverseProvider, {
+        resolve(signal?: AbortSignal) {
+          return toArrayAsyncFromReturn(reverseProvider, signal);
+        },
+      });
+    },
+    toSorted(comparator) {
+      const sortedProvider = toSortedAsync(provider, comparator);
+      return asyncIterableAYielded(sortedProvider, {
+        resolve(signal?: AbortSignal) {
+          return toArrayAsyncFromReturn(sortedProvider, signal);
+        },
+      });
     },
   };
 }

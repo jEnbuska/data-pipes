@@ -1,7 +1,7 @@
 import {
-  type YieldedSyncProvider,
   type YieldedAsyncProvider,
   type YieldedLiftMiddleware,
+  type YieldedSyncProvider,
 } from "../../types.ts";
 import { _internalY } from "../../utils.ts";
 

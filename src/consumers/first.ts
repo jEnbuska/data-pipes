@@ -1,6 +1,6 @@
 import {
-  type YieldedSyncProvider,
   type YieldedAsyncProvider,
+  type YieldedSyncProvider,
 } from "../types.ts";
 
 export function firstSync<TInput, TDefault>(

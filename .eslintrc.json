@@ -7,9 +7,24 @@
     "project": "./tsconfig.json"
   },
   "rules": {
+    "import/order": [
+      "warn",
+      {
+        "groups": ["builtin", "external", "parent", "sibling", "index"],
+        "alphabetize": {
+          "caseInsensitive": true,
+          "order": "asc"
+        },
+        "newlines-between": "never",
+        "named": true
+      }
+    ],
+    "no-unused-vars": "off",
+    "import/no-duplicates": "warn",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "linebreak-style": ["error", "unix"],
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-invalid-void-type": "off",
@@ -33,6 +48,23 @@
     "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
     "@typescript-eslint/prefer-reduce-type-parameter": "off",
     "@typescript-eslint/no-confusing-void-expression": "off",
-    "@typescript-eslint/unbound-method": "off"
+    "@typescript-eslint/unbound-method": "off",
+    "@typescript-eslint/consistent-type-imports": [
+      "warn",
+      {
+        "prefer": "type-imports", // always use `import type`
+        "disallowTypeAnnotations": false // optional: allows you to still use types in annotations without prefix
+      }
+    ],
+    "no-duplicate-imports": "warn",
+    "sort-keys": [
+      "warn",
+      "asc",
+      {
+        "caseSensitive": false,
+        "natural": true,
+        "minKeys": 2
+      }
+    ]
   }
 }

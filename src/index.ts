@@ -1,13 +1,13 @@
-import {
-  type YieldedSyncProvider,
-  type YieldedAsyncProvider,
-  type AsyncIterableYielded,
-  type SyncIterableYielded,
-  type SyncSingleYielded,
-} from "./types.ts";
 import { asyncIterableAYielded } from "./create/asyncIterableAYielded.ts";
 import { syncIterableYielded } from "./create/syncIterableYielded.ts";
 import { syncSingleYielded } from "./create/syncSingleYielded.ts";
+import {
+  type AsyncIterableYielded,
+  type SyncIterableYielded,
+  type SyncSingleYielded,
+  type YieldedAsyncProvider,
+  type YieldedSyncProvider,
+} from "./types.ts";
 import { _internalY } from "./utils.ts";
 
 /**
