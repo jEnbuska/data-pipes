@@ -17,7 +17,6 @@ export function filterSync(
   predicate: (next: unknown) => unknown,
 ): YieldedSyncProvider<any, any> {
   return function* filterSyncGenerator(signal) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       if (predicate(next)) yield next;
@@ -38,7 +37,6 @@ export function filterAsync(
   predicate: (next: unknown) => any,
 ): YieldedAsyncProvider<any, any> {
   return async function* filterAsyncGenerator(signal) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       if (predicate(next)) yield next;

@@ -1,8 +1,5 @@
 {
-  "extends": [
-    "standard-with-typescript",
-    "prettier"
-  ],
+  "extends": ["standard-with-typescript", "prettier"],
   "overrides": [],
   "parserOptions": {
     "ecmaVersion": "latest",
@@ -16,11 +13,14 @@
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/method-signature-style": "off",
     "@typescript-eslint/no-invalid-void-type": "off",
-    "@typescript-eslint/no-unused-vars": ["warn", {
-      "argsIgnorePattern": "^_",
-      "varsIgnorePattern": "^_",
-      "caughtErrorsIgnorePattern": "^_"
-    }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ],
     "spaced-comment": "warn",
     "@typescript-eslint/promise-function-async": "off",
     "@typescript-eslint/return-await": "off",
@@ -32,6 +32,7 @@
     "@typescript-eslint/no-unnecessary-boolean-literal-compare": "warn",
     "@typescript-eslint/consistent-type-definitions": ["warn", "type"],
     "@typescript-eslint/prefer-reduce-type-parameter": "off",
-    "@typescript-eslint/no-confusing-void-expression": "off"
+    "@typescript-eslint/no-confusing-void-expression": "off",
+    "@typescript-eslint/unbound-method": "off"
   }
 }

@@ -20,11 +20,8 @@ export function syncSingleYielded<TInput, TDefault>(
 ): SyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
-      return {
-        collect(signal?: AbortSignal) {
-          return firstSync(provider, getDefault, signal);
-        },
-      };
+      const { collect } = syncSingleYielded(provider, getDefault);
+      return { collect };
     },
     tap(callback) {
       return syncSingleYielded(tapSync(provider, callback), getDefault);

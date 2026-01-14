@@ -60,16 +60,17 @@ function yielded(provider: any) {
     return syncIterableYielded(provider);
   }
   if (provider.asyncIterator) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return asyncIterableAYielded(async function* createAsyncSource(
-      signal: any,
-    ): AsyncGenerator<any, void, undefined & void> {
-      if (signal?.aborted) return;
-      for await (const next of provider) {
+    return asyncIterableAYielded(
+      async function* createAsyncSource(
+        signal,
+      ): AsyncGenerator<any, void, undefined & void> {
         if (signal?.aborted) return;
-        yield next;
-      }
-    });
+        for await (const next of provider) {
+          if (signal?.aborted) return;
+          yield next;
+        }
+      },
+    );
   }
   if (typeof provider === "function") {
     return syncSingleYielded(function* singleYieldedSyncProvider(signal) {

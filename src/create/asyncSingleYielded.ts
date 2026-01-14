@@ -19,11 +19,8 @@ export function asyncSingleYielded<TInput, TDefault>(
 ): AsyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
-      return {
-        collect(signal?: AbortSignal) {
-          return firstAsync(provider, getDefault, signal);
-        },
-      };
+      const { collect } = asyncSingleYielded(provider, getDefault);
+      return { collect };
     },
     tap(callback) {
       return asyncSingleYielded(tapAsync(provider, callback), getDefault);

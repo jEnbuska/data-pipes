@@ -108,7 +108,9 @@ export function asyncIterableAYielded<TInput>(
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return asyncIterableAYielded(filterAsync(provider, predicate));
+      return asyncIterableAYielded(
+        filterAsync<TInput, TOutput>(provider, predicate),
+      );
     },
     fold(initial, reducer) {
       const initialOnce = _internalY.once(initial);

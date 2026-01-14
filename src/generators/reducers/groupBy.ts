@@ -15,7 +15,6 @@ export function groupBySync(
 ): YieldedSyncProvider<any> {
   return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       const key = keySelector(next);
@@ -35,7 +34,6 @@ export function groupByAsync(
 ): YieldedAsyncProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       const key = keySelector(next);
