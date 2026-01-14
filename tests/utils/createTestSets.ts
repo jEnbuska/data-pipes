@@ -1,4 +1,4 @@
-import yielded from "../../index.ts";
+import yielded from "../../src/index.ts";
 
 export function createTestSets<T>(array: T[]) {
   return {

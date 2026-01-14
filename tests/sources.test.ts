@@ -1,5 +1,5 @@
 import { expect, test, describe } from "vitest";
-import yielded from "../index.ts";
+import yielded from "../src/index.ts";
 
 describe("providers", () => {
   const numbers = [1, 2, 3];

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import yielded from "../index.ts";
+import yielded from "../src/index.ts";
 
 describe("skipWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];

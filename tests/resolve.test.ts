@@ -1,5 +1,6 @@
 import { expect, test, describe } from "vitest";
 import { createTestSets } from "./utils/createTestSets.ts";
+import yielded from "../src/index.ts";
 
 describe("array resolve tests", () => {
   const numbers = [1, 2, 3];
@@ -30,5 +31,12 @@ describe("array resolve tests", () => {
     expect(
       await (fromEmptyAsync.resolve() satisfies Promise<number[]>),
     ).toStrictEqual([]);
+  });
+
+  test("chainable to consume", () => {
+    const result = yielded(async function* () {
+      yield* await Promise.resolve(numbers);
+    }).resolve() satisfies Promise<number[]>;
+    expect(result).toStrictEqual(numbers);
   });
 });

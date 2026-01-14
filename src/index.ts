@@ -15,23 +15,20 @@ import { _internalY } from "./utils.ts";
  *
  * @example
  * yielded(async function*() {
- *   yield * getUsersByGroup(groupId);
+ *   yield* await getUsersByGroup(groupId);
  * })
- *  .filter(filterUsers)
- *  .map(mapUsers)
- *  .groupBy()
- *  .resolve() // ...
+ *  .groupBy(user => user.id)
+ *  .resolve() satisfies Promise<Record<string, User>>
  *
  * @example
  * yielded([1,2,3])
- * .map(n => n * 2)
- * .resolve() // [2,4,6]
+ *  .map(n => n * 2)
+ *  .resolve() satisfies number[] // [2,4,6]
  *
  * @example
  * yielded(1)
- * .map(n => n * 2)
- * .resolve() // [2]
- *
+ *  .map(n => n * 2)
+ *  .resolve() satisfies number | undefined // 2
  */
 
 function yielded<TInput>(

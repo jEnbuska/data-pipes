@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import yielded from "../index.ts";
+import yielded from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
 describe("parallel", () => {

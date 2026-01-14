@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import yielded from "../index.ts";
+import yielded from "../src/index.ts";
 import { simpleMock } from "./utils/simpleMock.ts";
 
 describe("takeWhile", () => {
