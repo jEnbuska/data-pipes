@@ -1,3 +1,4 @@
+import { _yielded } from "../_internal.ts";
 import { consumeAsync } from "../consumers/consume.ts";
 import { firstAsync } from "../consumers/first.ts";
 import { findAsync } from "../generators/finders/find.ts";
@@ -10,7 +11,6 @@ import {
   type AsyncSingleYielded,
   type YieldedAsyncProvider,
 } from "../types.ts";
-import { _internalY } from "../utils.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 
 const stringTag = "AsyncSingleYielded";
@@ -30,7 +30,7 @@ export function asyncSingleYielded<TInput, TDefault>(
     find(predicate: (next: Awaited<TInput>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     flat(depth) {
@@ -45,7 +45,7 @@ export function asyncSingleYielded<TInput, TDefault>(
     map(mapper) {
       return asyncSingleYielded(
         mapAsync(provider, mapper),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     resolve(signal?: AbortSignal) {

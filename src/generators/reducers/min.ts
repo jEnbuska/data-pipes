@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function minSync<TInput>(
   provider: YieldedSyncProvider<TInput>,
@@ -11,7 +11,7 @@ export function minSync<TInput>(
   return function* minSyncGenerator(signal) {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {
@@ -33,7 +33,7 @@ export function minAsync<TInput>(
   return async function* minAsyncGenerator(signal) {
     let currentMin: undefined | number;
     let current: undefined | TInput;
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       const value = callback(next);
       if (currentMin === undefined || value < currentMin) {

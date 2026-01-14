@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
@@ -13,7 +13,7 @@ export function distinctUntilChangedSync<TInput>(
   return function* distinctUntilChangedSyncGenerator(signal) {
     let first = true;
     let previous: TInput;
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;
@@ -31,7 +31,7 @@ export function distinctUntilChangedAsync<TInput>(
   return async function* distinctUntilChangedAsyncGenerator(signal) {
     let first = true;
     let previous: TInput;
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       if (first || !compare(previous!, next)) {
         previous = next;

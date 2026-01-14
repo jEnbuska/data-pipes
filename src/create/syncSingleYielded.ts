@@ -1,3 +1,4 @@
+import { _yielded } from "../_internal.ts";
 import { consumeSync } from "../consumers/consume.ts";
 import { firstSync } from "../consumers/first.ts";
 import { findSync } from "../generators/finders/find.ts";
@@ -8,7 +9,6 @@ import { toAwaited } from "../generators/misc/toAwaited.ts";
 import { flatSync } from "../generators/spreaders/flat.ts";
 import { flatMapSync } from "../generators/spreaders/flatMap.ts";
 import { type SyncSingleYielded, type YieldedSyncProvider } from "../types.ts";
-import { _internalY } from "../utils.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 import { syncIterableYielded } from "./syncIterableYielded.ts";
 
@@ -29,7 +29,7 @@ export function syncSingleYielded<TInput, TDefault>(
     find(predicate: (next: TInput) => boolean) {
       return syncSingleYielded(
         findSync(provider, predicate),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     flat(depth) {
@@ -44,7 +44,7 @@ export function syncSingleYielded<TInput, TDefault>(
     map(mapper) {
       return syncSingleYielded(
         mapSync(provider, mapper),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     resolve(signal?: AbortSignal) {
@@ -54,7 +54,7 @@ export function syncSingleYielded<TInput, TDefault>(
       return syncSingleYielded(tapSync(provider, callback), getDefault);
     },
     toAwaited() {
-      return asyncSingleYielded(toAwaited(provider), _internalY.getUndefined);
+      return asyncSingleYielded(toAwaited(provider), _yielded.getUndefined);
     },
   };
 }

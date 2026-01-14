@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function toSortedSync<TInput>(
   provider: YieldedSyncProvider<TInput>,
@@ -11,7 +11,7 @@ export function toSortedSync<TInput>(
   return function* sortSyncGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, compareFn);
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }
@@ -27,7 +27,7 @@ export function toSortedAsync<TInput = never>(
   return async function* sortAsyncGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, compareFn);
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       acc.splice(findIndex(next), 0, next);
     }

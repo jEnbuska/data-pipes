@@ -1,8 +1,8 @@
+import { _yielded } from "../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../types.ts";
-import { _internalY } from "../utils.ts";
 
 export function toArraySync<TInput>(
   provider: YieldedSyncProvider<TInput>,
@@ -27,7 +27,7 @@ export async function toArrayAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalY.invoke(async function () {
+    _yielded.invoke(async function () {
       for await (const next of provider(signal)) {
         if (signal.aborted) return [];
         acc.push(next);
@@ -65,11 +65,8 @@ export function toArrayAsyncFromReturn<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalY.invoke(async function () {
-      using generator = _internalY.getDisposableAsyncGenerator(
-        provider,
-        signal,
-      );
+    _yielded.invoke(async function () {
+      using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
       let result = await generator.next();
       while (true) {
         if (signal.aborted) return [];

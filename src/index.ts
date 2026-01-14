@@ -1,3 +1,4 @@
+import { _yielded } from "./_internal.ts";
 import { asyncIterableAYielded } from "./create/asyncIterableAYielded.ts";
 import { syncIterableYielded } from "./create/syncIterableYielded.ts";
 import { syncSingleYielded } from "./create/syncSingleYielded.ts";
@@ -8,7 +9,6 @@ import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "./types.ts";
-import { _internalY } from "./utils.ts";
 
 /**
  * creates a yielded from the given providers
@@ -71,13 +71,13 @@ function yielded(source: any) {
   if (typeof source === "function") {
     return syncSingleYielded(function* singleYieldedSyncProvider(signal) {
       yield source(signal);
-    }, _internalY.getUndefined);
+    }, _yielded.getUndefined);
   }
   if (!source[Symbol.iterator]) {
     return syncSingleYielded(function* singleYieldedSyncProvider(signal) {
       if (signal.aborted) return;
       yield source;
-    }, _internalY.getUndefined);
+    }, _yielded.getUndefined);
   }
   return syncIterableYielded(function* createSyncSource(signal): Generator<
     any,

@@ -1,3 +1,4 @@
+import { _yielded } from "../_internal.ts";
 import { consumeAsync } from "../consumers/consume.ts";
 import { toArrayAsync, toArrayAsyncFromReturn } from "../consumers/toArray.ts";
 import { distinctByAsync } from "../generators/filters/distinctBy.ts";
@@ -35,7 +36,6 @@ import {
   type AsyncIterableYielded,
   type YieldedAsyncProvider,
 } from "../types.ts";
-import { _internalY } from "../utils.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 
 const stringTag = "AsyncIterableYielded";
@@ -48,10 +48,7 @@ export function asyncIterableAYielded<TInput>(
     [Symbol.toStringTag]: stringTag,
     async *[Symbol.asyncIterator]() {
       const signal = new AbortController().signal;
-      using generator = _internalY.getDisposableAsyncGenerator(
-        provider,
-        signal,
-      );
+      using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
       for await (const next of generator) {
         yield next;
       }
@@ -66,10 +63,10 @@ export function asyncIterableAYielded<TInput>(
       return consumeAsync<TInput>(provider, signal);
     },
     count() {
-      return asyncSingleYielded(countAsync(provider), _internalY.getZero);
+      return asyncSingleYielded(countAsync(provider), _yielded.getZero);
     },
     countBy(fn) {
-      return asyncSingleYielded(countByAsync(provider, fn), _internalY.getZero);
+      return asyncSingleYielded(countByAsync(provider, fn), _yielded.getZero);
     },
     distinctBy(selector) {
       return asyncIterableAYielded(distinctByAsync(provider, selector));
@@ -82,7 +79,7 @@ export function asyncIterableAYielded<TInput>(
     every(predicate) {
       return asyncSingleYielded(
         everyAsync(provider, predicate),
-        _internalY.getTrue,
+        _yielded.getTrue,
       );
     },
     filter<TOutput extends TInput>(
@@ -95,7 +92,7 @@ export function asyncIterableAYielded<TInput>(
     find(predicate: (next: Awaited<TInput>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     flat(depth) {
@@ -105,7 +102,7 @@ export function asyncIterableAYielded<TInput>(
       return asyncIterableAYielded(flatMapAsync(provider, callback));
     },
     fold(initial, reducer) {
-      const initialOnce = _internalY.once(initial);
+      const initialOnce = _yielded.once(initial);
       return asyncSingleYielded(
         foldAsync(provider, initialOnce, reducer),
         initialOnce,
@@ -129,13 +126,13 @@ export function asyncIterableAYielded<TInput>(
     max(callback) {
       return asyncSingleYielded(
         maxAsync(provider, callback),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     min(callback) {
       return asyncSingleYielded(
         minAsync(provider, callback),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     reduce(reducer, initialValue) {

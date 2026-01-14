@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function filterSync<TInput, TOutput extends TInput = TInput>(
   provider: YieldedSyncProvider<TInput>,
@@ -17,7 +17,7 @@ export function filterSync(
   predicate: (next: unknown) => unknown,
 ): YieldedSyncProvider<any, any> {
   return function* filterSyncGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -37,7 +37,7 @@ export function filterAsync(
   predicate: (next: unknown) => any,
 ): YieldedAsyncProvider<any, any> {
   return async function* filterAsyncGenerator(signal) {
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }

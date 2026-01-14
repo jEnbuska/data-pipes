@@ -3,7 +3,7 @@ import {
   type YieldedSyncProvider,
 } from "./types.ts";
 
-export const _internalY = {
+export const _yielded = {
   getDisposableAsyncGenerator<TInput>(
     provider: YieldedAsyncProvider<TInput>,
     signal: AbortSignal,

@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function takeSync<TInput>(
   provider: YieldedSyncProvider<TInput>,
@@ -12,7 +12,7 @@ export function takeSync<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       yield next;
       if (!--count) return;
@@ -28,7 +28,7 @@ export function takeAsync<TInput>(
     if (count <= 0) {
       return;
     }
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
       if (!--count) return;

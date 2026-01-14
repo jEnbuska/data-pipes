@@ -5,6 +5,7 @@
   "types": "types",
   "scripts": {
     "watch": "tsc --noEmit --watch",
+    "check": "tsc --noEmit",
     "test": "vitest --run --reporter verbose",
     "test:watch": "vitest",
     "lint": "eslint --ext .ts --max-warnings 0 ./src",

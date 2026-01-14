@@ -1,8 +1,8 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
@@ -15,7 +15,7 @@ export function groupBySync(
 ): YieldedSyncProvider<any> {
   return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -34,7 +34,7 @@ export function groupByAsync(
 ): YieldedAsyncProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
+    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

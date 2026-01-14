@@ -1,4 +1,5 @@
 import { mapSync } from "generators/misc/map.ts";
+import { _yielded } from "../_internal.ts";
 import { consumeSync } from "../consumers/consume.ts";
 import { toArraySync, toArraySyncFromReturn } from "../consumers/toArray.ts";
 import { distinctBySync } from "../generators/filters/distinctBy.ts";
@@ -36,7 +37,6 @@ import {
   type SyncIterableYielded,
   type YieldedSyncProvider,
 } from "../types.ts";
-import { _internalY } from "../utils.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 import { syncSingleYielded } from "./syncSingleYielded.ts";
 
@@ -50,7 +50,7 @@ export function syncIterableYielded<TInput>(
     [Symbol.toStringTag]: stringTag,
     *[Symbol.iterator]() {
       const signal = new AbortController().signal;
-      using generator = (_internalY.getDisposableGenerator as any)(provider, [
+      using generator = (_yielded.getDisposableGenerator as any)(provider, [
         signal,
       ]);
       for (const next of generator) {
@@ -67,10 +67,10 @@ export function syncIterableYielded<TInput>(
       return consumeSync(provider, signal);
     },
     count() {
-      return syncSingleYielded(countSync(provider), _internalY.getZero);
+      return syncSingleYielded(countSync(provider), _yielded.getZero);
     },
     countBy(fn) {
-      return syncSingleYielded(countBySync(provider, fn), _internalY.getZero);
+      return syncSingleYielded(countBySync(provider, fn), _yielded.getZero);
     },
     distinctBy(selector) {
       return syncIterableYielded(distinctBySync(provider, selector));
@@ -81,7 +81,7 @@ export function syncIterableYielded<TInput>(
     every(predicate) {
       return syncSingleYielded(
         everySync(provider, predicate),
-        _internalY.getTrue,
+        _yielded.getTrue,
       );
     },
     filter<TOutput extends TInput>(
@@ -92,7 +92,7 @@ export function syncIterableYielded<TInput>(
     find(predicate: (next: TInput) => boolean) {
       return syncSingleYielded(
         findSync(provider, predicate),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     flat(depth) {
@@ -102,7 +102,7 @@ export function syncIterableYielded<TInput>(
       return syncIterableYielded(flatMapSync(provider, callback));
     },
     fold(initial, reducer) {
-      const initialOnce = _internalY.once(initial);
+      const initialOnce = _yielded.once(initial);
       return syncSingleYielded(
         foldSync(provider, initialOnce, reducer),
         initialOnce,
@@ -125,13 +125,13 @@ export function syncIterableYielded<TInput>(
     max(callback) {
       return syncSingleYielded(
         maxSync(provider, callback),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     min(callback) {
       return syncSingleYielded(
         minSync(provider, callback),
-        _internalY.getUndefined,
+        _yielded.getUndefined,
       );
     },
     reduce(reducer, initialValue) {

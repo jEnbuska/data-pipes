@@ -1,14 +1,14 @@
+import { _yielded } from "../../_internal.ts";
 import {
   type YieldedAsyncProvider,
   type YieldedSyncProvider,
 } from "../../types.ts";
-import { _internalY } from "../../utils.ts";
 
 export function toAwaited<TInput>(
   provider: YieldedSyncProvider<TInput>,
 ): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* toAwaitedGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
     }
@@ -23,7 +23,7 @@ export function toAwaitedParallel(
     throw new Error(`Invalid count ${count} passed to toAwaitedParallel`);
   }
   return async function* toAwaitedParallelGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(provider, signal);
+    using generator = _yielded.getDisposableGenerator(provider, signal);
     const promises = new Map<string, Promise<{ key: string; value: any }>>();
     let nextKey = 0;
     function add(value: any) {
