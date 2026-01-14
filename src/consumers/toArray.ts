@@ -2,13 +2,13 @@ import { type SyncYieldedProvider, type AsyncYieldedProvider } from "../types";
 import { _internalY } from "../utils";
 
 export function toArraySync<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
   if (!signal) return acc;
 
-  for (const next of source(signal)) {
+  for (const next of provider(signal)) {
     if (signal.aborted) return [];
     acc.push(next);
   }
@@ -16,7 +16,7 @@ export function toArraySync<TInput>(
 }
 
 export async function toArrayAsync<TInput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const acc: TInput[] = [];
@@ -25,7 +25,7 @@ export async function toArrayAsync<TInput>(
   return Promise.race([
     resolvable.promise,
     _internalY.invoke(async function () {
-      for await (const next of source(signal)) {
+      for await (const next of provider(signal)) {
         if (signal.aborted) return [];
         acc.push(next);
       }
@@ -35,11 +35,11 @@ export async function toArrayAsync<TInput>(
 }
 
 export function toArraySyncFromReturn<TInput>(
-  source: SyncYieldedProvider<TInput, TInput[]>,
+  provider: SyncYieldedProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   if (signal.aborted) return [];
-  using generator = Object.assign(source(signal), {
+  using generator = Object.assign(provider(signal), {
     [Symbol.dispose]() {
       generator.return([]);
     },
@@ -54,7 +54,7 @@ export function toArraySyncFromReturn<TInput>(
 }
 
 export function toArrayAsyncFromReturn<TInput>(
-  source: AsyncYieldedProvider<TInput, TInput[]>,
+  provider: AsyncYieldedProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const resolvable = Promise.withResolvers<any[]>();
@@ -63,7 +63,10 @@ export function toArrayAsyncFromReturn<TInput>(
   return Promise.race([
     resolvable.promise,
     _internalY.invoke(async function () {
-      using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+      using generator = _internalY.getDisposableAsyncGenerator(
+        provider,
+        signal,
+      );
       let result = await generator.next();
       while (true) {
         if (signal.aborted) return [];

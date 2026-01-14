@@ -5,14 +5,14 @@ import {
 import { _internalY } from "../../utils";
 
 export function foldSync<TInput, TOutput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
 ): SyncYieldedProvider<TOutput> {
   return function* foldSyncGenerator(signal) {
     let acc = initial();
     let index = 0;
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -21,14 +21,14 @@ export function foldSync<TInput, TOutput>(
 }
 
 export function foldAsync<TInput, TOutput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
 ): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* foldGenerator(signal) {
     let acc = initial();
     let index = 0;
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       acc = fold(acc, next, index++);
     }

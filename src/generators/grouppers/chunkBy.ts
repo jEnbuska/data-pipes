@@ -5,12 +5,12 @@ import {
 import { _internalY } from "../../utils";
 
 export function chunkBySync<TInput, TIdentifier = any>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
 ): SyncYieldedProvider<TInput[]> {
   return function* chunkBySyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);
@@ -21,12 +21,12 @@ export function chunkBySync<TInput, TIdentifier = any>(
 }
 
 export function chunkByAsync<TInput, TIdentifier = any>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
 ): AsyncYieldedProvider<TInput[]> {
   return async function* chunkByAsyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!map.has(next)) map.set(next, []);

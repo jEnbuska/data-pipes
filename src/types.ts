@@ -381,7 +381,7 @@ type CommonYielded<
    * @example
    * yielded([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    using generator = InternalYielded.disposable(source, args);
+   *    using generator = InternalYielded.disposable(provider, args);
    *    for (const next of generator) {
    *     yield next * 2;
    *    }
@@ -391,7 +391,7 @@ type CommonYielded<
    * @example
    * yielded([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *    using generator = InternalYielded.disposable(source, args);
+   *    using generator = InternalYielded.disposable(provider, args);
    *    for (const next of generator) {
    *      if (next < 0) continue;
    *      yield next;
@@ -403,7 +403,7 @@ type CommonYielded<
    * yielded("a", "b", "c")
    *  .lift(function* joinStrings(generator) {
    *      const acc: string[] = [];
-   *      using generator = InternalYielded.disposable(source, args);
+   *      using generator = InternalYielded.disposable(provider, args);
    *      for (const next of generator) {
    *       acc.push(next);
    *      }

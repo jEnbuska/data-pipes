@@ -5,12 +5,12 @@ import {
 import { _internalY } from "../../utils";
 
 export function defaultToSync<TInput, TDefault>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   getDefault: () => TDefault,
 ): SyncYieldedProvider<TInput | TDefault> {
   return function* defaultToSyncGenerator(signal) {
     let empty = true;
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       yield next;
       empty = false;
@@ -22,12 +22,12 @@ export function defaultToSync<TInput, TDefault>(
 }
 
 export function defaultToAsync<TInput, TDefault>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   getDefault: () => TDefault,
 ): AsyncYieldedProvider<TInput | TDefault> {
   return async function* defaultToAsyncGenerator(signal) {
     let empty = true;
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
       empty = false;

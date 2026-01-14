@@ -9,14 +9,14 @@ export function createInitialGroups(groups: any[] = []) {
 }
 
 export function groupBySync(
-  source: SyncYieldedProvider<any, any>,
+  provider: SyncYieldedProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
 ): SyncYieldedProvider<any> {
   return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -29,14 +29,14 @@ export function groupBySync(
 }
 
 export function groupByAsync(
-  source: AsyncYieldedProvider<any, any>,
+  provider: AsyncYieldedProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
 ): AsyncYieldedProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

@@ -5,10 +5,10 @@ import {
 import { getDisposableGenerator } from "../../";
 
 export function resolve<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
 ): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* resolveSyncGenerator(signal) {
-    using generator = getDisposableGenerator(source, signal);
+    using generator = getDisposableGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
     }
@@ -16,14 +16,14 @@ export function resolve<TInput>(
 }
 
 export function resolveParallel(
-  source: SyncYieldedProvider<any>,
+  provider: SyncYieldedProvider<any>,
   count: number,
 ): AsyncYieldedProvider<Awaited<any>> {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error(`Invalid count ${count} passed to resolveParallel`);
   }
   return async function* resolveParallelGenerator(signal) {
-    using generator = getDisposableGenerator(source, signal);
+    using generator = getDisposableGenerator(provider, signal);
     const promises = new Map<string, Promise<{ key: string; value: any }>>();
     let nextKey = 0;
     function add(value: any) {

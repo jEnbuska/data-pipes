@@ -5,11 +5,11 @@ import {
 import { _internalY } from "../../utils";
 
 export function tapSync<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   consumer: (next: TInput) => unknown,
 ): SyncYieldedProvider<TInput> {
   return function* tapSyncGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       consumer(next);
       yield next;
@@ -18,11 +18,11 @@ export function tapSync<TInput>(
 }
 
 export function tapAsync<TInput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   consumer: (next: TInput) => unknown,
 ): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* tapAsyncGenerator(signal) {
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       consumer(next);
       yield next;

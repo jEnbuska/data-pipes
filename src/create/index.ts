@@ -12,7 +12,7 @@ import { singleSyncYielded } from "./singleSyncYielded";
 import { _internalY } from "../utils";
 
 /**
- * creates a yielded from the given sources
+ * creates a yielded from the given providers
  *
  * @example
  * yielded(async function*() {
@@ -39,7 +39,7 @@ function yielded<TInput>(
   asyncGeneratorFunction: AsyncYieldedProvider<TInput>,
 ): IterableAsyncYielded<TInput>;
 function yielded<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
 ): IterableSyncYielded<TInput>;
 function yielded<TInput>(
   asyncIterable: AsyncIterator<TInput>,
@@ -52,34 +52,34 @@ function yielded<TInput>(
 ): SingleSyncYielded<TInput, undefined>;
 function yielded<TInput>(value: TInput): SingleSyncYielded<TInput, undefined>;
 
-function yielded(source: any) {
-  if (isAsyncGeneratorFunction<any>(source)) {
-    return iterableAsyncYielded(source);
+function yielded(provider: any) {
+  if (isAsyncGeneratorFunction<any>(provider)) {
+    return iterableAsyncYielded(provider);
   }
-  if (isGeneratorFunction(source)) {
-    return iterableSyncYielded(source);
+  if (isGeneratorFunction(provider)) {
+    return iterableSyncYielded(provider);
   }
-  if (source.asyncIterator) {
+  if (provider.asyncIterator) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return iterableAsyncYielded(async function* createAsyncSource(
       signal: any,
     ): AsyncGenerator<any, void, undefined & void> {
       if (signal?.aborted) return;
-      for await (const next of source) {
+      for await (const next of provider) {
         if (signal?.aborted) return;
         yield next;
       }
     });
   }
-  if (typeof source === "function") {
+  if (typeof provider === "function") {
     return singleSyncYielded(function* singleSyncYieldedProvider(signal) {
-      yield source(signal);
+      yield provider(signal);
     }, _internalY.getUndefined);
   }
-  if (!source[Symbol.iterator]) {
+  if (!provider[Symbol.iterator]) {
     return singleSyncYielded(function* singleSyncYieldedProvider(signal) {
       if (signal.aborted) return;
-      yield source;
+      yield provider;
     }, _internalY.getUndefined);
   }
   return iterableSyncYielded(function* createSyncSource(signal): Generator<
@@ -88,7 +88,7 @@ function yielded(source: any) {
     undefined & void
   > {
     if (signal?.aborted) return;
-    for (const next of source) {
+    for (const next of provider) {
       if (signal?.aborted) return;
       yield next;
     }
@@ -98,10 +98,11 @@ function yielded(source: any) {
 export default yielded;
 
 function isAsyncGeneratorFunction<TInput>(
-  source: unknown,
-): source is AsyncYieldedProvider<TInput> {
+  provider: unknown,
+): provider is AsyncYieldedProvider<TInput> {
   return (
-    Boolean(source) &&
-    Object.getPrototypeOf(source).constructor.name === "AsyncGeneratorFunction"
+    Boolean(provider) &&
+    Object.getPrototypeOf(provider).constructor.name ===
+      "AsyncGeneratorFunction"
   );
 }

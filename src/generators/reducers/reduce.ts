@@ -5,14 +5,14 @@ import {
 import { _internalY } from "../../utils";
 
 export function reduceSync<TInput, TOutput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
 ): SyncYieldedProvider<TOutput> {
   return function* reduceSyncGenerator(signal) {
     let acc = initialValue;
     let index = 0;
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc = reducer(acc, next, index++);
     }
@@ -21,13 +21,13 @@ export function reduceSync<TInput, TOutput>(
 }
 
 export function reduceAsync<TInput, TOutput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
   initialValue: TOutput,
 ): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* reduceAsyncGenerator(signal) {
     let acc = initialValue;
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     let index = 0;
     for await (const next of generator) {
       acc = reducer(acc, next, index++);

@@ -5,11 +5,11 @@ import {
 import { _internalY } from "../../utils";
 
 export function mapSync<TInput, TOutput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   mapper: (next: TInput) => TOutput,
 ): SyncYieldedProvider<TOutput> {
   return function* mapSyncGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       yield mapper(next);
     }
@@ -17,11 +17,11 @@ export function mapSync<TInput, TOutput>(
 }
 
 export function mapAsync<TInput, TOutput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   mapper: (next: TInput) => TOutput,
 ): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* mapAsyncGenerator(signal) {
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       yield mapper(next);
     }

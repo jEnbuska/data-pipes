@@ -5,20 +5,20 @@ import {
 import { _internalY } from "../../utils";
 
 export function countSync<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
 ): SyncYieldedProvider<number> {
   return function* countSyncGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     yield [...generator].length;
   };
 }
 
 export function countAsync<TInput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
 ): AsyncYieldedProvider<number> {
   return async function* countAsyncGenerator(signal) {
     let count = 0;
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const _ of generator) {
       count++;
     }

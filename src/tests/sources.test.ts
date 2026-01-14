@@ -1,7 +1,7 @@
 import { expect, test, describe } from "bun:test";
 import yielded from "../";
 
-describe("sources", () => {
+describe("providers", () => {
   const numbers = [1, 2, 3];
   function* generatorFunction() {
     yield* numbers;

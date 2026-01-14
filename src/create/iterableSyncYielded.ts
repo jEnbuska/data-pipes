@@ -40,85 +40,85 @@ import { liftSync } from "../generators/misc/lift";
 import { _internalY } from "../utils";
 
 export function iterableSyncYielded<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   overrides: Partial<IterableSyncYielded<TInput>> = {},
 ): IterableSyncYielded<TInput> {
   return {
     ...overrides,
     resolve() {
-      return iterableAsyncYielded(resolve(source));
+      return iterableAsyncYielded(resolve(provider));
     },
     resolveParallel(count: number) {
-      return iterableAsyncYielded(resolveParallel(source, count));
+      return iterableAsyncYielded(resolveParallel(provider, count));
     },
     *[Symbol.iterator]() {
       const signal = new AbortController().signal;
-      using generator = (getDisposableGenerator as any)(source, [signal]);
+      using generator = (getDisposableGenerator as any)(provider, [signal]);
       for (const next of generator) {
         yield next;
       }
     },
     find(predicate: (next: TInput) => boolean) {
       return singleSyncYielded(
-        findSync(source, predicate),
+        findSync(provider, predicate),
         _internalY.getUndefined,
       );
     },
     flat(depth) {
-      return iterableSyncYielded(flatSync(source, depth));
+      return iterableSyncYielded(flatSync(provider, depth));
     },
     flatMap(callback) {
-      return iterableSyncYielded(flatMapSync(source, callback));
+      return iterableSyncYielded(flatMapSync(provider, callback));
     },
     map(mapper) {
-      return iterableSyncYielded(mapSync(source, mapper));
+      return iterableSyncYielded(mapSync(provider, mapper));
     },
     collect(signal?: AbortSignal) {
-      return toArraySync(source, signal);
+      return toArraySync(provider, signal);
     },
     consume(signal?: AbortSignal) {
-      return consumeSync(source, signal);
+      return consumeSync(provider, signal);
     },
     [Symbol.toStringTag]: "IterableSyncYielded",
     tap(callback) {
-      return iterableSyncYielded(tapSync(source, callback));
+      return iterableSyncYielded(tapSync(provider, callback));
     },
     lift(middleware) {
-      return iterableSyncYielded(liftSync(source, middleware));
+      return iterableSyncYielded(liftSync(provider, middleware));
     },
     countBy(fn) {
-      return singleSyncYielded(countBySync(source, fn), _internalY.getZero);
+      return singleSyncYielded(countBySync(provider, fn), _internalY.getZero);
     },
     count() {
-      return singleSyncYielded(countSync(source), _internalY.getZero);
+      return singleSyncYielded(countSync(provider), _internalY.getZero);
     },
     chunkBy(fn) {
-      return iterableSyncYielded(chunkBySync(source, fn));
+      return iterableSyncYielded(chunkBySync(provider, fn));
     },
     batch(predicate) {
-      return iterableSyncYielded(batchSync(source, predicate));
+      return iterableSyncYielded(batchSync(provider, predicate));
     },
     distinctBy(selector) {
-      return iterableSyncYielded(distinctBySync(source, selector));
+      return iterableSyncYielded(distinctBySync(provider, selector));
     },
     distinctUntilChanged(isEqual) {
-      return iterableSyncYielded(distinctUntilChangedSync(source, isEqual));
+      return iterableSyncYielded(distinctUntilChangedSync(provider, isEqual));
     },
     every(predicate) {
       return singleSyncYielded(
-        everySync(source, predicate),
+        everySync(provider, predicate),
         _internalY.getTrue,
       );
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return iterableSyncYielded(filterSync(source, predicate));
+      return iterableSyncYielded(filterSync(provider, predicate));
     },
     fold(initial, reducer) {
       const initialOnce = _internalY.once(initial);
       return singleSyncYielded(
-        foldSync(source, initialOnce, reducer),
+        foldSync(provider, initialOnce, reducer),
         initialOnce,
       );
     },
@@ -126,69 +126,69 @@ export function iterableSyncYielded<TInput>(
       keySelector: (next: any) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
-      return singleSyncYielded(groupBySync(source, keySelector, groups), () =>
+      return singleSyncYielded(groupBySync(provider, keySelector, groups), () =>
         Object.fromEntries(createInitialGroups(groups ?? [])),
       );
     },
     max(callback) {
       return singleSyncYielded(
-        maxSync(source, callback),
+        maxSync(provider, callback),
         _internalY.getUndefined,
       );
     },
     min(callback) {
       return singleSyncYielded(
-        minSync(source, callback),
+        minSync(provider, callback),
         _internalY.getUndefined,
       );
     },
     reduce(reducer, initialValue) {
       return singleSyncYielded(
-        reduceSync(source, reducer, initialValue),
+        reduceSync(provider, reducer, initialValue),
         () => initialValue,
       );
     },
     toReverse() {
-      const toArraySource = toReverseSync(source);
-      return iterableSyncYielded(toArraySource, {
+      const reverseProvider = toReverseSync(provider);
+      return iterableSyncYielded(reverseProvider, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn(toArraySource, signal);
+          return toArraySyncFromReturn(reverseProvider, signal);
         },
       });
     },
     skip(count) {
-      return iterableSyncYielded(skipSync(source, count));
+      return iterableSyncYielded(skipSync(provider, count));
     },
     skipLast(count) {
-      return iterableSyncYielded(skipLastSync(source, count));
+      return iterableSyncYielded(skipLastSync(provider, count));
     },
     skipWhile(predicate) {
-      return iterableSyncYielded(skipWhileSync(source, predicate));
+      return iterableSyncYielded(skipWhileSync(provider, predicate));
     },
     some(predicate) {
-      return singleSyncYielded(someSync(source, predicate), () => false);
+      return singleSyncYielded(someSync(provider, predicate), () => false);
     },
     toSorted(comparator) {
-      const toArraySource = toSortedSync(source, comparator);
-      return iterableSyncYielded(toArraySource, {
+      const sortProvider = toSortedSync(provider, comparator);
+      return iterableSyncYielded(sortProvider, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn(toArraySource, signal);
+          return toArraySyncFromReturn(sortProvider, signal);
         },
       });
     },
     take(count) {
-      return iterableSyncYielded(takeSync(source, count));
+      return iterableSyncYielded(takeSync(provider, count));
     },
     takeLast(count) {
-      const toArraySource = takeLastSync(source, count);
-      return iterableSyncYielded(toArraySource, {
+      const takeLastProvider = takeLastSync(provider, count);
+      return iterableSyncYielded(takeLastProvider, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn(toArraySource, signal);
+          return toArraySyncFromReturn(takeLastProvider, signal);
         },
       });
     },
     takeWhile(predicate) {
-      return iterableSyncYielded(takeWhileSync(source, predicate));
+      return iterableSyncYielded(takeWhileSync(provider, predicate));
     },
   };
 }

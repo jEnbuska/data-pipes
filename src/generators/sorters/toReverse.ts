@@ -5,11 +5,11 @@ import {
 import { _internalY } from "../../utils";
 
 export function toReverseSync<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
 ): SyncYieldedProvider<TInput, TInput[]> {
   return function* reverseSyncGenerator(signal) {
     const acc: TInput[] = [];
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc.unshift(next);
     }
@@ -19,11 +19,11 @@ export function toReverseSync<TInput>(
 }
 
 export function toReverseAsync<TInput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
 ): AsyncYieldedProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* reverseAsyncGenerator(signal) {
     const acc: TInput[] = [];
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       acc.unshift(next);
     }

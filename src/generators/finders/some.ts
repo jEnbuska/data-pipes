@@ -5,11 +5,11 @@ import {
 import { _internalY } from "../../utils";
 
 export function someSync<TInput>(
-  source: SyncYieldedProvider<TInput>,
+  provider: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): SyncYieldedProvider<boolean> {
   return function* someSyncGenerator(signal) {
-    using generator = _internalY.getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       if (predicate(next)) return yield true;
     }
@@ -17,11 +17,11 @@ export function someSync<TInput>(
   };
 }
 export function someAsync<TInput>(
-  source: AsyncYieldedProvider<TInput>,
+  provider: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): AsyncYieldedProvider<boolean> {
   return async function* someAsyncGenerator(signal) {
-    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       if (predicate(next)) return yield true;
     }
