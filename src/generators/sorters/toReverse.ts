@@ -2,14 +2,17 @@ import {
   type AsyncYieldedProvider,
   type SyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import {
+  getDisposableGenerator,
+  getDisposableAsyncGenerator,
+} from "../../index.ts";
 
 export function toReverseSync<TInput>(
   source: SyncYieldedProvider<TInput>,
 ): SyncYieldedProvider<TInput, TInput[]> {
-  return function* reverseSyncGenerator() {
+  return function* reverseSyncGenerator(signal) {
     const acc: TInput[] = [];
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc.unshift(next);
     }
@@ -21,9 +24,9 @@ export function toReverseSync<TInput>(
 export function toReverseAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
 ): AsyncYieldedProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
-  return async function* reverseAsyncGenerator() {
+  return async function* reverseAsyncGenerator(signal) {
     const acc: TInput[] = [];
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       acc.unshift(next);
     }

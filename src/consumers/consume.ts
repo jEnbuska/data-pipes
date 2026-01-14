@@ -3,10 +3,10 @@ import { _internalYielded } from "../utils";
 
 export function consumeSync<TInput>(
   source: SyncYieldedProvider<TInput>,
-  signal = new AbortController().signal,
+  signal: AbortSignal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;
-  for (const _ of source()) {
+  for (const _ of source(signal)) {
     if (signal.aborted) return;
     /* iterate until done */
   }
@@ -14,7 +14,7 @@ export function consumeSync<TInput>(
 
 export async function consumeAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
-  signal = new AbortController().signal,
+  signal: AbortSignal = new AbortController().signal,
 ): Promise<void> {
   const resolvable = Promise.withResolvers<void>();
   if (signal.aborted) return;
@@ -22,7 +22,7 @@ export async function consumeAsync<TInput>(
   return Promise.race([
     resolvable.promise,
     _internalYielded.invoke(async function () {
-      for await (const _ of source()) {
+      for await (const _ of source(signal)) {
         if (signal?.aborted) return resolvable.promise;
       }
     }),

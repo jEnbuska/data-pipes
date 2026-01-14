@@ -1,13 +1,19 @@
-import type { SyncYieldedProvider, AsyncYieldedProvider } from "../../types";
-import { _internalYielded } from "../../utils";
+import {
+  type SyncYieldedProvider,
+  type AsyncYieldedProvider,
+} from "../../types";
+import {
+  getDisposableGenerator,
+  getDisposableAsyncGenerator,
+} from "../../index.ts";
 
-export function batchSync<TInput>(
+function batchSync<TInput>(
   source: SyncYieldedProvider<TInput>,
   predicate: (acc: TInput[]) => boolean,
 ): SyncYieldedProvider<TInput[]> {
-  return function* batchSyncGenerator() {
+  return function* batchSyncGenerator(signal) {
     let acc: TInput[] = [];
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) {
@@ -22,13 +28,15 @@ export function batchSync<TInput>(
   };
 }
 
+export default batchSync;
+
 export function batchAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
   predicate: (batch: TInput[]) => boolean,
 ): AsyncYieldedProvider<TInput[]> {
-  return async function* batchGenerator() {
+  return async function* batchGenerator(signal) {
     let acc: TInput[] = [];
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) continue;

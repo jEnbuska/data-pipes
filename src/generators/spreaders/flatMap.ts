@@ -2,14 +2,17 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import {
+  getDisposableGenerator,
+  getDisposableAsyncGenerator,
+} from "../../index.ts";
 
 export function flatMapSync<TInput, TOutput>(
   source: SyncYieldedProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
 ): SyncYieldedProvider<TOutput> {
-  return function* flatMapSyncGenerator() {
-    using generator = _internalYielded.disposable(source);
+  return function* flatMapSyncGenerator(signal) {
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
@@ -25,8 +28,8 @@ export function flatMapAsync<TInput, TOutput>(
   source: AsyncYieldedProvider<TInput>,
   flatMapper: (next: TInput) => TOutput | readonly TOutput[],
 ): AsyncYieldedProvider<Awaited<TOutput>> {
-  return async function* flatMapAsyncGenerator() {
-    using generator = _internalYielded.disposable(source);
+  return async function* flatMapAsyncGenerator(signal) {
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {

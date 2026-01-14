@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { yielded } from "../create";
+import yielded from "../";
 import { sleep } from "bun";
 
 describe("parallel", () => {
@@ -24,7 +24,6 @@ describe("parallel", () => {
         })
         .resolveParallel(5)
         .collect() satisfies Promise<number[]>);
-
       expect(result).toStrictEqual([100, 200, 300, 404, 500]);
     },
     { timeout: 1000 },

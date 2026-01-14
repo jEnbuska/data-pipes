@@ -1,15 +1,15 @@
+import { getDisposableGenerator, getDisposableAsyncGenerator } from "index";
 import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
 
 export function everySync<TInput>(
   source: SyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): SyncYieldedProvider<boolean> {
-  return function* everySyncGenerator() {
-    using generator = _internalYielded.disposable(source);
+  return function* everySyncGenerator(signal) {
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       if (!predicate(next)) return yield false;
     }
@@ -20,8 +20,8 @@ export function everyAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
   predicate: (next: TInput) => boolean,
 ): AsyncYieldedProvider<boolean> {
-  return async function* everyAsyncGenerator() {
-    using generator = _internalYielded.disposable(source);
+  return async function* everyAsyncGenerator(signal) {
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       if (!predicate(next)) return yield false;
     }

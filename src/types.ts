@@ -1,13 +1,12 @@
-export type AsyncYieldedProvider<
-  TOutput,
-  TReturn = unknown | void,
-> = () => AsyncGenerator<TOutput, TReturn, undefined & void>;
+export type YieldedProviderArgs = readonly [AbortSignal];
 
-export type SyncYieldedProvider<TOutput, TReturn = unknown> = () => Generator<
-  TOutput,
-  TReturn,
-  undefined & void
->;
+export type AsyncYieldedProvider<TOutput, TReturn = unknown | void> = (
+  signal: AbortSignal,
+) => AsyncGenerator<TOutput, TReturn, undefined & void>;
+
+export type SyncYieldedProvider<TOutput, TReturn = unknown> = (
+  signal: AbortSignal,
+) => Generator<TOutput, TReturn, undefined & void>;
 
 export type Yielded<
   TAsync extends boolean,
@@ -34,7 +33,7 @@ export type SingleSyncYielded<TInput, TDefault> = CommonYielded<
   collect(signal?: AbortSignal): TInput | TDefault;
   defaultTo<TDefault>(
     getDefault: () => TDefault,
-  ): Yielded<false, false, TInput, TDefault>;
+  ): Pick<SingleSyncYielded<TInput, TDefault>, "collect">;
 };
 export type SingleAsyncYielded<TInput, TDefault> = CommonYielded<
   true,
@@ -47,7 +46,7 @@ export type SingleAsyncYielded<TInput, TDefault> = CommonYielded<
   collect(signal?: AbortSignal): Promise<TInput | TDefault>;
   defaultTo<TDefault>(
     getDefault: () => TDefault,
-  ): Yielded<true, false, TInput, TDefault>;
+  ): Pick<SingleAsyncYielded<TInput, TDefault>, "collect">;
 };
 
 export type IterableSyncYielded<TInput> = IterableYielded<false, TInput> & {
@@ -357,7 +356,7 @@ type CommonYielded<
    * @example
    * yielded([1,2,3])
    *  .lift(function* multiplyByTwo(generator) {
-   *    using generator = InternalYielded.disposable(source);
+   *    using generator = InternalYielded.disposable(source, args);
     for (const next of generator) {
    *     yield next * 2;
    *    }
@@ -367,7 +366,7 @@ type CommonYielded<
    * @example
    * yielded([-2,1,2,-3,4])
    *  .lift(function* filterNegatives(generator) {
-   *    using generator = InternalYielded.disposable(source);
+   *    using generator = InternalYielded.disposable(source, args);
    *    for (const next of generator) {
    *      if (next < 0) continue;
    *      yield next;
@@ -380,7 +379,7 @@ type CommonYielded<
    *  .lift(function* joinStrings(source) {
    *    return function() {
    *      const acc: string[] = [];
-   *      using generator = InternalYielded.disposable(source);
+   *      using generator = InternalYielded.disposable(source, args);
     for (const next of generator) {
    *       acc.push(next);
    *      }

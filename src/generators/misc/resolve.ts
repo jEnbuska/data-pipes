@@ -2,31 +2,31 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import { getDisposableGenerator } from "../../index.ts";
 
 export function resolve<TInput>(
   source: SyncYieldedProvider<TInput>,
 ): AsyncYieldedProvider<Awaited<TInput>> {
-  return async function* resolveSyncGenerator() {
-    using generator = _internalYielded.disposable(source);
+  return async function* resolveSyncGenerator(signal) {
+    using generator = getDisposableGenerator(source, signal);
     for await (const next of generator) {
-      yield next as any;
+      yield next;
     }
   };
 }
 
-export function resolveParallel<TInput>(
-  source: SyncYieldedProvider<TInput>,
+export function resolveParallel(
+  source: SyncYieldedProvider<any>,
   count: number,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): AsyncYieldedProvider<Awaited<any>> {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error(`Invalid count ${count} passed to resolveParallel`);
   }
-  return async function* resolveParallelGenerator() {
-    using generator = _internalYielded.disposable(source);
-    const promises = new Map<string, Promise<{ key: string; value: TInput }>>();
+  return async function* resolveParallelGenerator(signal) {
+    using generator = getDisposableGenerator(source, signal);
+    const promises = new Map<string, Promise<{ key: string; value: any }>>();
     let nextKey = 0;
-    function add(value: TInput) {
+    function add(value: any) {
       const key = `${nextKey++}`;
       promises.set(
         key,
@@ -43,7 +43,7 @@ export function resolveParallel<TInput>(
 
     while (promises.size) {
       const { key, value } = await Promise.race(promises.values());
-      yield value as any;
+      yield value;
       promises.delete(key);
       const next = generator.next();
       if (next.done) continue;

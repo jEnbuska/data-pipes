@@ -1,4 +1,4 @@
-import type { SyncYieldedProvider, IterableSyncYielded } from "../types";
+import { type SyncYieldedProvider, type IterableSyncYielded } from "../types";
 import { _internalYielded } from "../utils";
 import {
   flatSync,
@@ -36,6 +36,7 @@ import { createInitialGroups } from "../generators/reducers/groupBy";
 import { consumeSync } from "../consumers";
 import { iterableAsyncYielded } from "./iterableAsyncYielded";
 import { singleSyncYielded } from "./singleSyncYielded";
+import { getDisposableGenerator } from "../index.ts";
 
 export function iterableSyncYielded<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -50,7 +51,8 @@ export function iterableSyncYielded<TInput>(
       return iterableAsyncYielded(resolveParallel(source, count));
     },
     *[Symbol.iterator]() {
-      using generator = _internalYielded.disposable(source);
+      const signal = new AbortController().signal;
+      using generator = (getDisposableGenerator as any)(source, [signal]);
       for (const next of generator) {
         yield next;
       }
@@ -71,10 +73,10 @@ export function iterableSyncYielded<TInput>(
       return iterableSyncYielded(mapSync(source, mapper));
     },
     collect(signal?: AbortSignal) {
-      return toArraySync<TInput>(source, signal);
+      return toArraySync(source, signal);
     },
     consume(signal?: AbortSignal) {
-      return consumeSync<TInput>(source, signal);
+      return consumeSync(source, signal);
     },
     [Symbol.toStringTag]: "IterableSyncYielded",
     tap(callback) {
@@ -113,9 +115,7 @@ export function iterableSyncYielded<TInput>(
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return iterableSyncYielded(
-        filterSync<TInput, TOutput>(source, predicate),
-      );
+      return iterableSyncYielded(filterSync(source, predicate));
     },
     fold(initial, reducer) {
       const initialOnce = _internalYielded.once(initial);
@@ -125,7 +125,7 @@ export function iterableSyncYielded<TInput>(
       );
     },
     groupBy(
-      keySelector: (next: TInput) => PropertyKey,
+      keySelector: (next: any) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
       return singleSyncYielded(groupBySync(source, keySelector, groups), () =>
@@ -154,7 +154,7 @@ export function iterableSyncYielded<TInput>(
       const toArraySource = toReverseSync(source);
       return iterableSyncYielded(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn(toArraySource, signal);
         },
       });
     },
@@ -174,7 +174,7 @@ export function iterableSyncYielded<TInput>(
       const toArraySource = toSortedSync(source, comparator);
       return iterableSyncYielded(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn(toArraySource, signal);
         },
       });
     },
@@ -185,7 +185,7 @@ export function iterableSyncYielded<TInput>(
       const toArraySource = takeLastSync(source, count);
       return iterableSyncYielded(toArraySource, {
         collect(signal?: AbortSignal) {
-          return toArraySyncFromReturn<TInput>(toArraySource, signal);
+          return toArraySyncFromReturn(toArraySource, signal);
         },
       });
     },

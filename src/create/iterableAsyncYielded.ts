@@ -34,6 +34,7 @@ import { consumeAsync } from "../consumers/consume";
 
 import { createInitialGroups } from "../generators/reducers/groupBy";
 import { singleAsyncYielded } from "./singleAsyncYielded";
+import { getDisposableAsyncGenerator } from "../index.ts";
 
 export function iterableAsyncYielded<TInput>(
   source: AsyncYieldedProvider<Awaited<TInput>>,
@@ -42,7 +43,8 @@ export function iterableAsyncYielded<TInput>(
   return {
     ...overrides,
     async *[Symbol.asyncIterator]() {
-      using generator = _internalYielded.disposable(source);
+      const signal = new AbortController().signal;
+      using generator = (getDisposableAsyncGenerator as any)(source, [signal]);
       for await (const next of generator) {
         yield next;
       }
@@ -63,7 +65,7 @@ export function iterableAsyncYielded<TInput>(
       return iterableAsyncYielded(mapAsync(source, mapper));
     },
     collect(signal?: AbortSignal) {
-      return toArrayAsync<TInput>(source, signal);
+      return toArrayAsync(source, signal);
     },
     consume(signal?: AbortSignal) {
       return consumeAsync<TInput>(source, signal);
@@ -105,9 +107,7 @@ export function iterableAsyncYielded<TInput>(
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
     ) {
-      return iterableAsyncYielded(
-        filterAsync<TInput, TOutput>(source, predicate),
-      );
+      return iterableAsyncYielded(filterAsync(source, predicate));
     },
     fold(initial, reducer) {
       const initialOnce = _internalYielded.once(initial);

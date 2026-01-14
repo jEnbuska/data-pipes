@@ -2,15 +2,15 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import { getDisposableGenerator, getDisposableAsyncGenerator } from "../../";
 
 export function countBySync<TInput>(
   source: SyncYieldedProvider<TInput>,
   mapper: (next: TInput) => number,
 ): SyncYieldedProvider<number> {
-  return function* countSyncByGenerator() {
+  return function* countSyncByGenerator(signal) {
     let acc = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc += mapper(next);
     }
@@ -22,9 +22,9 @@ export function countByAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
   mapper: (next: TInput) => number,
 ): AsyncYieldedProvider<number> {
-  return async function* countByAsyncGenerator() {
+  return async function* countByAsyncGenerator(signal) {
     let acc = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       acc += mapper(next);
     }

@@ -2,16 +2,19 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import {
+  getDisposableGenerator,
+  getDisposableAsyncGenerator,
+} from "../../index.ts";
 
 export function skipLastSync<TInput>(
   source: SyncYieldedProvider<TInput>,
   count: number,
 ): SyncYieldedProvider<TInput> {
-  return function* skipLastSyncGenerator() {
+  return function* skipLastSyncGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       buffer.push(next);
       if (skipped < count) {
@@ -27,10 +30,10 @@ export function skipLastAsync<TInput>(
   source: AsyncYieldedProvider<TInput>,
   count: number,
 ): AsyncYieldedProvider<Awaited<TInput>> {
-  return async function* skipLastAsyncGenerator() {
+  return async function* skipLastAsyncGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       buffer.push(next);
       if (skipped < count) {

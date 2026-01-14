@@ -21,10 +21,12 @@ export function singleAsyncYielded<TInput, TDefault>(
   getDefault: () => TDefault,
 ): SingleAsyncYielded<TInput, TDefault> {
   return {
-    defaultTo<TDefault>(
-      getDefault: () => TDefault,
-    ): SingleAsyncYielded<TInput, TDefault> {
-      return singleAsyncYielded(source, getDefault);
+    defaultTo<TDefault>(getDefault: () => TDefault) {
+      return {
+        collect(signal?: AbortSignal) {
+          return firstAsync(source, getDefault, signal);
+        },
+      };
     },
     tap(callback) {
       return singleAsyncYielded(tapAsync(source, callback), getDefault);
@@ -32,7 +34,7 @@ export function singleAsyncYielded<TInput, TDefault>(
     lift<TOutput>(
       middleware: YieldedLiftMiddleware<true, Awaited<TInput>, TOutput>,
     ) {
-      return iterableAsyncYielded<TOutput>(middleware(source));
+      return iterableAsyncYielded(middleware(source));
     },
     find(predicate: (next: Awaited<TInput>) => boolean) {
       return singleAsyncYielded(

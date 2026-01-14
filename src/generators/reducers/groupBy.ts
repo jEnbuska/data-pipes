@@ -2,20 +2,21 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import { getDisposableGenerator, getDisposableAsyncGenerator } from "../../";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
 }
 
 export function groupBySync(
-  source: SyncYieldedProvider<any>,
+  source: SyncYieldedProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
 ): SyncYieldedProvider<any> {
-  return function* groupBySyncGenerator() {
+  return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    using generator = _internalYielded.disposable(source);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -28,13 +29,14 @@ export function groupBySync(
 }
 
 export function groupByAsync(
-  source: AsyncYieldedProvider<any>,
+  source: AsyncYieldedProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
 ): AsyncYieldedProvider<Awaited<any>> {
-  return async function* groupByAsyncGenerator() {
+  return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
-    using generator = _internalYielded.disposable(source);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

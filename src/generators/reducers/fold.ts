@@ -2,17 +2,20 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { _internalYielded } from "../../utils";
+import {
+  getDisposableGenerator,
+  getDisposableAsyncGenerator,
+} from "../../index.ts";
 
 export function foldSync<TInput, TOutput>(
   source: SyncYieldedProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
 ): SyncYieldedProvider<TOutput> {
-  return function* foldSyncGenerator() {
+  return function* foldSyncGenerator(signal) {
     let acc = initial();
     let index = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -25,10 +28,10 @@ export function foldAsync<TInput, TOutput>(
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
 ): AsyncYieldedProvider<Awaited<TOutput>> {
-  return async function* foldGenerator() {
+  return async function* foldGenerator(signal) {
     let acc = initial();
     let index = 0;
-    using generator = _internalYielded.disposable(source);
+    using generator = getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       acc = fold(acc, next, index++);
     }

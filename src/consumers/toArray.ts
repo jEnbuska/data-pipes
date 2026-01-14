@@ -7,7 +7,8 @@ export function toArraySync<TInput>(
 ): TInput[] {
   const acc: TInput[] = [];
   if (!signal) return acc;
-  for (const next of source()) {
+
+  for (const next of source(signal)) {
     if (signal.aborted) return [];
     acc.push(next);
   }
@@ -20,12 +21,11 @@ export async function toArrayAsync<TInput>(
 ): Promise<Array<Awaited<TInput>>> {
   const acc: TInput[] = [];
   const resolvable = Promise.withResolvers<Array<Awaited<TInput>>>();
-  if (signal.aborted) return [];
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
     _internalYielded.invoke(async function () {
-      for await (const next of source()) {
+      for await (const next of source(signal)) {
         if (signal.aborted) return [];
         acc.push(next);
       }
@@ -38,7 +38,8 @@ export function toArraySyncFromReturn<TInput>(
   source: SyncYieldedProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
-  const generator = source();
+  if (signal.aborted) return [];
+  const generator = source(signal);
   let result = generator.next();
   while (true) {
     if (signal.aborted) return [];
@@ -58,7 +59,7 @@ export function toArrayAsyncFromReturn<TInput>(
   return Promise.race([
     resolvable.promise,
     _internalYielded.invoke(async function () {
-      const generator = source();
+      const generator = source(signal);
       let result = await generator.next();
       while (true) {
         if (signal.aborted) return [];

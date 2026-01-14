@@ -1,13 +1,12 @@
 import { describe, test, expect } from "bun:test";
-import yielded from "../";
-import { _internalYielded } from "../utils";
+import yielded, { getDisposableGenerator } from "../";
 
 describe("lift", () => {
   test("lift mapper", () => {
     const array = yielded([1, 2, 3])
       .lift(function multiplyByTwo(source) {
-        return function* () {
-          using generator = _internalYielded.disposable(source);
+        return function* (signal) {
+          using generator = getDisposableGenerator(source, signal);
           for (const next of generator) {
             yield next * 2;
           }
@@ -20,8 +19,8 @@ describe("lift", () => {
   test("lift single", () => {
     const array = yielded(1)
       .lift(function multiplyByTwo(source) {
-        return function* () {
-          using generator = _internalYielded.disposable(source);
+        return function* (signal) {
+          using generator = getDisposableGenerator(source, signal);
           for (const next of generator) {
             yield next * 2;
           }
@@ -33,8 +32,8 @@ describe("lift", () => {
   test("lift filter", () => {
     const array = yielded([-2, 1, 2, -3, 4])
       .lift(function filterNegatives(source) {
-        return function* () {
-          using generator = _internalYielded.disposable(source);
+        return function* (signal) {
+          using generator = getDisposableGenerator(source, signal);
           for (const next of generator) {
             if (next < 0) continue;
             yield next;
@@ -46,18 +45,20 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = yielded(["a", "b", "c"])
+    const text = yielded(function* () {
+      yield* ["a", "b", "c"];
+    })
       .lift(function joinStrings(source) {
-        return function* () {
+        return function* (signal) {
           const acc: string[] = [];
-          using generator = _internalYielded.disposable(source);
+          using generator = getDisposableGenerator(source, signal);
           for (const next of generator) {
             acc.push(next);
           }
           yield acc.join(".");
         };
       })
-      .collect() satisfies string[];
+      .collect(new AbortController().signal) satisfies string[];
     expect(text).toStrictEqual(["a.b.c"]);
   });
 });

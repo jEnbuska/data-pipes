@@ -1,4 +1,4 @@
-import type { SingleSyncYielded, SyncYieldedProvider } from "../types";
+import { type SingleSyncYielded, type SyncYieldedProvider } from "../types";
 import {
   findSync,
   flatSync,
@@ -19,7 +19,11 @@ export function singleSyncYielded<TInput, TDefault>(
 ): SingleSyncYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
-      return singleSyncYielded(source, getDefault);
+      return {
+        collect(signal?: AbortSignal) {
+          return firstSync(source, getDefault, signal);
+        },
+      };
     },
     tap(callback) {
       return singleSyncYielded(tapSync(source, callback), getDefault);
@@ -46,10 +50,10 @@ export function singleSyncYielded<TInput, TDefault>(
       );
     },
     collect(signal?: AbortSignal) {
-      return firstSync<TInput, TDefault>(source, getDefault, signal);
+      return firstSync(source, getDefault, signal);
     },
     consume(signal?: AbortSignal) {
-      return consumeSync<TInput>(source, signal);
+      return consumeSync(source, signal);
     },
     [Symbol.toStringTag]: "SingleSyncYielded",
     resolve() {

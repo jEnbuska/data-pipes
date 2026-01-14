@@ -3,7 +3,9 @@ import yielded from "../../";
 export function createTestSets<T>(array: T[]) {
   return {
     fromEmpty: yielded<T>([]),
-    fromEmptyAsync: yielded<T>(async function* () {}),
+    fromEmptyAsync: yielded(async function* () {
+      yield* array.slice(0, 0);
+    }),
     fromAsyncGenerator: yielded(async function* () {
       for await (const value of array) {
         yield value;

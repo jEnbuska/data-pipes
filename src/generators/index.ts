@@ -1,4 +1,4 @@
-import { batchSync, batchAsync } from "./grouppers/batch";
+import batchSync, { batchAsync } from "./grouppers/batch";
 import { chunkBySync, chunkByAsync } from "./grouppers/chunkBy";
 import { countSync, countAsync } from "./reducers/count";
 import { countBySync, countByAsync } from "./reducers/countBy";
@@ -28,7 +28,7 @@ import { someSync, someAsync } from "./finders/some";
 import { toSortedSync, toSortedAsync } from "./sorters/toSorted.ts";
 import { takeSync, takeAsync } from "./filters/take";
 import { takeLastSync, takeLastAsync } from "./filters/takeLast";
-import { takeWhileSync, takeWhileAsync } from "./filters/takeWhile";
+import { takeWhileAsync, takeWhileSync } from "./filters/takeWhile";
 import { tapSync, tapAsync } from "./misc/tap";
 
 export {
