@@ -4,8 +4,8 @@
   "type": "module",
   "types": "types",
   "scripts": {
-    "build": "tsc --noEmit --watch",
-    "test": "npx vitest --run --reporter verbose",
+    "watch": "tsc --noEmit --watch",
+    "test": "vitest --run --reporter verbose",
     "test:watch": "vitest",
     "lint": "eslint --ext .ts --max-warnings 0 ./src",
     "lint:fix": "eslint --fix --ext .ts ./src",
@@ -20,7 +20,6 @@
     "eslint-config-standard-with-typescript": "^43.0.1",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.7.4",
-    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite-tsconfig-paths": "^6.0.4",
     "vitest": "^4.0.17"
