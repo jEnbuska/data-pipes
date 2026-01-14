@@ -2,8 +2,8 @@ import {
   type YieldedSyncProvider,
   type YieldedAsyncProvider,
   type YieldedLiftMiddleware,
-} from "../../types";
-import { _internalY } from "../../utils";
+} from "../../types.ts";
+import { _internalY } from "../../utils.ts";
 
 export function liftSync<TInput, TOutput>(
   provider: YieldedSyncProvider<TInput>,

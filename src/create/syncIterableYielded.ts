@@ -1,59 +1,63 @@
-import { type YieldedSyncProvider, type SyncIterableYielded } from "../types";
 import {
-  flatSync,
-  mapSync,
-  tapSync,
-  chunkBySync,
-  batchSync,
-  distinctBySync,
-  distinctUntilChangedSync,
-  everySync,
-  filterSync,
-  foldSync,
+  type YieldedSyncProvider,
+  type SyncIterableYielded,
+} from "../types.ts";
+import { toArraySyncFromReturn, toArraySync } from "../consumers/toArray.ts";
+import {
+  createInitialGroups,
   groupBySync,
-  maxSync,
-  minSync,
-  reduceSync,
-  toReverseSync,
-  skipSync,
-  skipLastSync,
-  skipWhileSync,
-  someSync,
-  toSortedSync,
-  takeSync,
-  takeLastSync,
-  takeWhileSync,
-  flatMapSync,
-  findSync,
-  countBySync,
-  countSync,
-  resolve,
-  resolveParallel,
-} from "../generators";
-import { toArraySyncFromReturn, toArraySync } from "../consumers/toArray";
-import { createInitialGroups } from "../generators/reducers/groupBy";
-import { consumeSync } from "../consumers";
+} from "../generators/reducers/groupBy.ts";
+import { consumeSync } from "../consumers/consume.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 import { syncSingleYielded } from "./syncSingleYielded.ts";
-import { getDisposableGenerator } from "../";
-import { liftSync } from "../generators/misc/lift";
-import { _internalY } from "../utils";
+import { liftSync } from "../generators/misc/lift.ts";
+import { _internalY } from "../utils.ts";
+import { toAwaited, toAwaitedParallel } from "../generators/misc/toAwaited.ts";
+import { findSync } from "../generators/finders/find.ts";
+import { flatSync } from "../generators/spreaders/flat.ts";
+import { flatMapSync } from "../generators/spreaders/flatMap.ts";
+import { mapSync } from "generators/misc/map.ts";
+import { tapSync } from "../generators/misc/tap.ts";
+import { countBySync } from "../generators/reducers/countBy.ts";
+import { countSync } from "../generators/reducers/count.ts";
+import { chunkBySync } from "../generators/grouppers/chunkBy.ts";
+import { batchSync } from "../generators/grouppers/batch.ts";
+import { distinctBySync } from "../generators/filters/distinctBy.ts";
+import { distinctUntilChangedSync } from "../generators/filters/distinctUntilChanged.ts";
+import { everySync } from "../generators/finders/every.ts";
+import { filterSync } from "../generators/filters/filter.ts";
+import { foldSync } from "../generators/reducers/fold.ts";
+import { maxSync } from "../generators/reducers/max.ts";
+import { minSync } from "../generators/reducers/min.ts";
+import { reduceSync } from "../generators/reducers/reduce.ts";
+import { toReverseSync } from "../generators/sorters/toReverse.ts";
+import { skipSync } from "../generators/filters/skip.ts";
+import { skipLastSync } from "../generators/filters/skipLast.ts";
+import { skipWhileSync } from "../generators/filters/skipWhile.ts";
+import { someSync } from "../generators/finders/some.ts";
+import { toSortedSync } from "../generators/sorters/toSorted.ts";
+import { takeSync } from "../generators/filters/take.ts";
+import { takeLastSync } from "../generators/filters/takeLast.ts";
+import { takeWhileSync } from "../generators/filters/takeWhile.ts";
 
+const stringTag = "SyncIterableYielded";
 export function syncIterableYielded<TInput>(
   provider: YieldedSyncProvider<TInput>,
   overrides: Partial<SyncIterableYielded<TInput>> = {},
 ): SyncIterableYielded<TInput> {
   return {
     ...overrides,
-    resolve() {
-      return asyncIterableAYielded(resolve(provider));
+    toAwaited() {
+      return asyncIterableAYielded(toAwaited(provider));
     },
-    resolveParallel(count: number) {
-      return asyncIterableAYielded(resolveParallel(provider, count));
+    toAwaitedParallel(count: number) {
+      return asyncIterableAYielded(toAwaitedParallel(provider, count));
     },
     *[Symbol.iterator]() {
       const signal = new AbortController().signal;
-      using generator = (getDisposableGenerator as any)(provider, [signal]);
+      using generator = (_internalY.getDisposableGenerator as any)(provider, [
+        signal,
+      ]);
       for (const next of generator) {
         yield next;
       }
@@ -73,13 +77,13 @@ export function syncIterableYielded<TInput>(
     map(mapper) {
       return syncIterableYielded(mapSync(provider, mapper));
     },
-    collect(signal?: AbortSignal) {
+    resolve(signal?: AbortSignal) {
       return toArraySync(provider, signal);
     },
     consume(signal?: AbortSignal) {
       return consumeSync(provider, signal);
     },
-    [Symbol.toStringTag]: "IterableSyncYielded",
+    [Symbol.toStringTag]: stringTag,
     tap(callback) {
       return syncIterableYielded(tapSync(provider, callback));
     },
@@ -151,7 +155,7 @@ export function syncIterableYielded<TInput>(
     toReverse() {
       const reverseProvider = toReverseSync(provider);
       return syncIterableYielded(reverseProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArraySyncFromReturn(reverseProvider, signal);
         },
       });
@@ -168,10 +172,10 @@ export function syncIterableYielded<TInput>(
     some(predicate) {
       return syncSingleYielded(someSync(provider, predicate), () => false);
     },
-    toSorted(comparator) {
-      const sortProvider = toSortedSync(provider, comparator);
+    toSorted(compareFn) {
+      const sortProvider = toSortedSync(provider, compareFn);
       return syncIterableYielded(sortProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArraySyncFromReturn(sortProvider, signal);
         },
       });
@@ -182,7 +186,7 @@ export function syncIterableYielded<TInput>(
     takeLast(count) {
       const takeLastProvider = takeLastSync(provider, count);
       return syncIterableYielded(takeLastProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArraySyncFromReturn(takeLastProvider, signal);
         },
       });

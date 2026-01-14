@@ -1,13 +1,13 @@
-import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
-import yielded from "../";
+import { describe, test, expect } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
+import yielded from "../index.ts";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
     expect(
       yielded<number>([])
         .countBy((next) => next)
-        .collect(),
+        .resolve(),
     ).toBe(0);
   });
 
@@ -22,11 +22,11 @@ describe("countBy", () => {
     fromEmptyAsync,
   } = createTestSets(objects);
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises
         .countBy((next) => next.value)
-        .collect() satisfies Promise<number>),
+        .resolve() satisfies Promise<number>),
     ).toBe(6);
   });
 
@@ -34,34 +34,34 @@ describe("countBy", () => {
     expect(
       await (fromAsyncGenerator
         .countBy((next) => next.value)
-        .collect() satisfies Promise<number>),
+        .resolve() satisfies Promise<number>),
     ).toBe(6);
   });
 
   test("from promises", async () => {
     expect(
       await fromPromises
-        .resolve()
+        .toAwaited()
         .countBy((next) => next.value)
-        .collect(),
+        .resolve(),
     ).toBe(6);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.countBy((next) => next.value).collect() satisfies number,
+      fromGenerator.countBy((next) => next.value).resolve() satisfies number,
     ).toBe(6);
   });
 
   test("from array", () => {
     expect(
-      fromArray.countBy((next) => next.value).collect() satisfies number,
+      fromArray.countBy((next) => next.value).resolve() satisfies number,
     ).toBe(6);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.countBy((next) => next.value).collect() satisfies number,
+      fromEmpty.countBy((next) => next.value).resolve() satisfies number,
     ).toBe(0);
   });
 
@@ -69,7 +69,7 @@ describe("countBy", () => {
     expect(
       await (fromEmptyAsync
         .countBy((next) => next.value)
-        .collect() satisfies Promise<number>),
+        .resolve() satisfies Promise<number>),
     ).toBe(0);
   });
 
@@ -79,7 +79,7 @@ describe("countBy", () => {
     expect(
       yielded([1, 2, 3])
         .countBy((next) => next)
-        .collect(controller.signal) satisfies number,
+        .resolve(controller.signal) satisfies number,
     ).toBe(0);
   });
 
@@ -88,9 +88,9 @@ describe("countBy", () => {
     controller.abort();
     expect(
       (await yielded([1, 2, 3])
-        .resolve()
+        .toAwaited()
         .countBy((next) => next)
-        .collect(controller.signal)) satisfies number,
+        .resolve(controller.signal)) satisfies number,
     ).toBe(0);
   });
 });

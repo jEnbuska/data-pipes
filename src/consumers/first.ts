@@ -1,4 +1,7 @@
-import { type YieldedSyncProvider, type YieldedAsyncProvider } from "../types";
+import {
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
+} from "../types.ts";
 
 export function firstSync<TInput, TDefault>(
   provider: YieldedSyncProvider<TInput>,

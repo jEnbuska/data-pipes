@@ -1,29 +1,29 @@
 import {
   type YieldedSyncProvider,
   type YieldedAsyncProvider,
-} from "../../types";
-import { getDisposableGenerator } from "../../";
+} from "../../types.ts";
+import { _internalY } from "../../utils.ts";
 
-export function resolve<TInput>(
+export function toAwaited<TInput>(
   provider: YieldedSyncProvider<TInput>,
 ): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* resolveSyncGenerator(signal) {
-    using generator = getDisposableGenerator(provider, signal);
+  return async function* toAwaitedGenerator(signal) {
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
     }
   };
 }
 
-export function resolveParallel(
+export function toAwaitedParallel(
   provider: YieldedSyncProvider<any>,
   count: number,
 ): YieldedAsyncProvider<Awaited<any>> {
   if (!Number.isInteger(count) || count < 1) {
-    throw new Error(`Invalid count ${count} passed to resolveParallel`);
+    throw new Error(`Invalid count ${count} passed to toAwaitedParallel`);
   }
-  return async function* resolveParallelGenerator(signal) {
-    using generator = getDisposableGenerator(provider, signal);
+  return async function* toAwaitedParallelGenerator(signal) {
+    using generator = _internalY.getDisposableGenerator(provider, signal);
     const promises = new Map<string, Promise<{ key: string; value: any }>>();
     let nextKey = 0;
     function add(value: any) {

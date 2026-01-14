@@ -1,5 +1,8 @@
-import { type YieldedSyncProvider, type YieldedAsyncProvider } from "../types";
-import { _internalY } from "../utils";
+import {
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
+} from "../types.ts";
+import { _internalY } from "../utils.ts";
 
 export function toArraySync<TInput>(
   provider: YieldedSyncProvider<TInput>,

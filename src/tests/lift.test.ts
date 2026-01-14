@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import yielded from "../";
+import { describe, test, expect } from "vitest";
+import yielded from "../index.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
@@ -9,7 +9,7 @@ describe("lift", () => {
           yield next * 2;
         }
       })
-      .collect();
+      .resolve();
     expect(array).toStrictEqual([2, 4, 6]);
   });
 
@@ -20,7 +20,7 @@ describe("lift", () => {
           yield next * 2;
         }
       })
-      .collect() satisfies number[];
+      .resolve() satisfies number[];
     expect(array).toStrictEqual([2]);
   });
   test("lift filter", () => {
@@ -31,7 +31,7 @@ describe("lift", () => {
           yield next;
         }
       })
-      .collect();
+      .resolve();
     expect(array).toStrictEqual([1, 2, 4]);
   });
 
@@ -46,7 +46,7 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .collect(new AbortController().signal) satisfies string[];
+      .resolve(new AbortController().signal) satisfies string[];
     expect(text).toStrictEqual(["a.b.c"]);
   });
 
@@ -63,7 +63,7 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .collect(new AbortController().signal)) satisfies string[];
+      .resolve(new AbortController().signal)) satisfies string[];
     expect(text).toStrictEqual(["a.b.c"]);
   });
 });

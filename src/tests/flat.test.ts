@@ -1,6 +1,6 @@
-import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
-import yielded from "../";
+import { describe, test, expect } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
+import yielded from "../index.ts";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {
@@ -16,7 +16,7 @@ describe("flat", () => {
           .flat(depth)
           // Verify typing works correctly
           .tap(verify<FlatArray<T[], D>>())
-          .collect()
+          .resolve()
       );
     }
     describe("depth 0", () => {
@@ -149,12 +149,12 @@ describe("flat", () => {
     fromEmptyAsync,
   } = createTestSets(numbers);
   test("from single", () => {
-    expect(fromSingle.flat(5).collect() satisfies number[]).toEqual([1, 2]);
+    expect(fromSingle.flat(5).resolve() satisfies number[]).toEqual([1, 2]);
   });
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.flat(5).collect() satisfies Promise<
+      await (fromResolvedPromises.flat(5).resolve() satisfies Promise<
         number[]
       >),
     ).toStrictEqual([1, 2, 3, 4, 5]);
@@ -162,35 +162,35 @@ describe("flat", () => {
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.flat(5).collect() satisfies Promise<number[]>),
+      await (fromAsyncGenerator.flat(5).resolve() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2, 3, 4, 5]);
   });
 
   test("from promises", async () => {
     expect(
-      (await fromPromises.resolve().flat(5).collect()) satisfies number[],
+      (await fromPromises.toAwaited().flat(5).resolve()) satisfies number[],
     ).toStrictEqual([1, 2, 3, 4, 5]);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.flat(5).collect() satisfies number[]).toStrictEqual([
+    expect(fromGenerator.flat(5).resolve() satisfies number[]).toStrictEqual([
       1, 2, 3, 4, 5,
     ]);
   });
 
   test("from array", () => {
-    expect(fromArray.flat(5).collect() satisfies number[]).toStrictEqual([
+    expect(fromArray.flat(5).resolve() satisfies number[]).toStrictEqual([
       1, 2, 3, 4, 5,
     ]);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.flat(5).collect() satisfies number[]).toStrictEqual([]);
+    expect(fromEmpty.flat(5).resolve() satisfies number[]).toStrictEqual([]);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.flat(5).collect() satisfies Promise<number[]>),
+      await (fromEmptyAsync.flat(5).resolve() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

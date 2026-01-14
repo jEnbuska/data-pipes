@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
+import { describe, test, expect } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("min", () => {
   const numbers = [2, 1, 3, 5, 4];
@@ -15,23 +15,23 @@ describe("min", () => {
   } = createTestSets(numbers);
   const modulo4 = (n: number) => n % 4;
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.min(modulo4).collect() satisfies Promise<
+      await (fromResolvedPromises.min(modulo4).resolve() satisfies Promise<
         number | void
       >),
     ).toBe(4);
   });
 
   test("from single", () => {
-    expect(fromSingle.collect() satisfies number | undefined).toEqual(
+    expect(fromSingle.resolve() satisfies number | undefined).toEqual(
       numbers[0],
     );
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.min(modulo4).collect() satisfies Promise<
+      await (fromAsyncGenerator.min(modulo4).resolve() satisfies Promise<
         number | void
       >),
     ).toBe(4);
@@ -39,31 +39,31 @@ describe("min", () => {
 
   test("from promises", async () => {
     const first = fromPromises
-      .resolve()
+      .toAwaited()
       .min(modulo4)
-      .collect() satisfies Promise<number | void>;
+      .resolve() satisfies Promise<number | void>;
     expect(await first).toBe(4);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.min(modulo4).collect() satisfies number | void).toBe(
+    expect(fromGenerator.min(modulo4).resolve() satisfies number | void).toBe(
       4,
     );
   });
 
   test("from array", () => {
-    expect(fromArray.min(modulo4).collect() satisfies number | void).toBe(4);
+    expect(fromArray.min(modulo4).resolve() satisfies number | void).toBe(4);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.min(modulo4).collect() satisfies number | void).toBe(
+    expect(fromEmpty.min(modulo4).resolve() satisfies number | void).toBe(
       undefined,
     );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.min(modulo4).collect() satisfies Promise<
+      await (fromEmptyAsync.min(modulo4).resolve() satisfies Promise<
         number | void
       >),
     ).toBe(undefined);

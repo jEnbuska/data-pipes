@@ -1,26 +1,26 @@
-import { describe, test, expect } from "bun:test";
-import yielded from "../";
+import { describe, test, expect } from "vitest";
+import yielded from "../index.ts";
 
 describe("skipWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];
   test("skipWhile negative", () => {
     const array = yielded(numbers)
       .skipWhile((n) => n < 0)
-      .collect();
+      .resolve();
     expect(array).toStrictEqual([0, 1, 2]);
   });
 
   test("skipWhile always", () => {
     const array = yielded(numbers)
       .skipWhile(() => true)
-      .collect();
+      .resolve();
     expect(array).toStrictEqual([]);
   });
 
   test("skipWhile never", () => {
     const array = yielded(numbers)
       .skipWhile(() => false)
-      .collect();
+      .resolve();
     expect(array).toStrictEqual(numbers);
   });
 });

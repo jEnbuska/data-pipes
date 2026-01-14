@@ -1,27 +1,26 @@
-import { type YieldedSyncProvider, type SyncSingleYielded } from "../types";
-import {
-  findSync,
-  flatSync,
-  flatMapSync,
-  mapSync,
-  tapSync,
-  resolve,
-} from "../generators";
-import { firstSync } from "../consumers/first";
-import { consumeSync } from "../consumers/consume";
+import { type YieldedSyncProvider, type SyncSingleYielded } from "../types.ts";
+import { firstSync } from "../consumers/first.ts";
+import { consumeSync } from "../consumers/consume.ts";
 import { syncIterableYielded } from "./syncIterableYielded.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
-import { liftSync } from "../generators/misc/lift";
-import { _internalY } from "../utils";
+import { liftSync } from "../generators/misc/lift.ts";
+import { _internalY } from "../utils.ts";
+import { tapSync } from "../generators/misc/tap.ts";
+import { findSync } from "../generators/finders/find.ts";
+import { flatSync } from "../generators/spreaders/flat.ts";
+import { flatMapSync } from "../generators/spreaders/flatMap.ts";
+import { mapSync } from "../generators/misc/map.ts";
+import { toAwaited } from "../generators/misc/toAwaited.ts";
 
+const stringTag = "SyncSingleYielded";
 export function syncSingleYielded<TInput, TDefault>(
   provider: YieldedSyncProvider<TInput>,
   getDefault: () => TDefault,
 ): SyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
-      const { collect } = syncSingleYielded(provider, getDefault);
-      return { collect };
+      const { resolve } = syncSingleYielded(provider, getDefault);
+      return { resolve };
     },
     tap(callback) {
       return syncSingleYielded(tapSync(provider, callback), getDefault);
@@ -47,15 +46,15 @@ export function syncSingleYielded<TInput, TDefault>(
         _internalY.getUndefined,
       );
     },
-    collect(signal?: AbortSignal) {
+    resolve(signal?: AbortSignal) {
       return firstSync(provider, getDefault, signal);
     },
     consume(signal?: AbortSignal) {
       return consumeSync(provider, signal);
     },
-    [Symbol.toStringTag]: "SingleSyncYielded",
-    resolve() {
-      return asyncSingleYielded(resolve(provider), _internalY.getUndefined);
+    [Symbol.toStringTag]: stringTag,
+    toAwaited() {
+      return asyncSingleYielded(toAwaited(provider), _internalY.getUndefined);
     },
   };
 }

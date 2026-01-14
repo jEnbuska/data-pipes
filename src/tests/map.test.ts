@@ -1,5 +1,5 @@
-import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
+import { describe, test, expect } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("map", () => {
   const {
@@ -14,23 +14,23 @@ describe("map", () => {
   } = createTestSets([2, 1, 3, 5, 4]);
   const expected = [2, 1, 3, 1, 0];
   const modulo4 = (n: number) => n % 4;
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.map(modulo4).collect() satisfies Promise<
+      await (fromResolvedPromises.map(modulo4).resolve() satisfies Promise<
         number[]
       >),
     ).toStrictEqual(expected);
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4).collect() satisfies number | void).toEqual(
+    expect(fromSingle.map(modulo4).resolve() satisfies number | void).toEqual(
       expected[0],
     );
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.map(modulo4).collect() satisfies Promise<
+      await (fromAsyncGenerator.map(modulo4).resolve() satisfies Promise<
         number[]
       >),
     ).toStrictEqual(expected);
@@ -38,33 +38,33 @@ describe("map", () => {
 
   test("from promises", async () => {
     const first = fromPromises
-      .resolve()
+      .toAwaited()
       .map(modulo4)
-      .collect() satisfies Promise<number[]>;
+      .resolve() satisfies Promise<number[]>;
     expect(await first).toStrictEqual(expected);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.map(modulo4).collect() satisfies number[],
+      fromGenerator.map(modulo4).resolve() satisfies number[],
     ).toStrictEqual(expected);
   });
 
   test("from array", () => {
-    expect(fromArray.map(modulo4).collect() satisfies number[]).toStrictEqual(
+    expect(fromArray.map(modulo4).resolve() satisfies number[]).toStrictEqual(
       expected,
     );
   });
 
   test("from empty", () => {
-    expect(fromEmpty.map(modulo4).collect() satisfies number[]).toStrictEqual(
+    expect(fromEmpty.map(modulo4).resolve() satisfies number[]).toStrictEqual(
       [],
     );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.map(modulo4).collect() satisfies Promise<number[]>),
+      await (fromEmptyAsync.map(modulo4).resolve() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

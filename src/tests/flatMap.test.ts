@@ -1,13 +1,13 @@
-import { describe, test, expect } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
-import yielded from "../";
+import { describe, test, expect } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
+import yielded from "../index.ts";
 
 describe("flatMap", () => {
   test("flatten non array", () => {
     expect(
       yielded([1, 2, 3])
         .flatMap((it) => it)
-        .collect() satisfies number[],
+        .resolve() satisfies number[],
     ).toStrictEqual([1, 2, 3]);
   });
 
@@ -27,17 +27,17 @@ describe("flatMap", () => {
   } = createTestSets(numbers);
   test("from single", () => {
     expect(
-      fromSingle.flatMap((next) => next).collect() satisfies Array<
+      fromSingle.flatMap((next) => next).resolve() satisfies Array<
         number | number[]
       >,
     ).toEqual(expected[0]);
   });
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises
         .flatMap((next) => next)
-        .collect() satisfies Promise<Array<number | number[]>>),
+        .resolve() satisfies Promise<Array<number | number[]>>),
     ).toStrictEqual(expected);
   });
 
@@ -45,22 +45,22 @@ describe("flatMap", () => {
     expect(
       await (fromAsyncGenerator
         .flatMap((next) => next)
-        .collect() satisfies Promise<Array<number | number[]>>),
+        .resolve() satisfies Promise<Array<number | number[]>>),
     ).toStrictEqual(expected);
   });
 
   test("from promises", async () => {
     expect(
       (await fromPromises
-        .resolve()
+        .toAwaited()
         .flatMap((next) => next)
-        .collect()) satisfies Array<number | number[]>,
+        .resolve()) satisfies Array<number | number[]>,
     ).toStrictEqual(expected);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.flatMap((next) => next).collect() satisfies Array<
+      fromGenerator.flatMap((next) => next).resolve() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual(expected);
@@ -68,7 +68,7 @@ describe("flatMap", () => {
 
   test("from array", () => {
     expect(
-      fromArray.flatMap((next) => next).collect() satisfies Array<
+      fromArray.flatMap((next) => next).resolve() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual(expected);
@@ -76,7 +76,7 @@ describe("flatMap", () => {
 
   test("from empty", () => {
     expect(
-      fromEmpty.flatMap((next) => next).collect() satisfies Array<
+      fromEmpty.flatMap((next) => next).resolve() satisfies Array<
         number | number[]
       >,
     ).toStrictEqual([]);
@@ -84,7 +84,7 @@ describe("flatMap", () => {
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.flatMap((next) => next).collect() satisfies Promise<
+      await (fromEmptyAsync.flatMap((next) => next).resolve() satisfies Promise<
         Array<number | number[]>
       >),
     ).toStrictEqual([]);

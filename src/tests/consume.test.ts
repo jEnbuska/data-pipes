@@ -1,5 +1,5 @@
-import { expect, test, describe } from "bun:test";
-import yielded from "../";
+import { expect, test, describe } from "vitest";
+import yielded from "../index.ts";
 
 describe("consume", () => {
   const numbers = [1, 2, 3];
@@ -16,13 +16,13 @@ describe("consume", () => {
     const consumed: number[] = [];
     await yielded(numbers)
       .map((value) => Promise.resolve(value))
-      .resolve()
+      .toAwaited()
       .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);
   });
 
-  test("chainable async resolver to consume", async () => {
+  test("chainable async to consume", async () => {
     const consumed: number[] = [];
     await yielded(async function* () {
       for (const value of numbers) {

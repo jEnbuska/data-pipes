@@ -1,7 +1,7 @@
-import { expect, test, describe } from "bun:test";
-import { createTestSets } from "./utils/createTestSets";
+import { expect, test, describe } from "vitest";
+import { createTestSets } from "./utils/createTestSets.ts";
 
-describe("array collect tests", () => {
+describe("array resolve tests", () => {
   const numbers = [1, 2, 3];
   test("array test set", async () => {
     const {
@@ -14,21 +14,21 @@ describe("array collect tests", () => {
       fromEmptyAsync,
     } = createTestSets(numbers);
     expect(
-      await (fromResolvedPromises.collect() satisfies Promise<number[]>),
+      await (fromResolvedPromises.resolve() satisfies Promise<number[]>),
     ).toStrictEqual(numbers);
     expect(
-      (await fromAsyncGenerator.collect()) satisfies number[],
+      (await fromAsyncGenerator.resolve()) satisfies number[],
     ).toStrictEqual(numbers);
     expect(
       await Promise.all(
-        fromPromises.collect() satisfies Array<Promise<number>>,
+        fromPromises.resolve() satisfies Array<Promise<number>>,
       ),
     ).toStrictEqual(numbers);
-    expect(fromGenerator.collect() satisfies number[]).toStrictEqual(numbers);
-    expect(fromArray.collect() satisfies number[]).toStrictEqual(numbers);
-    expect(fromEmpty.collect() satisfies number[]).toStrictEqual([]);
+    expect(fromGenerator.resolve() satisfies number[]).toStrictEqual(numbers);
+    expect(fromArray.resolve() satisfies number[]).toStrictEqual(numbers);
+    expect(fromEmpty.resolve() satisfies number[]).toStrictEqual([]);
     expect(
-      await (fromEmptyAsync.collect() satisfies Promise<number[]>),
+      await (fromEmptyAsync.resolve() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

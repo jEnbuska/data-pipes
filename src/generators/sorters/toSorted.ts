@@ -1,16 +1,16 @@
 import {
   type YieldedSyncProvider,
   type YieldedAsyncProvider,
-} from "../../types";
-import { _internalY } from "../../utils";
+} from "../../types.ts";
+import { _internalY } from "../../utils.ts";
 
 export function toSortedSync<TInput>(
   provider: YieldedSyncProvider<TInput>,
-  comparator: (a: TInput, b: TInput) => number = defaultCompare,
+  compareFn: (a: TInput, b: TInput) => number,
 ): YieldedSyncProvider<TInput, TInput[]> {
   return function* sortSyncGenerator(signal) {
     const acc: TInput[] = [];
-    const findIndex = createIndexFinder(acc, comparator);
+    const findIndex = createIndexFinder(acc, compareFn);
     using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc.splice(findIndex(next), 0, next);
@@ -22,11 +22,11 @@ export function toSortedSync<TInput>(
 
 export function toSortedAsync<TInput = never>(
   provider: YieldedAsyncProvider<TInput>,
-  comparator: (a: TInput, b: TInput) => number = defaultCompare,
+  compareFn: (a: TInput, b: TInput) => number,
 ): YieldedAsyncProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* sortAsyncGenerator(signal) {
     const acc: TInput[] = [];
-    const findIndex = createIndexFinder(acc, comparator);
+    const findIndex = createIndexFinder(acc, compareFn);
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       acc.splice(findIndex(next), 0, next);
@@ -34,34 +34,6 @@ export function toSortedAsync<TInput = never>(
     yield* acc as Array<Awaited<TInput>>;
     return acc as Array<Awaited<TInput>>;
   };
-}
-
-function createJsonComparable(value: any) {
-  const { stack } = new Error("");
-  console.warn(`Yielded:\nCreating Object tack trace using JSON.stringify for comparison at:
-${stack}\nNote this might be quite heavy operation and the sort result might be unpredictable`);
-  return JSON.stringify(value);
-}
-export function defaultCompare(a: unknown, b: unknown): number {
-  // Numbers: handle NaN, undefined, null last
-  if (typeof a === "number" && typeof b === "number") {
-    if (Number.isNaN(a)) {
-      return 1;
-    }
-    if (Number.isNaN(b)) {
-      return -1;
-    }
-    return a - b;
-  }
-  // Strings
-  if (typeof a === "string" && typeof b === "string") {
-    return a < b ? -1 : a > b ? 1 : 0;
-  }
-
-  // Fallback: JSON string compare to keep deterministic
-  const sa = a === undefined || a === null ? "\uffff" : createJsonComparable(a);
-  const sb = b === undefined || b === null ? "\uffff" : createJsonComparable(b);
-  return sa < sb ? -1 : sa > sb ? 1 : 0;
 }
 
 function createIndexFinder<TInput>(

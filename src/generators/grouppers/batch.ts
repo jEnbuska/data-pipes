@@ -1,10 +1,10 @@
 import {
   type YieldedSyncProvider,
   type YieldedAsyncProvider,
-} from "../../types";
-import { _internalY } from "../../utils";
+} from "../../types.ts";
+import { _internalY } from "../../utils.ts";
 
-function batchSync<TInput>(
+export function batchSync<TInput>(
   provider: YieldedSyncProvider<TInput>,
   predicate: (acc: TInput[]) => boolean,
 ): YieldedSyncProvider<TInput[]> {
@@ -24,8 +24,6 @@ function batchSync<TInput>(
     }
   };
 }
-
-export default batchSync;
 
 export function batchAsync<TInput>(
   provider: YieldedAsyncProvider<TInput>,

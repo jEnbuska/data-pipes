@@ -1,4 +1,4 @@
-import type { YieldedSyncProvider, YieldedAsyncProvider } from "./types";
+import type { YieldedSyncProvider, YieldedAsyncProvider } from "./types.ts";
 
 export const _internalY = {
   invoke<T>(cb: () => T) {

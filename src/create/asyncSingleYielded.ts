@@ -1,26 +1,28 @@
-import { type YieldedAsyncProvider, type AsyncSingleYielded } from "../types";
-import { firstAsync } from "../consumers/first";
-import { _internalY } from "../utils";
-import { consumeAsync } from "../consumers/consume";
 import {
-  findAsync,
-  flatAsync,
-  flatMapAsync,
-  mapAsync,
-  tapAsync,
-} from "../generators";
-import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
-import { liftAsync } from "../generators/misc/lift";
+  type YieldedAsyncProvider,
+  type AsyncSingleYielded,
+} from "../types.ts";
+import { firstAsync } from "../consumers/first.ts";
+import { _internalY } from "../utils.ts";
+import { consumeAsync } from "../consumers/consume.ts";
 
-const stringTag = "SingleAsyncYielded";
+import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
+import { liftAsync } from "../generators/misc/lift.ts";
+import { tapAsync } from "../generators/misc/tap.ts";
+import { findAsync } from "../generators/finders/find.ts";
+import { flatAsync } from "../generators/spreaders/flat.ts";
+import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
+import { mapAsync } from "../generators/misc/map.ts";
+
+const stringTag = "AsyncSingleYielded";
 export function asyncSingleYielded<TInput, TDefault>(
   provider: YieldedAsyncProvider<Awaited<TInput>>,
   getDefault: () => TDefault,
 ): AsyncSingleYielded<TInput, TDefault> {
   return {
     defaultTo<TDefault>(getDefault: () => TDefault) {
-      const { collect } = asyncSingleYielded(provider, getDefault);
-      return { collect };
+      const { resolve } = asyncSingleYielded(provider, getDefault);
+      return { resolve };
     },
     tap(callback) {
       return asyncSingleYielded(tapAsync(provider, callback), getDefault);
@@ -46,7 +48,7 @@ export function asyncSingleYielded<TInput, TDefault>(
         _internalY.getUndefined,
       );
     },
-    collect(signal?: AbortSignal) {
+    resolve(signal?: AbortSignal) {
       return firstAsync(provider, getDefault, signal);
     },
     consume(signal?: AbortSignal) {

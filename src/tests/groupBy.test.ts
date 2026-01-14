@@ -1,6 +1,6 @@
-import { describe, test, expect } from "bun:test";
-import yielded from "../";
-import { createTestSets } from "./utils/createTestSets";
+import { describe, test, expect } from "vitest";
+import yielded from "../index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("groupBy", () => {
   describe("identity", () => {
@@ -13,7 +13,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = yielded([1, 2, 3])
         .groupBy((x) => x)
-        .collect();
+        .resolve();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -28,7 +28,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = yielded([1, 2, 3])
         .groupBy((x) => x, [1, 2, 4])
-        .collect();
+        .resolve();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -41,7 +41,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = yielded([1, 2, 3, 4])
         .groupBy((x) => x % 2)
-        .collect();
+        .resolve();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -55,10 +55,8 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = yielded([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"), ["even", "other"])
-        .collect() satisfies
-        | (Record<"even" | "other", number[]> &
-            Partial<Record<"odd", number[]>>)
-        | undefined;
+        .resolve() satisfies Record<"even" | "other", number[]> &
+        Partial<Record<"odd", number[]>>;
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -71,7 +69,7 @@ describe("groupBy", () => {
     test("chainable", () => {
       const groups = yielded([1, 2, 3, 4])
         .groupBy((x) => (x % 2 ? "odd" : "even"))
-        .collect();
+        .resolve();
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -92,9 +90,9 @@ describe("groupBy", () => {
     even: number[];
   };
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.groupBy(getKey).collect() satisfies Promise<
+      await (fromResolvedPromises.groupBy(getKey).resolve() satisfies Promise<
         Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -102,7 +100,7 @@ describe("groupBy", () => {
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.groupBy(getKey).collect() satisfies Promise<
+      await (fromAsyncGenerator.groupBy(getKey).resolve() satisfies Promise<
         Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -110,7 +108,7 @@ describe("groupBy", () => {
 
   test("from promises", async () => {
     expect(
-      (await fromPromises.resolve().groupBy(getKey).collect()) satisfies
+      (await fromPromises.toAwaited().groupBy(getKey).resolve()) satisfies
         | Partial<ExpectedReturnType>
         | undefined,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -120,7 +118,7 @@ describe("groupBy", () => {
     expect(
       fromGenerator
         .groupBy(getKey)
-        .collect() satisfies Partial<ExpectedReturnType> | void,
+        .resolve() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
@@ -128,7 +126,7 @@ describe("groupBy", () => {
     expect(
       fromArray
         .groupBy(getKey)
-        .collect() satisfies Partial<ExpectedReturnType> | void,
+        .resolve() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
@@ -136,7 +134,7 @@ describe("groupBy", () => {
     expect(
       fromEmpty
         .groupBy(getKey)
-        .collect() satisfies Partial<ExpectedReturnType> | void,
+        .resolve() satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({});
   });
 
@@ -144,7 +142,7 @@ describe("groupBy", () => {
     expect(
       await (fromEmptyAsync
         .groupBy(getKey)
-        .collect() satisfies Promise<Partial<ExpectedReturnType> | void>),
+        .resolve() satisfies Promise<Partial<ExpectedReturnType> | void>),
     ).toStrictEqual({});
   });
 });

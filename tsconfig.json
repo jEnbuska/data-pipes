@@ -1,22 +1,19 @@
 {
+  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
     "baseUrl": "./src",
-    // add Bun type definitions
-    "types": ["bun-types"],
-
-    // enable latest features
+    "types": ["node"],
     "lib": ["esnext"],
-    "module": "esnext",
-    "target": "esnext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
 
-    // if TS 5.x+
-    "moduleResolution": "bundler",
     "noEmit": true,
-    "allowImportingTsExtensions": true,
     "moduleDetection": "force",
     // best practices
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+
+    "allowImportingTsExtensions": true
   }
 }

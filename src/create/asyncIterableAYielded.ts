@@ -1,40 +1,44 @@
-import { type YieldedAsyncProvider, type AsyncIterableYielded } from "../types";
-import { _internalY } from "../utils";
-import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray";
 import {
-  findAsync,
-  flatAsync,
-  flatMapAsync,
-  mapAsync,
-  tapAsync,
-  countByAsync,
-  countAsync,
-  chunkByAsync,
-  batchAsync,
-  distinctByAsync,
-  distinctUntilChangedAsync,
-  everyAsync,
-  filterAsync,
-  foldAsync,
+  type YieldedAsyncProvider,
+  type AsyncIterableYielded,
+} from "../types.ts";
+import { _internalY } from "../utils.ts";
+import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray.ts";
+import { consumeAsync } from "../consumers/consume.ts";
+import {
+  createInitialGroups,
   groupByAsync,
-  maxAsync,
-  minAsync,
-  reduceAsync,
-  toReverseAsync,
-  skipAsync,
-  skipLastAsync,
-  skipWhileAsync,
-  someAsync,
-  toSortedAsync,
-  takeAsync,
-  takeLastAsync,
-  takeWhileAsync,
-} from "../generators";
-import { consumeAsync } from "../consumers/consume";
-import { createInitialGroups } from "../generators/reducers/groupBy";
+} from "../generators/reducers/groupBy.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
-import { liftAsync } from "../generators/misc/lift";
+import { liftAsync } from "../generators/misc/lift.ts";
+import { findAsync } from "../generators/finders/find.ts";
+import { flatAsync } from "../generators/spreaders/flat.ts";
+import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
+import { mapAsync } from "../generators/misc/map.ts";
+import { tapAsync } from "../generators/misc/tap.ts";
+import { countByAsync } from "../generators/reducers/countBy.ts";
+import { countAsync } from "../generators/reducers/count.ts";
+import { chunkByAsync } from "../generators/grouppers/chunkBy.ts";
+import { batchAsync } from "../generators/grouppers/batch.ts";
+import { distinctByAsync } from "../generators/filters/distinctBy.ts";
+import { distinctUntilChangedAsync } from "../generators/filters/distinctUntilChanged.ts";
+import { everyAsync } from "../generators/finders/every.ts";
+import { filterAsync } from "../generators/filters/filter.ts";
+import { foldAsync } from "../generators/reducers/fold.ts";
+import { maxAsync } from "../generators/reducers/max.ts";
+import { minAsync } from "../generators/reducers/min.ts";
+import { reduceAsync } from "../generators/reducers/reduce.ts";
+import { toReverseAsync } from "../generators/sorters/toReverse.ts";
+import { skipAsync } from "../generators/filters/skip.ts";
+import { skipLastAsync } from "../generators/filters/skipLast.ts";
+import { skipWhileAsync } from "../generators/filters/skipWhile.ts";
+import { someAsync } from "../generators/finders/some.ts";
+import { toSortedAsync } from "../generators/sorters/toSorted.ts";
+import { takeAsync } from "../generators/filters/take.ts";
+import { takeLastAsync } from "../generators/filters/takeLast.ts";
+import { takeWhileAsync } from "../generators/filters/takeWhile.ts";
 
+const stringTag = "AsyncIterableYielded";
 export function asyncIterableAYielded<TInput>(
   provider: YieldedAsyncProvider<Awaited<TInput>>,
   overrides: Partial<AsyncIterableYielded<TInput>> = {},
@@ -66,13 +70,13 @@ export function asyncIterableAYielded<TInput>(
     map(mapper) {
       return asyncIterableAYielded(mapAsync(provider, mapper));
     },
-    collect(signal?: AbortSignal) {
+    resolve(signal?: AbortSignal) {
       return toArrayAsync(provider, signal);
     },
     consume(signal?: AbortSignal) {
       return consumeAsync<TInput>(provider, signal);
     },
-    [Symbol.toStringTag]: "AsyncIterableYielded",
+    [Symbol.toStringTag]: stringTag,
     tap(callback) {
       return asyncIterableAYielded(tapAsync(provider, callback));
     },
@@ -149,7 +153,7 @@ export function asyncIterableAYielded<TInput>(
     toReverse() {
       const reverseProvider = toReverseAsync(provider);
       return asyncIterableAYielded(reverseProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(reverseProvider, signal);
         },
       });
@@ -169,7 +173,7 @@ export function asyncIterableAYielded<TInput>(
     toSorted(comparator) {
       const sortedProvider = toSortedAsync(provider, comparator);
       return asyncIterableAYielded(sortedProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(sortedProvider, signal);
         },
       });
@@ -180,7 +184,7 @@ export function asyncIterableAYielded<TInput>(
     takeLast(count) {
       const takeLastProvider = takeLastAsync(provider, count);
       return asyncIterableAYielded(takeLastProvider, {
-        collect(signal?: AbortSignal) {
+        resolve(signal?: AbortSignal) {
           return toArrayAsyncFromReturn(takeLastProvider, signal);
         },
       });

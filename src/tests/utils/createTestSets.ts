@@ -1,4 +1,4 @@
-import yielded from "../../";
+import yielded from "../../index.ts";
 
 export function createTestSets<T>(array: T[]) {
   return {
@@ -16,11 +16,11 @@ export function createTestSets<T>(array: T[]) {
     }),
     fromArray: yielded(array),
     fromSingle: yielded(array[0]),
-    fromSingleAsync: yielded(array[0]).resolve(),
+    fromSingleAsync: yielded(array[0]).toAwaited(),
     fromPromises: yielded(array).map((next) => Promise.resolve(next)),
     fromResolvedPromises: yielded(array)
       .map((next) => Promise.resolve(next))
-      .resolve()
+      .toAwaited()
       .map((next) => Promise.resolve(next)),
   };
 }

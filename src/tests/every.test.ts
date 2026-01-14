@@ -1,17 +1,17 @@
-import { describe, test, expect } from "bun:test";
-import yielded from "../";
-import { createTestSets } from "./utils/createTestSets";
+import { describe, test, expect } from "vitest";
+import yielded from "../index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("every", () => {
   test("has every", () => {
-    expect(yielded([true, true, true]).every(Boolean).collect()).toBe(true);
+    expect(yielded([true, true, true]).every(Boolean).resolve()).toBe(true);
   });
   test("has none", () => {
-    expect(yielded([false, false, false]).every(Boolean).collect()).toBe(false);
+    expect(yielded([false, false, false]).every(Boolean).resolve()).toBe(false);
   });
 
   test("has some", () => {
-    expect(yielded([false, false, false]).every(Boolean).collect()).toBe(false);
+    expect(yielded([false, false, false]).every(Boolean).resolve()).toBe(false);
   });
 
   const numbers = [1, 2, 3, 4];
@@ -28,11 +28,11 @@ describe("every", () => {
     return value > 0;
   }
 
-  test("from resolver promises", async () => {
+  test("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises
         .every(isGreaterThenZero)
-        .collect() satisfies Promise<boolean>),
+        .resolve() satisfies Promise<boolean>),
     ).toStrictEqual(true);
   });
 
@@ -40,28 +40,28 @@ describe("every", () => {
     expect(
       await (fromAsyncGenerator
         .every(isGreaterThenZero)
-        .collect() satisfies Promise<boolean>),
+        .resolve() satisfies Promise<boolean>),
     ).toStrictEqual(true);
   });
 
   test("from promises", async () => {
     expect(
       (await fromPromises
-        .resolve()
+        .toAwaited()
         .every(isGreaterThenZero)
-        .collect()) satisfies boolean,
+        .resolve()) satisfies boolean,
     ).toStrictEqual(true);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.every(isGreaterThenZero).collect() satisfies boolean,
+      fromGenerator.every(isGreaterThenZero).resolve() satisfies boolean,
     ).toStrictEqual(true);
   });
 
   test("from array", () => {
     expect(
-      fromArray.every(isGreaterThenZero).collect() satisfies boolean,
+      fromArray.every(isGreaterThenZero).resolve() satisfies boolean,
     ).toStrictEqual(true);
   });
 
@@ -70,13 +70,13 @@ describe("every", () => {
   }
   test("from empty", () => {
     expect(
-      fromEmpty.every(isGreaterThan100).collect() satisfies boolean | void,
+      fromEmpty.every(isGreaterThan100).resolve() satisfies boolean | void,
     ).toStrictEqual(true);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.every(isGreaterThan100).collect() satisfies Promise<
+      await (fromEmptyAsync.every(isGreaterThan100).resolve() satisfies Promise<
         boolean | void
       >),
     ).toStrictEqual(true);
