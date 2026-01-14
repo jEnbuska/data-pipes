@@ -414,11 +414,10 @@ type CommonYielded<
   ): Yielded<TAsync, true, TOutput>;
 };
 
-export type YieldedLiftMiddleware<TAsync, TInput, TOutput> =
-  TAsync extends false
-    ? (
-        generator: Generator<TInput, unknown, undefined & void>,
-      ) => Generator<TOutput, unknown, undefined & void>
-    : (
-        generator: AsyncGenerator<TInput, void, undefined & void>,
-      ) => AsyncGenerator<TOutput, void, undefined & void>;
+export type YieldedLiftMiddleware<TAsync, TInput, TOutput> = TAsync extends true
+  ? (
+      generator: ReturnType<YieldedAsyncProvider<TInput>>,
+    ) => ReturnType<YieldedAsyncProvider<TOutput>>
+  : (
+      generator: ReturnType<YieldedSyncProvider<TInput>>,
+    ) => ReturnType<YieldedSyncProvider<TOutput>>;
