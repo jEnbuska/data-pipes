@@ -1,10 +1,6 @@
-import {
-  type AsyncYieldedProvider,
-  type SingleAsyncYielded,
-  type YieldedLiftMiddleware,
-} from "../types";
+import { type AsyncYieldedProvider, type SingleAsyncYielded } from "../types";
 import { firstAsync } from "../consumers/first";
-import { _internalYielded } from "../utils";
+import { _internalY } from "../utils";
 import { consumeAsync } from "../consumers/consume";
 import {
   findAsync,
@@ -14,6 +10,7 @@ import {
   tapAsync,
 } from "../generators";
 import { iterableAsyncYielded } from "./iterableAsyncYielded";
+import { liftAsync } from "../generators/misc/lift";
 
 const stringTag = "SingleAsyncYielded";
 export function singleAsyncYielded<TInput, TDefault>(
@@ -31,15 +28,13 @@ export function singleAsyncYielded<TInput, TDefault>(
     tap(callback) {
       return singleAsyncYielded(tapAsync(source, callback), getDefault);
     },
-    lift<TOutput>(
-      middleware: YieldedLiftMiddleware<true, Awaited<TInput>, TOutput>,
-    ) {
-      return iterableAsyncYielded(middleware(source));
+    lift(middleware) {
+      return iterableAsyncYielded(liftAsync(source, middleware));
     },
     find(predicate: (next: Awaited<TInput>) => boolean) {
       return singleAsyncYielded(
         findAsync(source, predicate),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     flat(depth) {
@@ -51,7 +46,7 @@ export function singleAsyncYielded<TInput, TDefault>(
     map(mapper) {
       return singleAsyncYielded(
         mapAsync(source, mapper),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     collect(signal?: AbortSignal) {

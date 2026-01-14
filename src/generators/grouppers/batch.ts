@@ -2,10 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import {
-  getDisposableGenerator,
-  getDisposableAsyncGenerator,
-} from "../../index.ts";
+import { _internalY } from "../../utils";
 
 function batchSync<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -13,7 +10,7 @@ function batchSync<TInput>(
 ): SyncYieldedProvider<TInput[]> {
   return function* batchSyncGenerator(signal) {
     let acc: TInput[] = [];
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) {
@@ -36,7 +33,7 @@ export function batchAsync<TInput>(
 ): AsyncYieldedProvider<TInput[]> {
   return async function* batchGenerator(signal) {
     let acc: TInput[] = [];
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       acc.push(next);
       if (!predicate(acc)) continue;

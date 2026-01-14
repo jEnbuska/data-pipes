@@ -2,7 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { getDisposableGenerator, getDisposableAsyncGenerator } from "../../";
+import { _internalY } from "../../utils";
 
 export function maxSync<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -11,7 +11,7 @@ export function maxSync<TInput>(
   return function* maxSyncGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {
@@ -33,7 +33,7 @@ export function maxAsync<TInput>(
   return async function* maxGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       const value = callback(next);
       if (currentMax === undefined || value > currentMax) {

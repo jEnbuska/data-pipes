@@ -2,7 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { getDisposableGenerator, getDisposableAsyncGenerator } from "../../";
+import { _internalY } from "../../utils";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
@@ -16,7 +16,7 @@ export function groupBySync(
   return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {
@@ -36,7 +36,7 @@ export function groupByAsync(
   return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       const key = keySelector(next);
       if (!record.has(key)) {

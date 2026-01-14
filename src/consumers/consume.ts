@@ -1,5 +1,5 @@
 import { type AsyncYieldedProvider, type SyncYieldedProvider } from "../types";
-import { _internalYielded } from "../utils";
+import { _internalY } from "../utils";
 
 export function consumeSync<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -21,7 +21,7 @@ export async function consumeAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve());
   return Promise.race([
     resolvable.promise,
-    _internalYielded.invoke(async function () {
+    _internalY.invoke(async function () {
       for await (const _ of source(signal)) {
         if (signal?.aborted) return resolvable.promise;
       }

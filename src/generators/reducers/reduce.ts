@@ -2,10 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import {
-  getDisposableGenerator,
-  getDisposableAsyncGenerator,
-} from "../../index.ts";
+import { _internalY } from "../../utils";
 
 export function reduceSync<TInput, TOutput>(
   source: SyncYieldedProvider<TInput>,
@@ -15,7 +12,7 @@ export function reduceSync<TInput, TOutput>(
   return function* reduceSyncGenerator(signal) {
     let acc = initialValue;
     let index = 0;
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       acc = reducer(acc, next, index++);
     }
@@ -30,7 +27,7 @@ export function reduceAsync<TInput, TOutput>(
 ): AsyncYieldedProvider<Awaited<TOutput>> {
   return async function* reduceAsyncGenerator(signal) {
     let acc = initialValue;
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     let index = 0;
     for await (const next of generator) {
       acc = reducer(acc, next, index++);

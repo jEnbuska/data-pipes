@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import yielded from "../index";
+import yielded from "../";
 
 describe("reduce", () => {
   test("sum chainable", () => {

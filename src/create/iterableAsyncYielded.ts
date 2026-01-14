@@ -1,5 +1,5 @@
 import { type AsyncYieldedProvider, type IterableAsyncYielded } from "../types";
-import { _internalYielded } from "../utils";
+import { _internalY } from "../utils";
 import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray";
 import {
   findAsync,
@@ -31,10 +31,9 @@ import {
   takeWhileAsync,
 } from "../generators";
 import { consumeAsync } from "../consumers/consume";
-
 import { createInitialGroups } from "../generators/reducers/groupBy";
 import { singleAsyncYielded } from "./singleAsyncYielded";
-import { getDisposableAsyncGenerator } from "../index.ts";
+import { liftAsync } from "../generators/misc/lift";
 
 export function iterableAsyncYielded<TInput>(
   source: AsyncYieldedProvider<Awaited<TInput>>,
@@ -44,7 +43,7 @@ export function iterableAsyncYielded<TInput>(
     ...overrides,
     async *[Symbol.asyncIterator]() {
       const signal = new AbortController().signal;
-      using generator = (getDisposableAsyncGenerator as any)(source, [signal]);
+      using generator = _internalY.getDisposableAsyncGenerator(source, signal);
       for await (const next of generator) {
         yield next;
       }
@@ -52,7 +51,7 @@ export function iterableAsyncYielded<TInput>(
     find(predicate: (next: Awaited<TInput>) => boolean) {
       return singleAsyncYielded(
         findAsync(source, predicate),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     flat(depth) {
@@ -75,16 +74,13 @@ export function iterableAsyncYielded<TInput>(
       return iterableAsyncYielded(tapAsync(source, callback));
     },
     lift(middleware) {
-      return iterableAsyncYielded(middleware(source));
+      return iterableAsyncYielded(liftAsync(source, middleware));
     },
     countBy(fn) {
-      return singleAsyncYielded(
-        countByAsync(source, fn),
-        _internalYielded.getZero,
-      );
+      return singleAsyncYielded(countByAsync(source, fn), _internalY.getZero);
     },
     count() {
-      return singleAsyncYielded(countAsync(source), _internalYielded.getZero);
+      return singleAsyncYielded(countAsync(source), _internalY.getZero);
     },
     chunkBy(fn) {
       return iterableAsyncYielded(chunkByAsync(source, fn));
@@ -101,7 +97,7 @@ export function iterableAsyncYielded<TInput>(
     every(predicate) {
       return singleAsyncYielded(
         everyAsync(source, predicate),
-        _internalYielded.getTrue,
+        _internalY.getTrue,
       );
     },
     filter<TOutput extends TInput>(
@@ -110,7 +106,7 @@ export function iterableAsyncYielded<TInput>(
       return iterableAsyncYielded(filterAsync(source, predicate));
     },
     fold(initial, reducer) {
-      const initialOnce = _internalYielded.once(initial);
+      const initialOnce = _internalY.once(initial);
       return singleAsyncYielded(
         foldAsync(source, initialOnce, reducer),
         initialOnce,
@@ -127,13 +123,13 @@ export function iterableAsyncYielded<TInput>(
     max(callback) {
       return singleAsyncYielded(
         maxAsync(source, callback),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     min(callback) {
       return singleAsyncYielded(
         minAsync(source, callback),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     reduce(reducer, initialValue) {

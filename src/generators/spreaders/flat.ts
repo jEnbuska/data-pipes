@@ -2,10 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import {
-  getDisposableGenerator,
-  getDisposableAsyncGenerator,
-} from "../../index.ts";
+import { _internalY } from "../../utils";
 
 export function flatSync<TInput, const Depth extends number = 1>(
   source: SyncYieldedProvider<TInput>,
@@ -13,7 +10,7 @@ export function flatSync<TInput, const Depth extends number = 1>(
 ): SyncYieldedProvider<FlatArray<TInput[], Depth>> {
   return function* flatSyncGenerator(signal) {
     depth = depth ?? (1 as Depth);
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next;
@@ -30,7 +27,7 @@ export function flatAsync<TInput, const Depth extends number = 1>(
 ): AsyncYieldedProvider<Awaited<FlatArray<TInput[], Depth>>> {
   return async function* flatGenerator(signal) {
     depth = depth ?? (1 as Depth);
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next;

@@ -1,5 +1,4 @@
 import { type SyncYieldedProvider, type IterableSyncYielded } from "../types";
-import { _internalYielded } from "../utils";
 import {
   flatSync,
   mapSync,
@@ -36,7 +35,9 @@ import { createInitialGroups } from "../generators/reducers/groupBy";
 import { consumeSync } from "../consumers";
 import { iterableAsyncYielded } from "./iterableAsyncYielded";
 import { singleSyncYielded } from "./singleSyncYielded";
-import { getDisposableGenerator } from "../index.ts";
+import { getDisposableGenerator } from "../";
+import { liftSync } from "../generators/misc/lift";
+import { _internalY } from "../utils";
 
 export function iterableSyncYielded<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -60,7 +61,7 @@ export function iterableSyncYielded<TInput>(
     find(predicate: (next: TInput) => boolean) {
       return singleSyncYielded(
         findSync(source, predicate),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     flat(depth) {
@@ -83,16 +84,13 @@ export function iterableSyncYielded<TInput>(
       return iterableSyncYielded(tapSync(source, callback));
     },
     lift(middleware) {
-      return iterableSyncYielded(middleware(source));
+      return iterableSyncYielded(liftSync(source, middleware));
     },
     countBy(fn) {
-      return singleSyncYielded(
-        countBySync(source, fn),
-        _internalYielded.getZero,
-      );
+      return singleSyncYielded(countBySync(source, fn), _internalY.getZero);
     },
     count() {
-      return singleSyncYielded(countSync(source), _internalYielded.getZero);
+      return singleSyncYielded(countSync(source), _internalY.getZero);
     },
     chunkBy(fn) {
       return iterableSyncYielded(chunkBySync(source, fn));
@@ -109,7 +107,7 @@ export function iterableSyncYielded<TInput>(
     every(predicate) {
       return singleSyncYielded(
         everySync(source, predicate),
-        _internalYielded.getTrue,
+        _internalY.getTrue,
       );
     },
     filter<TOutput extends TInput>(
@@ -118,7 +116,7 @@ export function iterableSyncYielded<TInput>(
       return iterableSyncYielded(filterSync(source, predicate));
     },
     fold(initial, reducer) {
-      const initialOnce = _internalYielded.once(initial);
+      const initialOnce = _internalY.once(initial);
       return singleSyncYielded(
         foldSync(source, initialOnce, reducer),
         initialOnce,
@@ -135,13 +133,13 @@ export function iterableSyncYielded<TInput>(
     max(callback) {
       return singleSyncYielded(
         maxSync(source, callback),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     min(callback) {
       return singleSyncYielded(
         minSync(source, callback),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     reduce(reducer, initialValue) {

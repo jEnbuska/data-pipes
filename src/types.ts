@@ -351,44 +351,6 @@ type CommonYielded<
     callback: (value: TInput) => TOutput | TOutput[],
   ): Yielded<TAsync, true, TOutput>;
   /**
-   * Accepts a generator middleware and yields the output of the middleware to the next operation.
-   *
-   * @example
-   * yielded([1,2,3])
-   *  .lift(function* multiplyByTwo(generator) {
-   *    using generator = InternalYielded.disposable(source, args);
-    for (const next of generator) {
-   *     yield next * 2;
-   *    }
-   *   })
-   *   .collect() // [2, 4, 6]
-   *
-   * @example
-   * yielded([-2,1,2,-3,4])
-   *  .lift(function* filterNegatives(generator) {
-   *    using generator = InternalYielded.disposable(source, args);
-   *    for (const next of generator) {
-   *      if (next < 0) continue;
-   *      yield next;
-   *    }
-   *   })
-   *  .collect() // [1, 2, 4]
-   *
-   * @example
-   * yielded("a", "b", "c")
-   *  .lift(function* joinStrings(source) {
-   *    return function() {
-   *      const acc: string[] = [];
-   *      using generator = InternalYielded.disposable(source, args);
-    for (const next of generator) {
-   *       acc.push(next);
-   *      }
-   *      yield acc.join(".");
-   *    }
-   *  })
-   *  .collect() // "a.b.c"
-   * */
-  /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example
    * yielded([1,2,3,4])
@@ -413,18 +375,52 @@ type CommonYielded<
   find<TOutput extends TInput>(
     predicate: (next: TInput) => next is TOutput,
   ): Yielded<TAsync, false, TOutput, undefined>;
+  /**
+   * Accepts the previous generator middleware and yields the output's to the next operation.
+   *
+   * @example
+   * yielded([1,2,3])
+   *  .lift(function* multiplyByTwo(generator) {
+   *    using generator = InternalYielded.disposable(source, args);
+   *    for (const next of generator) {
+   *     yield next * 2;
+   *    }
+   *   })
+   *   .collect() // [2, 4, 6]
+   *
+   * @example
+   * yielded([-2,1,2,-3,4])
+   *  .lift(function* filterNegatives(generator) {
+   *    using generator = InternalYielded.disposable(source, args);
+   *    for (const next of generator) {
+   *      if (next < 0) continue;
+   *      yield next;
+   *    }
+   *   })
+   *  .collect() // [1, 2, 4]
+   *
+   * @example
+   * yielded("a", "b", "c")
+   *  .lift(function* joinStrings(generator) {
+   *      const acc: string[] = [];
+   *      using generator = InternalYielded.disposable(source, args);
+   *      for (const next of generator) {
+   *       acc.push(next);
+   *      }
+   *      yield acc.join(".");
+   *  })
+   *  .collect() // "a.b.c"
+   * */
   lift<TOutput = never>(
     middleware: YieldedLiftMiddleware<TAsync, TInput, TOutput>,
   ): Yielded<TAsync, true, TOutput>;
 };
 
-export type YieldedLiftMiddleware<TAsync, TInput, TOutput> = TAsync extends true
-  ? (
-      source: AsyncYieldedProvider<TInput>,
-    ) => AsyncYieldedProvider<
-      Awaited<TOutput>,
-      void | undefined | Promise<void | undefined>
-    >
-  : (
-      source: SyncYieldedProvider<TInput>,
-    ) => SyncYieldedProvider<Awaited<TOutput>, void | undefined>;
+export type YieldedLiftMiddleware<TAsync, TInput, TOutput> =
+  TAsync extends false
+    ? (
+        generator: Generator<TInput, unknown, undefined & void>,
+      ) => Generator<TOutput, unknown, undefined & void>
+    : (
+        generator: AsyncGenerator<TInput, void, undefined & void>,
+      ) => AsyncGenerator<TOutput, void, undefined & void>;

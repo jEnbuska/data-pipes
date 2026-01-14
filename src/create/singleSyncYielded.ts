@@ -7,11 +7,12 @@ import {
   tapSync,
   resolve,
 } from "../generators";
-import { _internalYielded } from "../utils";
 import { firstSync } from "../consumers/first";
 import { consumeSync } from "../consumers/consume";
 import { iterableSyncYielded } from "./iterableSyncYielded";
 import { singleAsyncYielded } from "./singleAsyncYielded";
+import { liftSync } from "../generators/misc/lift";
+import { _internalY } from "../utils";
 
 export function singleSyncYielded<TInput, TDefault>(
   source: SyncYieldedProvider<TInput>,
@@ -29,12 +30,12 @@ export function singleSyncYielded<TInput, TDefault>(
       return singleSyncYielded(tapSync(source, callback), getDefault);
     },
     lift(middleware) {
-      return iterableSyncYielded(middleware(source));
+      return iterableSyncYielded(liftSync(source, middleware));
     },
     find(predicate: (next: TInput) => boolean) {
       return singleSyncYielded(
         findSync(source, predicate),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     flat(depth) {
@@ -46,7 +47,7 @@ export function singleSyncYielded<TInput, TDefault>(
     map(mapper) {
       return singleSyncYielded(
         mapSync(source, mapper),
-        _internalYielded.getUndefined,
+        _internalY.getUndefined,
       );
     },
     collect(signal?: AbortSignal) {
@@ -57,7 +58,7 @@ export function singleSyncYielded<TInput, TDefault>(
     },
     [Symbol.toStringTag]: "SingleSyncYielded",
     resolve() {
-      return singleAsyncYielded(resolve(source), _internalYielded.getUndefined);
+      return singleAsyncYielded(resolve(source), _internalY.getUndefined);
     },
   };
 }

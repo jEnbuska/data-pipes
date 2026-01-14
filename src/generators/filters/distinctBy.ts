@@ -3,10 +3,7 @@ import {
   type AsyncYieldedProvider,
   type YieldedProviderArgs,
 } from "../../types";
-import {
-  getDisposableAsyncGenerator,
-  getDisposableGenerator,
-} from "../../index.ts";
+import { _internalY } from "../../utils";
 
 export function distinctBySync<TInput, TSelect>(
   source: SyncYieldedProvider<TInput>,
@@ -20,7 +17,7 @@ export function distinctBySync(
     signal: AbortSignal,
   ): Generator<any, void, undefined & void> {
     const set = new Set<any>();
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       const key = selector(next);
       if (set.has(key)) {
@@ -37,7 +34,7 @@ export function distinctByAsync<TInput, TSelect>(
 ): AsyncYieldedProvider<Awaited<TInput>> {
   return async function* distinctByAsyncGenerator(signal) {
     const set = new Set<TSelect>();
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       const key = selector(next);
       if (set.has(key)) continue;

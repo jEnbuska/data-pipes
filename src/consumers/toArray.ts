@@ -1,5 +1,5 @@
 import { type SyncYieldedProvider, type AsyncYieldedProvider } from "../types";
-import { _internalYielded } from "../utils";
+import { _internalY } from "../utils";
 
 export function toArraySync<TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -24,7 +24,7 @@ export async function toArrayAsync<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalYielded.invoke(async function () {
+    _internalY.invoke(async function () {
       for await (const next of source(signal)) {
         if (signal.aborted) return [];
         acc.push(next);
@@ -39,7 +39,11 @@ export function toArraySyncFromReturn<TInput>(
   signal = new AbortController().signal,
 ): TInput[] {
   if (signal.aborted) return [];
-  const generator = source(signal);
+  using generator = Object.assign(source(signal), {
+    [Symbol.dispose]() {
+      generator.return([]);
+    },
+  });
   let result = generator.next();
   while (true) {
     if (signal.aborted) return [];
@@ -58,8 +62,8 @@ export function toArrayAsyncFromReturn<TInput>(
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
-    _internalYielded.invoke(async function () {
-      const generator = source(signal);
+    _internalY.invoke(async function () {
+      using generator = _internalY.getDisposableAsyncGenerator(source, signal);
       let result = await generator.next();
       while (true) {
         if (signal.aborted) return [];

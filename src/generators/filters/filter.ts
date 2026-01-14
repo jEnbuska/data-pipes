@@ -3,10 +3,7 @@ import {
   type AsyncYieldedProvider,
   type YieldedProviderArgs,
 } from "../../types";
-import {
-  getDisposableAsyncGenerator,
-  getDisposableGenerator,
-} from "../../index.ts";
+import { _internalY } from "../../utils";
 
 export function filterSync<TInput, TOutput extends TInput = TInput>(
   source: SyncYieldedProvider<TInput>,
@@ -22,7 +19,7 @@ export function filterSync(
 ): SyncYieldedProvider<YieldedProviderArgs, unknown> {
   return function* filterSyncGenerator(signal) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = getDisposableGenerator(source, signal);
+    using generator = _internalY.getDisposableGenerator(source, signal);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -43,7 +40,7 @@ export function filterAsync(
 ): AsyncYieldedProvider<YieldedProviderArgs, unknown> {
   return async function* filterAsyncGenerator(signal) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    using generator = getDisposableAsyncGenerator(source, signal);
+    using generator = _internalY.getDisposableAsyncGenerator(source, signal);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }

@@ -2,7 +2,7 @@ import {
   type SyncYieldedProvider,
   type AsyncYieldedProvider,
 } from "../../types";
-import { getDisposableGenerator } from "../../index.ts";
+import { getDisposableGenerator } from "../../";
 
 export function resolve<TInput>(
   source: SyncYieldedProvider<TInput>,
