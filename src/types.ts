@@ -12,9 +12,7 @@ export type Yielded<
   TInput,
   TDefault = TInput,
 > = TIterable extends true
-  ? TAsync extends true
-    ? AsyncIterableYielded<TInput>
-    : SyncIterableYielded<TInput>
+  ? IterableYielded<TAsync, TInput>
   : SingleYielded<TAsync, TInput, TDefault>;
 
 type SingleYielded<
@@ -508,7 +506,7 @@ type CommonYielded<
    *     yield next * 2;
    *    }
    *   })
-   *   .resolve() // [2, 4, 6]
+   *   .collect() // [2, 4, 6]
    *
    * @example
    * yielded([-2,1,2,-3,4])
@@ -519,7 +517,7 @@ type CommonYielded<
    *      yield next;
    *    }
    *   })
-   *  .resolve() // [1, 2, 4]
+   *  .collect() // [1, 2, 4]
    *
    * @example
    * yielded("a", "b", "c")
@@ -531,7 +529,7 @@ type CommonYielded<
    *      }
    *      yield acc.join(".");
    *  })
-   *  .resolve() // "a.b.c"
+   *  .collect() // "a.b.c"
    * */
   lift<TOutput = never>(
     middleware: YieldedLiftMiddleware<TAsync, TInput, TOutput>,

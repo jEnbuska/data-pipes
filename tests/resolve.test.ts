@@ -33,10 +33,10 @@ describe("array resolve tests", () => {
     ).toStrictEqual([]);
   });
 
-  test("chainable to consume", () => {
-    const result = yielded(async function* () {
+  test("chainable to consume", async () => {
+    const result = (await yielded(async function* () {
       yield* await Promise.resolve(numbers);
-    }).resolve() satisfies Promise<number[]>;
+    }).resolve()) satisfies number[];
     expect(result).toStrictEqual(numbers);
   });
 });

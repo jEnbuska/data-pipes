@@ -10,7 +10,7 @@ export function simpleMock<T extends any[]>(args: T) {
       expect(n).toBe(expected);
     },
     {
-      get called() {
+      getCalled() {
         return called;
       },
     },

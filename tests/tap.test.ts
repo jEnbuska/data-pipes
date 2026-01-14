@@ -35,10 +35,9 @@ describe("tap", () => {
     fromEmptyAsync,
   } = createTestSets(numbers);
   test("from single", () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     fromSingle.tap(callback).consume() satisfies void;
-    expect(callback.called).toHaveBeenCalledTimes(1);
+    expect(callback.getCalled()).toBe(1);
   });
 
   test("from resolved promises", async () => {
@@ -49,49 +48,43 @@ describe("tap", () => {
       .tap(callback)
       .consume() satisfies Promise<void>);
 
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(2);
   });
 
   test("from async generator", async () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
 
     await (fromAsyncGenerator.tap(callback).consume() satisfies Promise<void>);
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(2);
   });
 
   test("from promises", async () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     (await fromPromises.toAwaited().tap(callback).consume()) satisfies void;
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(2);
   });
 
   test("from generator", async () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     fromGenerator.tap(callback).consume() satisfies void;
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(2);
   });
 
   test("from array", () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     fromArray.tap(callback).consume() satisfies void;
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(2);
   });
 
   test("from empty", () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     fromEmpty.tap(callback).consume() satisfies void;
-    expect(callback.called).toBe(2);
+    expect(callback.getCalled()).toBe(0);
   });
 
   test("from empty async", async () => {
-    const args = [1, 2];
-    const callback = simpleMock(args);
+    const callback = simpleMock(numbers);
     await (fromEmptyAsync.tap(callback).consume() satisfies Promise<void>);
-    expect(callback.called).toBe(0);
+    expect(callback.getCalled()).toBe(0);
   });
 });
