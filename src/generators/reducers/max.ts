@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function maxSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   callback: (next: TInput) => number,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* maxSyncGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;
@@ -27,9 +27,9 @@ export function maxSync<TInput>(
 }
 
 export function maxAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* maxGenerator(signal) {
     let currentMax: undefined | number;
     let current: undefined | TInput;

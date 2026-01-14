@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function toSortedSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): SyncYieldedProvider<TInput, TInput[]> {
+): YieldedSyncProvider<TInput, TInput[]> {
   return function* sortSyncGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);
@@ -21,9 +21,9 @@ export function toSortedSync<TInput>(
 }
 
 export function toSortedAsync<TInput = never>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   comparator: (a: TInput, b: TInput) => number = defaultCompare,
-): AsyncYieldedProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
+): YieldedAsyncProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
   return async function* sortAsyncGenerator(signal) {
     const acc: TInput[] = [];
     const findIndex = createIndexFinder(acc, comparator);

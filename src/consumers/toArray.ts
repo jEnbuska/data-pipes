@@ -1,8 +1,8 @@
-import { type SyncYieldedProvider, type AsyncYieldedProvider } from "../types";
+import { type YieldedSyncProvider, type YieldedAsyncProvider } from "../types";
 import { _internalY } from "../utils";
 
 export function toArraySync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   signal = new AbortController().signal,
 ): TInput[] {
   const acc: TInput[] = [];
@@ -16,7 +16,7 @@ export function toArraySync<TInput>(
 }
 
 export async function toArrayAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const acc: TInput[] = [];
@@ -35,7 +35,7 @@ export async function toArrayAsync<TInput>(
 }
 
 export function toArraySyncFromReturn<TInput>(
-  provider: SyncYieldedProvider<TInput, TInput[]>,
+  provider: YieldedSyncProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): TInput[] {
   if (signal.aborted) return [];
@@ -54,7 +54,7 @@ export function toArraySyncFromReturn<TInput>(
 }
 
 export function toArrayAsyncFromReturn<TInput>(
-  provider: AsyncYieldedProvider<TInput, TInput[]>,
+  provider: YieldedAsyncProvider<TInput, TInput[]>,
   signal = new AbortController().signal,
 ): Promise<Array<Awaited<TInput>>> {
   const resolvable = Promise.withResolvers<any[]>();

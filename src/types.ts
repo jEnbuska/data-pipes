@@ -1,10 +1,8 @@
-export type YieldedProviderArgs = readonly [AbortSignal];
-
-export type AsyncYieldedProvider<TOutput, TReturn = unknown | void> = (
+export type YieldedAsyncProvider<TOutput, TReturn = unknown | void> = (
   signal: AbortSignal,
 ) => AsyncGenerator<TOutput, TReturn, undefined & void>;
 
-export type SyncYieldedProvider<TOutput, TReturn = unknown> = (
+export type YieldedSyncProvider<TOutput, TReturn = unknown> = (
   signal: AbortSignal,
 ) => Generator<TOutput, TReturn, undefined & void>;
 

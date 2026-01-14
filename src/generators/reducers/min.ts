@@ -1,14 +1,14 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { getDisposableGenerator } from "../../";
 import { _internalY } from "../../utils";
 
 export function minSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   callback: (next: TInput) => number,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* minSyncGenerator(signal) {
     let currentMin: undefined | number;
     let current: undefined | TInput;
@@ -28,9 +28,9 @@ export function minSync<TInput>(
 }
 
 export function minAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   callback: (next: TInput) => number,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* minAsyncGenerator(signal) {
     let currentMin: undefined | number;
     let current: undefined | TInput;

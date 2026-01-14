@@ -1,4 +1,4 @@
-import { type SingleSyncYielded, type SyncYieldedProvider } from "../types";
+import { type SingleSyncYielded, type YieldedSyncProvider } from "../types";
 import {
   findSync,
   flatSync,
@@ -15,7 +15,7 @@ import { liftSync } from "../generators/misc/lift";
 import { _internalY } from "../utils";
 
 export function singleSyncYielded<TInput, TDefault>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   getDefault: () => TDefault,
 ): SingleSyncYielded<TInput, TDefault> {
   return {

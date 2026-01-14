@@ -1,7 +1,7 @@
-import { type SyncYieldedProvider, type AsyncYieldedProvider } from "../types";
+import { type YieldedSyncProvider, type YieldedAsyncProvider } from "../types";
 
 export function firstSync<TInput, TDefault>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): TInput | TDefault {
@@ -12,7 +12,7 @@ export function firstSync<TInput, TDefault>(
 }
 
 export async function firstAsync<TInput, TDefault>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
 ): Promise<TInput | TDefault> {

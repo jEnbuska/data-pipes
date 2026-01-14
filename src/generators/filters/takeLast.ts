@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function takeLastSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   count: number,
-): SyncYieldedProvider<TInput, TInput[]> {
+): YieldedSyncProvider<TInput, TInput[]> {
   return function* takeLastSyncGenerator(signal) {
     using generator = _internalY.getDisposableGenerator(provider, signal);
     const array = [...generator];
@@ -18,9 +18,9 @@ export function takeLastSync<TInput>(
 }
 
 export function takeLastAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   count: number,
-): AsyncYieldedProvider<Awaited<TInput>, TInput[]> {
+): YieldedAsyncProvider<Awaited<TInput>, TInput[]> {
   return async function* takeLastAsyncGenerator(signal) {
     const acc: TInput[] = [];
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

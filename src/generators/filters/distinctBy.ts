@@ -1,16 +1,15 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
-  type YieldedProviderArgs,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function distinctBySync<TInput, TSelect>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   selector: (next: TInput) => TSelect,
-): SyncYieldedProvider<TInput>;
+): YieldedSyncProvider<TInput>;
 export function distinctBySync(
-  provider: SyncYieldedProvider<YieldedProviderArgs, any>,
+  provider: YieldedSyncProvider<any, any>,
   selector: (next: any) => any,
 ) {
   return function* distinctBySyncGenerator(
@@ -29,9 +28,9 @@ export function distinctBySync(
   };
 }
 export function distinctByAsync<TInput, TSelect>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   selector: (next: TInput) => TSelect,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* distinctByAsyncGenerator(signal) {
     const set = new Set<TSelect>();
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

@@ -1,9 +1,9 @@
-import { type SyncYieldedProvider } from "./types";
+import { type YieldedSyncProvider } from "./types";
 
 export { default } from "./create";
 
 export function getDisposableGenerator<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   signal: AbortSignal,
 ) {
   const generator = provider(signal);

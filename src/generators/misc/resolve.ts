@@ -1,12 +1,12 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { getDisposableGenerator } from "../../";
 
 export function resolve<TInput>(
-  provider: SyncYieldedProvider<TInput>,
-): AsyncYieldedProvider<Awaited<TInput>> {
+  provider: YieldedSyncProvider<TInput>,
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* resolveSyncGenerator(signal) {
     using generator = getDisposableGenerator(provider, signal);
     for await (const next of generator) {
@@ -16,9 +16,9 @@ export function resolve<TInput>(
 }
 
 export function resolveParallel(
-  provider: SyncYieldedProvider<any>,
+  provider: YieldedSyncProvider<any>,
   count: number,
-): AsyncYieldedProvider<Awaited<any>> {
+): YieldedAsyncProvider<Awaited<any>> {
   if (!Number.isInteger(count) || count < 1) {
     throw new Error(`Invalid count ${count} passed to resolveParallel`);
   }

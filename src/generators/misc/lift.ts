@@ -1,14 +1,14 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
   type YieldedLiftMiddleware,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function liftSync<TInput, TOutput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   middleware: YieldedLiftMiddleware<false, TInput, TOutput>,
-): SyncYieldedProvider<TOutput> {
+): YieldedSyncProvider<TOutput> {
   return function* liftSyncGenerator(signal) {
     using generator = _internalY.getDisposableGenerator(provider, signal);
     const arg = generator as any as Parameters<
@@ -19,9 +19,9 @@ export function liftSync<TInput, TOutput>(
 }
 
 export function liftAsync<TInput, TOutput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   middleware: YieldedLiftMiddleware<true, TInput, TOutput>,
-): AsyncYieldedProvider<Awaited<TOutput>> {
+): YieldedAsyncProvider<Awaited<TOutput>> {
   return async function* liftAsyncGenerator(signal) {
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     const arg = generator as any as Parameters<

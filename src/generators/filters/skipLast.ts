@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function skipLastSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   count: number,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* skipLastSyncGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;
@@ -24,9 +24,9 @@ export function skipLastSync<TInput>(
 }
 
 export function skipLastAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   count: number,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* skipLastAsyncGenerator(signal) {
     const buffer: TInput[] = [];
     let skipped = 0;

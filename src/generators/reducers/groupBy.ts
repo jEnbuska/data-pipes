@@ -1,6 +1,6 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
@@ -9,10 +9,10 @@ export function createInitialGroups(groups: any[] = []) {
 }
 
 export function groupBySync(
-  provider: SyncYieldedProvider<any, any>,
+  provider: YieldedSyncProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): SyncYieldedProvider<any> {
+): YieldedSyncProvider<any> {
   return function* groupBySyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -29,10 +29,10 @@ export function groupBySync(
 }
 
 export function groupByAsync(
-  provider: AsyncYieldedProvider<any, any>,
+  provider: YieldedAsyncProvider<any, any>,
   keySelector: (next: any) => PropertyKey,
   groups: PropertyKey[] = [],
-): AsyncYieldedProvider<Awaited<any>> {
+): YieldedAsyncProvider<Awaited<any>> {
   return async function* groupByAsyncGenerator(signal: AbortSignal) {
     const record = createInitialGroups(groups);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

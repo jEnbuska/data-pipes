@@ -1,4 +1,4 @@
-import type { SyncYieldedProvider, AsyncYieldedProvider } from "./types";
+import type { YieldedSyncProvider, YieldedAsyncProvider } from "./types";
 
 export const _internalY = {
   invoke<T>(cb: () => T) {
@@ -16,7 +16,7 @@ export const _internalY = {
   getUndefined: () => undefined,
   getTrue: () => true,
   getDisposableGenerator<TInput>(
-    provider: SyncYieldedProvider<TInput>,
+    provider: YieldedSyncProvider<TInput>,
     signal: AbortSignal,
   ) {
     const generator = provider(signal);
@@ -27,7 +27,7 @@ export const _internalY = {
     });
   },
   getDisposableAsyncGenerator<TInput>(
-    provider: AsyncYieldedProvider<TInput>,
+    provider: YieldedAsyncProvider<TInput>,
     signal: AbortSignal,
   ) {
     const generator = provider(signal);

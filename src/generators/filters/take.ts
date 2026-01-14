@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function takeSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   count: number,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* takeSyncGenerator(signal) {
     if (count <= 0) {
       return;
@@ -21,9 +21,9 @@ export function takeSync<TInput>(
 }
 
 export function takeAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   count: number,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* takeAsyncGenerator(signal) {
     if (count <= 0) {
       return;

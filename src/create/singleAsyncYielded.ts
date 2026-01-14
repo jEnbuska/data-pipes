@@ -1,4 +1,4 @@
-import { type AsyncYieldedProvider, type SingleAsyncYielded } from "../types";
+import { type YieldedAsyncProvider, type SingleAsyncYielded } from "../types";
 import { firstAsync } from "../consumers/first";
 import { _internalY } from "../utils";
 import { consumeAsync } from "../consumers/consume";
@@ -14,7 +14,7 @@ import { liftAsync } from "../generators/misc/lift";
 
 const stringTag = "SingleAsyncYielded";
 export function singleAsyncYielded<TInput, TDefault>(
-  provider: AsyncYieldedProvider<Awaited<TInput>>,
+  provider: YieldedAsyncProvider<Awaited<TInput>>,
   getDefault: () => TDefault,
 ): SingleAsyncYielded<TInput, TDefault> {
   return {

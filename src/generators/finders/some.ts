@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function someSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): SyncYieldedProvider<boolean> {
+): YieldedSyncProvider<boolean> {
   return function* someSyncGenerator(signal) {
     using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
@@ -17,9 +17,9 @@ export function someSync<TInput>(
   };
 }
 export function someAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncYieldedProvider<boolean> {
+): YieldedAsyncProvider<boolean> {
   return async function* someAsyncGenerator(signal) {
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {

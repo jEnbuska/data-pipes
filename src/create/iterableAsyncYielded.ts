@@ -1,4 +1,4 @@
-import { type AsyncYieldedProvider, type IterableAsyncYielded } from "../types";
+import { type YieldedAsyncProvider, type IterableAsyncYielded } from "../types";
 import { _internalY } from "../utils";
 import { toArrayAsyncFromReturn, toArrayAsync } from "../consumers/toArray";
 import {
@@ -36,7 +36,7 @@ import { singleAsyncYielded } from "./singleAsyncYielded";
 import { liftAsync } from "../generators/misc/lift";
 
 export function iterableAsyncYielded<TInput>(
-  provider: AsyncYieldedProvider<Awaited<TInput>>,
+  provider: YieldedAsyncProvider<Awaited<TInput>>,
   overrides: Partial<IterableAsyncYielded<TInput>> = {},
 ): IterableAsyncYielded<TInput> {
   return {

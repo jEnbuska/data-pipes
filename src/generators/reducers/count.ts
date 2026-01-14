@@ -1,12 +1,12 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function countSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
-): SyncYieldedProvider<number> {
+  provider: YieldedSyncProvider<TInput>,
+): YieldedSyncProvider<number> {
   return function* countSyncGenerator(signal) {
     using generator = _internalY.getDisposableGenerator(provider, signal);
     yield [...generator].length;
@@ -14,8 +14,8 @@ export function countSync<TInput>(
 }
 
 export function countAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
-): AsyncYieldedProvider<number> {
+  provider: YieldedAsyncProvider<TInput>,
+): YieldedAsyncProvider<number> {
   return async function* countAsyncGenerator(signal) {
     let count = 0;
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

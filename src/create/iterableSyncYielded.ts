@@ -1,4 +1,4 @@
-import { type SyncYieldedProvider, type IterableSyncYielded } from "../types";
+import { type YieldedSyncProvider, type IterableSyncYielded } from "../types";
 import {
   flatSync,
   mapSync,
@@ -40,7 +40,7 @@ import { liftSync } from "../generators/misc/lift";
 import { _internalY } from "../utils";
 
 export function iterableSyncYielded<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   overrides: Partial<IterableSyncYielded<TInput>> = {},
 ): IterableSyncYielded<TInput> {
   return {

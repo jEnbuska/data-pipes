@@ -1,13 +1,13 @@
 import {
-  type AsyncYieldedProvider,
-  type SyncYieldedProvider,
+  type YieldedAsyncProvider,
+  type YieldedSyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function takeWhileSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* takeWhileSyncGenerator(signal) {
     using generator = _internalY.getDisposableGenerator(provider, signal);
     for (const next of generator) {
@@ -18,9 +18,9 @@ export function takeWhileSync<TInput>(
 }
 
 export function takeWhileAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* takeWhileAsyncGenerator(signal) {
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {

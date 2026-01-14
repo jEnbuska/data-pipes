@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function skipWhileSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* skipWhileSyncGenerator(signal) {
     let skip = true;
     using generator = _internalY.getDisposableGenerator(provider, signal);
@@ -20,9 +20,9 @@ export function skipWhileSync<TInput>(
 }
 
 export function skipWhileAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* skipWhileAsyncGenerator(signal) {
     let skip = true;
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

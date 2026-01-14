@@ -1,6 +1,6 @@
 import {
-  type AsyncYieldedProvider,
-  type SyncYieldedProvider,
+  type YieldedAsyncProvider,
+  type YieldedSyncProvider,
   type IterableAsyncYielded,
   type IterableSyncYielded,
   type SingleSyncYielded,
@@ -36,10 +36,10 @@ import { _internalY } from "../utils";
  */
 
 function yielded<TInput>(
-  asyncGeneratorFunction: AsyncYieldedProvider<TInput>,
+  asyncGeneratorFunction: YieldedAsyncProvider<TInput>,
 ): IterableAsyncYielded<TInput>;
 function yielded<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
 ): IterableSyncYielded<TInput>;
 function yielded<TInput>(
   asyncIterable: AsyncIterator<TInput>,
@@ -72,12 +72,12 @@ function yielded(provider: any) {
     });
   }
   if (typeof provider === "function") {
-    return singleSyncYielded(function* singleSyncYieldedProvider(signal) {
+    return singleSyncYielded(function* singleYieldedSyncProvider(signal) {
       yield provider(signal);
     }, _internalY.getUndefined);
   }
   if (!provider[Symbol.iterator]) {
-    return singleSyncYielded(function* singleSyncYieldedProvider(signal) {
+    return singleSyncYielded(function* singleYieldedSyncProvider(signal) {
       if (signal.aborted) return;
       yield provider;
     }, _internalY.getUndefined);
@@ -99,7 +99,7 @@ export default yielded;
 
 function isAsyncGeneratorFunction<TInput>(
   provider: unknown,
-): provider is AsyncYieldedProvider<TInput> {
+): provider is YieldedAsyncProvider<TInput> {
   return (
     Boolean(provider) &&
     Object.getPrototypeOf(provider).constructor.name ===

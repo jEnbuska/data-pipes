@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 function batchSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   predicate: (acc: TInput[]) => boolean,
-): SyncYieldedProvider<TInput[]> {
+): YieldedSyncProvider<TInput[]> {
   return function* batchSyncGenerator(signal) {
     let acc: TInput[] = [];
     using generator = _internalY.getDisposableGenerator(provider, signal);
@@ -28,9 +28,9 @@ function batchSync<TInput>(
 export default batchSync;
 
 export function batchAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   predicate: (batch: TInput[]) => boolean,
-): AsyncYieldedProvider<TInput[]> {
+): YieldedAsyncProvider<TInput[]> {
   return async function* batchGenerator(signal) {
     let acc: TInput[] = [];
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

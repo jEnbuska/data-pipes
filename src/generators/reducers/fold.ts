@@ -1,14 +1,14 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function foldSync<TInput, TOutput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): SyncYieldedProvider<TOutput> {
+): YieldedSyncProvider<TOutput> {
   return function* foldSyncGenerator(signal) {
     let acc = initial();
     let index = 0;
@@ -21,10 +21,10 @@ export function foldSync<TInput, TOutput>(
 }
 
 export function foldAsync<TInput, TOutput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   initial: () => TOutput,
   fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): AsyncYieldedProvider<Awaited<TOutput>> {
+): YieldedAsyncProvider<Awaited<TOutput>> {
   return async function* foldGenerator(signal) {
     let acc = initial();
     let index = 0;

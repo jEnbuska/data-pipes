@@ -1,13 +1,13 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 export function chunkBySync<TInput, TIdentifier = any>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): SyncYieldedProvider<TInput[]> {
+): YieldedSyncProvider<TInput[]> {
   return function* chunkBySyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
     using generator = _internalY.getDisposableGenerator(provider, signal);
@@ -21,9 +21,9 @@ export function chunkBySync<TInput, TIdentifier = any>(
 }
 
 export function chunkByAsync<TInput, TIdentifier = any>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): AsyncYieldedProvider<TInput[]> {
+): YieldedAsyncProvider<TInput[]> {
   return async function* chunkByAsyncGenerator(signal) {
     const map = new Map<any, TInput[]>();
     using generator = _internalY.getDisposableAsyncGenerator(provider, signal);

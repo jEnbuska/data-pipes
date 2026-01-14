@@ -1,15 +1,15 @@
 import {
-  type SyncYieldedProvider,
-  type AsyncYieldedProvider,
+  type YieldedSyncProvider,
+  type YieldedAsyncProvider,
 } from "../../types";
 import { _internalY } from "../../utils";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
 export function distinctUntilChangedSync<TInput>(
-  provider: SyncYieldedProvider<TInput>,
+  provider: YieldedSyncProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): SyncYieldedProvider<TInput> {
+): YieldedSyncProvider<TInput> {
   return function* distinctUntilChangedSyncGenerator(signal) {
     let first = true;
     let previous: TInput;
@@ -25,9 +25,9 @@ export function distinctUntilChangedSync<TInput>(
 }
 
 export function distinctUntilChangedAsync<TInput>(
-  provider: AsyncYieldedProvider<TInput>,
+  provider: YieldedAsyncProvider<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): AsyncYieldedProvider<Awaited<TInput>> {
+): YieldedAsyncProvider<Awaited<TInput>> {
   return async function* distinctUntilChangedAsyncGenerator(signal) {
     let first = true;
     let previous: TInput;
