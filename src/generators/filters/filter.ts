@@ -1,45 +1,51 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
+import type { AsyncConsumerGenerator } from "../../types.ts";
 
-export function filterSync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => next is TOutput,
-): YieldedSyncProvider<TOutput>;
-export function filterSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => any,
-): YieldedSyncProvider<TInput>;
+export function filterSync<TArgs extends any[], TIn, TNext extends TIn = TIn>(
+  predicate: (next: TIn) => next is TNext,
+): SyncOperatorResolver<TArgs, TIn, TNext>;
+export function filterSync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => any,
+): SyncOperatorResolver<TArgs, TIn>;
 export function filterSync(
-  provider: YieldedSyncProvider<any, any>,
   predicate: (next: unknown) => unknown,
-): YieldedSyncProvider<any, any> {
-  return function* filterSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): SyncOperatorResolver<unknown[], unknown, unknown> {
+  return function* filterSyncResolver(...args) {
+    using generator = startGenerator(...args);
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
   };
 }
 
-export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => next is TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>>;
-export function filterAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => any,
-): YieldedAsyncProvider<Awaited<TInput>>;
+export function filterAsync<TArgs extends any[], TIn, TNext extends TIn = TIn>(
+  predicate: (next: TIn) => next is TNext,
+): AsyncOperatorResolver<TArgs, TIn, TNext>;
+export function filterAsync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => any,
+): AsyncOperatorResolver<TArgs, TIn>;
 export function filterAsync(
-  provider: YieldedAsyncProvider<any, any>,
-  predicate: (next: unknown) => any,
-): YieldedAsyncProvider<any, any> {
-  return async function* filterAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+  predicate: (next: unknown) => unknown,
+): AsyncOperatorResolver<unknown[], unknown, unknown> {
+  return async function* filterAsyncResolver(
+    provider,
+    ...args
+  ): AsyncConsumerGenerator<unknown> {
+    using generator = startGenerator(...args);
     for await (const next of generator) {
       if (predicate(next)) yield next;
     }
   };
 }
+
+export default defineOperator({
+  name: "filter",
+  toMaybe: undefined,
+  filterSync,
+  filterAsync,
+});

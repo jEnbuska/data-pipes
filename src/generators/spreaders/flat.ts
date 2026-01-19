@@ -1,16 +1,17 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
 
-export function flatSync<TInput, const Depth extends number = 1>(
-  provider: YieldedSyncProvider<TInput>,
-  depth?: Depth,
-): YieldedSyncProvider<FlatArray<TInput[], Depth>> {
-  return function* flatSyncGenerator(signal) {
+export function flatSync<
+  TArgs extends any[],
+  TIn,
+  const Depth extends number = 1,
+>(depth?: Depth): SyncOperatorResolver<TArgs, TIn, FlatArray<TIn[], Depth>> {
+  return function* flatSyncResolver(...args) {
+    using generator = useGenerator(...args);
     depth = depth ?? (1 as Depth);
-    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next;
@@ -21,13 +22,14 @@ export function flatSync<TInput, const Depth extends number = 1>(
   };
 }
 
-export function flatAsync<TInput, const Depth extends number = 1>(
-  provider: YieldedAsyncProvider<TInput>,
-  depth?: Depth,
-): YieldedAsyncProvider<Awaited<FlatArray<TInput[], Depth>>> {
-  return async function* flatGenerator(signal) {
+export function flatAsync<
+  TArgs extends any[],
+  TIn,
+  const Depth extends number = 1,
+>(depth?: Depth): AsyncOperatorResolver<TArgs, TIn, FlatArray<TIn[], Depth>> {
+  return async function* flatGenerator(...args) {
+    using generator = useGenerator(...args);
     depth = depth ?? (1 as Depth);
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
         yield next;
@@ -37,3 +39,11 @@ export function flatAsync<TInput, const Depth extends number = 1>(
     }
   };
 }
+
+export default defineOperator({
+  name: "flat",
+  flatAsync,
+  flatSync,
+  toMany: true,
+  toMaybe: true,
+});

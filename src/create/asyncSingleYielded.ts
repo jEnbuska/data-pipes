@@ -7,29 +7,27 @@ import { mapAsync } from "../generators/misc/map.ts";
 import { tapAsync } from "../generators/misc/tap.ts";
 import { flatAsync } from "../generators/spreaders/flat.ts";
 import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
-import {
-  type AsyncSingleYielded,
-  type YieldedAsyncProvider,
-} from "../types.ts";
+import { type AsyncProvider, type AsyncSingleYielded } from "../types.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 
 const stringTag = "AsyncSingleYielded";
-export function asyncSingleYielded<TInput, TDefault>(
-  provider: YieldedAsyncProvider<Awaited<TInput>>,
-  getDefault: () => TDefault,
-): AsyncSingleYielded<TInput, TDefault> {
+export function asyncSingleYielded<TData, TOptional extends boolean>(
+  provider: AsyncProvider<Awaited<TData>>,
+  getDefault?: () => TData,
+): AsyncSingleYielded<TData, TOptional> {
+  function defaultTo<TDefault>(getDefault: () => TDefault) {
+    return asyncSingleYielded<TData | TDefault, false>(provider, getDefault);
+  }
   return {
     [Symbol.toStringTag]: stringTag,
+    defaultTo: (getDefault ? undefined : defaultTo) as any,
     consume(signal?: AbortSignal) {
       return consumeAsync(provider, signal);
     },
-    defaultTo<TDefault>(getDefault: () => TDefault) {
-      const { resolve } = asyncSingleYielded(provider, getDefault);
-      return { resolve };
-    },
-    find(predicate: (next: Awaited<TInput>) => boolean) {
+    find(predicate: (next: Awaited<TData>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
+        true,
         _yielded.getUndefined,
       );
     },
@@ -45,6 +43,7 @@ export function asyncSingleYielded<TInput, TDefault>(
     map(mapper) {
       return asyncSingleYielded(
         mapAsync(provider, mapper),
+        optional,
         _yielded.getUndefined,
       );
     },

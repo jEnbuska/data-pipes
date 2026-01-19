@@ -1,24 +1,29 @@
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type AsyncProvider, type SyncProvider } from "../types.ts";
 
-export function firstSync<TInput, TDefault>(
-  provider: YieldedSyncProvider<TInput>,
-  getDefault: () => TDefault,
+export function firstSync<TData, TDefault>(
+  provider: SyncProvider<TData>,
+  signal: AbortSignal | undefined,
+): TData | TDefault;
+export function firstSync<TData>(args: {
+  provider: SyncProvider<TData>;
+  optional: true;
+}): TData | undefined;
+export function firstSync<TData>(
+  provider: SyncProvider<TData>,
   signal = new AbortController().signal,
-): TInput | TDefault {
-  if (signal.aborted) return getDefault();
+  getDefault?: () => any,
+): TData | any {
+  if (signal.aborted) return getDefault?.();
   const result = provider(signal).next();
-  if (signal.aborted || result.done) return getDefault();
+  if (signal.aborted || result.done) return getDefault?.();
   return result.value;
 }
 
-export async function firstAsync<TInput, TDefault>(
-  provider: YieldedAsyncProvider<TInput>,
+export async function firstAsync<TData, TDefault>(
+  provider: AsyncProvider<TData>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
-): Promise<TInput | TDefault> {
+): Promise<TData | TDefault> {
   const resolvable = Promise.withResolvers<TDefault>();
 
   if (signal.aborted) return getDefault();
@@ -30,3 +35,6 @@ export async function firstAsync<TInput, TDefault>(
       .then((result) => (result.done ? getDefault() : result.value)),
   ]);
 }
+export type ExcludeNevers<T extends Record<string, any>> = {
+  [K in keyof T as T[K] extends never ? never : K]: T[K];
+};

@@ -1,11 +1,8 @@
 import { _yielded } from "../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type AsyncProvider, type SyncProvider } from "../types.ts";
 
-export function consumeSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function consumeSync<TData>(
+  provider: SyncProvider<TData>,
   signal: AbortSignal = new AbortController().signal,
 ): void {
   if (signal.aborted) return;
@@ -15,8 +12,8 @@ export function consumeSync<TInput>(
   }
 }
 
-export async function consumeAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export async function consumeAsync<TData>(
+  provider: AsyncProvider<TData>,
   signal: AbortSignal = new AbortController().signal,
 ): Promise<void> {
   const resolvable = Promise.withResolvers<void>();

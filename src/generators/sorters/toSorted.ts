@@ -1,46 +1,15 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function toSortedSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  compareFn: (a: TInput, b: TInput) => number,
-): YieldedSyncProvider<TInput, TInput[]> {
-  return function* sortSyncGenerator(signal) {
-    const acc: TInput[] = [];
-    const findIndex = createIndexFinder(acc, compareFn);
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      acc.splice(findIndex(next), 0, next);
-    }
-    yield* acc;
-    return acc;
-  };
-}
-
-export function toSortedAsync<TInput = never>(
-  provider: YieldedAsyncProvider<TInput>,
-  compareFn: (a: TInput, b: TInput) => number,
-): YieldedAsyncProvider<Awaited<TInput>, Array<Awaited<TInput>>> {
-  return async function* sortAsyncGenerator(signal) {
-    const acc: TInput[] = [];
-    const findIndex = createIndexFinder(acc, compareFn);
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      acc.splice(findIndex(next), 0, next);
-    }
-    yield* acc as Array<Awaited<TInput>>;
-    return acc as Array<Awaited<TInput>>;
-  };
-}
-
-function createIndexFinder<TInput>(
-  arr: TInput[],
-  comparator: (a: TInput, b: TInput) => number,
+function createIndexFinder<TIn>(
+  arr: TIn[],
+  comparator: (a: TIn, b: TIn) => number,
 ) {
-  return function findIndex(next: TInput, low = 0, high = arr.length - 1) {
+  return function findIndex(next: TIn, low = 0, high = arr.length - 1) {
     if (low > high) {
       return low;
     }
@@ -52,3 +21,39 @@ function createIndexFinder<TInput>(
     return findIndex(next, mid + 1, high);
   };
 }
+
+export function toSortedSync<TArgs extends any[], TIn>(
+  compareFn: (a: TIn, b: TIn) => number,
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* sortSyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const acc: TIn[] = [];
+    const findIndex = createIndexFinder(acc, compareFn);
+
+    for (const next of generator) {
+      acc.splice(findIndex(next), 0, next);
+    }
+    yield* acc;
+  };
+}
+
+export function toSortedAsync<TArgs extends any[], TIn = never>(
+  compareFn: (a: TIn, b: TIn) => number,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* sortAsyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const acc: TIn[] = [];
+    const findIndex = createIndexFinder(acc, compareFn);
+
+    for await (const next of generator) {
+      acc.splice(findIndex(next), 0, next);
+    }
+    yield* acc;
+  };
+}
+
+export default defineOperator({
+  name: "toSorted",
+  toSortedAsync,
+  toSortedSync,
+});

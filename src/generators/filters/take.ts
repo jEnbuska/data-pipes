@@ -1,18 +1,19 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function takeSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function takeSync<TArgs extends any[], TIn>(
   count: number,
-): YieldedSyncProvider<TInput> {
-  return function* takeSyncGenerator(signal) {
+): SyncOperatorResolver<TArgs, TIn> {
+  if (count < 1) throw new Error(`take ${count} must be greater than 0`);
+  return function* takeSyncResolver(...args) {
+    using generator = startGenerator(...args);
     if (count <= 0) {
       return;
     }
-    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       yield next;
       if (!--count) return;
@@ -20,18 +21,24 @@ export function takeSync<TInput>(
   };
 }
 
-export function takeAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export function takeAsync<TArgs extends any[], TIn>(
   count: number,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* takeAsyncGenerator(signal) {
+): AsyncOperatorResolver<TArgs, TIn> {
+  if (count < 1) throw new Error(`take ${count} must be greater than 0`);
+  return async function* takeAsyncResolver(...args) {
+    using generator = startGenerator(...args);
     if (count <= 0) {
       return;
     }
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       yield next;
       if (!--count) return;
     }
   };
 }
+
+export default defineOperator({
+  name: "take",
+  takeSync,
+  takeAsync,
+});

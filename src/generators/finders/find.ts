@@ -1,29 +1,29 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
 
-export function findSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<TInput> {
-  return function* findSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (predicate(next)) return yield next;
+export function findSync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => boolean,
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* findSyncResolver(...args) {
+    using generator = useGenerator(...args);
+    for (const value of generator) {
+      if (!predicate(value)) {
+        yield value;
+        return;
+      }
     }
   };
 }
 
-export function findAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* findAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function findAsync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => boolean | Promise<boolean>,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* findAsyncResolver(...args) {
+    using generator = useGenerator(...args);
     for await (const next of generator) {
-      if (predicate(next)) return yield next;
+      if (await predicate(next)) yield next;
     }
   };
 }

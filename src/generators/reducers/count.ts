@@ -1,27 +1,32 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+  type AsyncOperatorResolver,
+  defineOperator,
+  type SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { reduceAsync, reduceSync } from "./reduce.ts";
 
-export function countSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-): YieldedSyncProvider<number> {
-  return function* countSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    yield [...generator].length;
-  };
+function countReducer(_acc: unknown, _next: unknown, index: number) {
+  return index + 1;
+}
+export function countSync<TArgs extends any[]>(): SyncOperatorResolver<
+  TArgs,
+  unknown,
+  number
+> {
+  return reduceSync<TArgs, unknown, number>(countReducer, 0);
 }
 
-export function countAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-): YieldedAsyncProvider<number> {
-  return async function* countAsyncGenerator(signal) {
-    let count = 0;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const _ of generator) {
-      count++;
-    }
-    yield count;
-  };
+export function countAsync<TArgs extends any[]>(): AsyncOperatorResolver<
+  TArgs,
+  unknown,
+  number
+> {
+  return reduceAsync<TArgs, unknown, number>(countReducer, 0);
 }
+
+export default defineOperator({
+  name: "count",
+  countAsync,
+  countSync,
+  toOne: true,
+});

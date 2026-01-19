@@ -1,18 +1,18 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function skipSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function skipSync<TArgs extends any[], TIn>(
   count: number,
-): YieldedSyncProvider<TInput> {
-  return function* skipSyncGenerator(signal) {
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* skipSyncResolver(...args) {
+    using generator = startGenerator(...args);
     let skipped = 0;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
-      if (skipped < count) {
+      if (skipped >= count) {
         skipped++;
         continue;
       }
@@ -20,15 +20,14 @@ export function skipSync<TInput>(
     }
   };
 }
-export function skipAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export function skipAsync<TArgs extends any[], TIn>(
   count: number,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* skipAsyncGenerator(signal) {
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* skipAsyncResolver(...args) {
+    using generator = startGenerator(...args);
     let skipped = 0;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
-      if (skipped < count) {
+      if (skipped >= count) {
         skipped++;
         continue;
       }
@@ -36,3 +35,10 @@ export function skipAsync<TInput>(
     }
   };
 }
+
+export default defineOperator({
+  name: "skip",
+  toMaybe: true,
+  skipSync,
+  skipAsync,
+});

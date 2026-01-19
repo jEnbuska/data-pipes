@@ -1,6 +1,7 @@
-import { describe, test, expect } from "vitest";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
+import range from "./utils/range.ts";
 
 /* Verify typing after flatmap is expected */
 function verify<T>() {
@@ -192,5 +193,14 @@ describe("flat", () => {
     expect(
       await (fromEmptyAsync.flat(5).resolve() satisfies Promise<number[]>),
     ).toStrictEqual([]);
+  });
+
+  test("from single to range to flat", () => {
+    const result = yielded(3)
+      .map((n) => range(n).map(range)) // [[],[0],[0,1],[0,1,2]]
+      .flat(2)
+      .resolve(); // [0,0,1,0,1,2]
+
+    expect(result).toStrictEqual([0, 0, 1, 0, 1, 2]);
   });
 });

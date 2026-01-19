@@ -1,43 +1,49 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function skipLastSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function skipLastSync<TArgs extends any[], TIn>(
   count: number,
-): YieldedSyncProvider<TInput> {
-  return function* skipLastSyncGenerator(signal) {
-    const buffer: TInput[] = [];
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* skipLastSyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const buffer: TIn[] = [];
     let skipped = 0;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      buffer.push(next);
+    for (const value of generator) {
+      buffer.push(value);
       if (skipped < count) {
         skipped++;
         continue;
       }
-      yield buffer.shift()!;
+      yield buffer.shift() as TIn;
     }
   };
 }
 
-export function skipLastAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export function skipLastAsync<TArgs extends any[], TIn>(
   count: number,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* skipLastAsyncGenerator(signal) {
-    const buffer: TInput[] = [];
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* skipLastAsyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const buffer: TIn[] = [];
     let skipped = 0;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      buffer.push(next);
+    for await (const value of generator) {
+      buffer.push(value);
       if (skipped < count) {
         skipped++;
         continue;
       }
-      yield buffer.shift()!;
+      yield buffer.shift() as TIn;
     }
   };
 }
+
+export default defineOperator({
+  name: "skipLast",
+  toMaybe: true,
+  skipLastSync,
+  skipLastAsync,
+});

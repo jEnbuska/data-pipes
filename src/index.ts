@@ -4,10 +4,10 @@ import { syncIterableYielded } from "./create/syncIterableYielded.ts";
 import { syncSingleYielded } from "./create/syncSingleYielded.ts";
 import {
   type AsyncIterableYielded,
+  type AsyncProvider,
   type SyncIterableYielded,
+  type SyncProvider,
   type SyncSingleYielded,
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
 } from "./types.ts";
 
 /**
@@ -31,22 +31,20 @@ import {
  *  .resolve() satisfies number | undefined // 2
  */
 
-function yielded<TInput>(
-  asyncGeneratorFunction: YieldedAsyncProvider<TInput>,
-): AsyncIterableYielded<TInput>;
-function yielded<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-): SyncIterableYielded<TInput>;
-function yielded<TInput>(
-  asyncIterable: AsyncIterator<TInput>,
-): AsyncIterableYielded<TInput>;
-function yielded<TInput>(
-  iterable: Iterable<TInput>,
-): SyncIterableYielded<TInput>;
-function yielded<TInput>(
-  callback: (signal: AbortSignal) => TInput,
-): SyncSingleYielded<TInput, undefined>;
-function yielded<TInput>(value: TInput): SyncSingleYielded<TInput, undefined>;
+function yielded<TData>(
+  asyncGeneratorFunction: AsyncProvider<TData>,
+): AsyncIterableYielded<TData>;
+function yielded<TData>(
+  provider: SyncProvider<TData>,
+): SyncIterableYielded<TData>;
+function yielded<TData>(
+  asyncIterable: AsyncIterator<TData>,
+): AsyncIterableYielded<TData>;
+function yielded<TData>(iterable: Iterable<TData>): SyncIterableYielded<TData>;
+function yielded<TData>(
+  callback: (signal: AbortSignal) => TData,
+): SyncSingleYielded<TData, undefined>;
+function yielded<TData>(value: TData): SyncSingleYielded<TData, undefined>;
 
 function yielded(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
@@ -94,9 +92,9 @@ function yielded(source: any) {
 
 export default yielded;
 
-function isAsyncGeneratorFunction<TInput>(
+function isAsyncGeneratorFunction<TData>(
   provider: unknown,
-): provider is YieldedAsyncProvider<TInput> {
+): provider is AsyncProvider<TData> {
   return (
     Boolean(provider) &&
     Object.getPrototypeOf(provider).constructor.name ===

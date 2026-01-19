@@ -1,15 +1,15 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function tapSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  consumer: (next: TInput) => unknown,
-): YieldedSyncProvider<TInput> {
-  return function* tapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+export function tapSync<TArgs extends any[], TIn>(
+  consumer: (next: TIn) => unknown,
+): SyncOperatorResolver<TArgs, TIn, TIn> {
+  return function* tapSyncResolver(...args) {
+    using generator = startGenerator(...args);
     for (const next of generator) {
       consumer(next);
       yield next;
@@ -17,15 +17,20 @@ export function tapSync<TInput>(
   };
 }
 
-export function tapAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  consumer: (next: TInput) => unknown,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* tapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function tapAsync<TArgs extends any[], TIn>(
+  consumer: (next: TIn) => unknown,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* tapAsyncResolver(...args) {
+    using generator = startGenerator(...args);
     for await (const next of generator) {
       consumer(next);
       yield next;
     }
   };
 }
+
+export default defineOperator({
+  name: "tap",
+  tapAsync,
+  tapSync,
+});

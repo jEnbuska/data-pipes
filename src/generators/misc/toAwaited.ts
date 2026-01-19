@@ -1,54 +1,52 @@
 import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type { AsyncOperatorResolver } from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function toAwaited<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* toAwaitedGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for await (const next of generator) {
-      yield next;
+export function toAwaitedSync<TArgs extends any[], TIn>(
+  parallel: number | boolean = 1,
+): AsyncOperatorResolver<TArgs, TIn> {
+  const _parallel = _yielded.invoke(() => {
+    if (parallel === true) return Number.MAX_SAFE_INTEGER;
+    if (parallel === false) return 1;
+    if (parallel < 1) {
+      throw new Error("toAwaited parallel must be boolean or positive integer");
     }
-  };
-}
-
-export function toAwaitedParallel(
-  provider: YieldedSyncProvider<any>,
-  count: number,
-): YieldedAsyncProvider<Awaited<any>> {
-  if (!Number.isInteger(count) || count < 1) {
-    throw new Error(`Invalid count ${count} passed to toAwaitedParallel`);
-  }
-  return async function* toAwaitedParallelGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+    return parallel;
+  });
+  return async function* toAwaitedResolver(...args) {
+    using generator = startGenerator(...args);
     const promises = new Map<string, Promise<{ key: string; value: any }>>();
     let nextKey = 0;
-    function add(value: any) {
+    function addTask(value: any) {
       const key = `${nextKey++}`;
       promises.set(
         key,
         Promise.resolve(value).then((value) => ({ key, value })),
       );
     }
-
     /* Trigger 'count' amount for tasks to be run parallel */
-    while (promises.size < count) {
-      const next = generator.next();
+    while (_parallel < promises.size) {
+      const next = await generator.next();
       if (next.done) break;
-      add(next.value);
+      addTask(next.value);
     }
 
     while (promises.size) {
       const { key, value } = await Promise.race(promises.values());
       yield value;
       promises.delete(key);
-      const next = generator.next();
+      const next = await generator.next();
       if (next.done) continue;
       // Add next task to be executed
-      add(next.value);
+      addTask(next.value);
     }
   };
 }
+
+export default defineOperator({
+  name: "toAwaited",
+  toAsync: true,
+  toAwaitedSync,
+  toAwaitedAsync: undefined,
+});

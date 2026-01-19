@@ -1,18 +1,22 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function foldSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  initial: () => TOutput,
-  fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): YieldedSyncProvider<TOutput> {
-  return function* foldSyncGenerator(signal) {
-    let acc = initial();
+export function foldSync<TArgs extends any[], TIn>(
+  fold: (acc: TIn, next: TIn, index: number) => TIn,
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* foldSyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const initial = generator.next();
+    let acc: TIn;
+    if (initial.done) {
+      return;
+    }
+    acc = initial.value;
     let index = 0;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
     for (const next of generator) {
       acc = fold(acc, next, index++);
     }
@@ -20,18 +24,27 @@ export function foldSync<TInput, TOutput>(
   };
 }
 
-export function foldAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  initial: () => TOutput,
-  fold: (acc: TOutput, next: TInput, index: number) => TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* foldGenerator(signal) {
-    let acc = initial();
+export function foldAsync<TArgs extends any[], TIn>(
+  fold: (acc: TIn, next: TIn, index: number) => Promise<TIn> | TIn,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* foldGenerator(...args) {
+    using generator = startGenerator(...args);
+    const initial = await generator.next();
+    let acc: TIn;
+    if (initial.done) {
+      return;
+    }
+    acc = initial.value;
     let index = 0;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
-      acc = fold(acc, next, index++);
+      acc = await fold(acc, next, index++);
     }
     yield acc;
   };
 }
+
+export default defineOperator({
+  name: "fold",
+  foldAsync,
+  foldSync,
+});

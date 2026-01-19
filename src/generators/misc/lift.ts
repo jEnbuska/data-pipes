@@ -1,35 +1,35 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedLiftMiddleware,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorGenerator,
+  AsyncOperatorResolver,
+  SyncOperatorGenerator,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
 
-export function liftSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  middleware: YieldedLiftMiddleware<false, TInput, TOutput>,
-): YieldedSyncProvider<TOutput> {
-  return function* liftSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    const arg = generator as any as Parameters<
-      YieldedLiftMiddleware<false, TInput, TOutput>
-    >[0];
-    yield* middleware(arg);
+export function liftSync<TArgs extends any[], TIn, TNext>(
+  middleware: (
+    resolver: SyncOperatorResolver<TArgs, TIn, TNext>,
+  ) => SyncOperatorGenerator<TNext>,
+): SyncOperatorResolver<TArgs, TIn, TNext> {
+  return function* liftSyncResolver(...args) {
+    yield* middleware(...args);
   };
 }
 
-export function liftAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  middleware: YieldedLiftMiddleware<true, TInput, TOutput>,
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* liftAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    const arg = generator as any as Parameters<
-      YieldedLiftMiddleware<true, TInput, TOutput>
-    >[0];
-    const asyncGenerator = middleware(arg);
-    for await (const next of asyncGenerator) {
+export function liftAsync<TArgs extends any[], TIn, TNext>(
+  middleware: (
+    resolver: AsyncOperatorResolver<TArgs, TIn, TNext>,
+  ) => AsyncOperatorGenerator<TNext>,
+): AsyncOperatorResolver<TArgs, TIn, TNext> {
+  return async function* liftAsyncResolver(...args) {
+    for await (const next of middleware(...args)) {
       yield next;
     }
   };
 }
+
+export default defineOperator({
+  name: "lift",
+  liftAsync,
+  liftSync,
+});

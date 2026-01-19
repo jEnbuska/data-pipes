@@ -1,39 +1,48 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function flatMapSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedSyncProvider<TOutput> {
-  return function* flatMapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+export function flatMapSync<TArgs extends any[], TIn, TNext>(
+  flatMapper: (next: TIn) => TNext | readonly TNext[],
+): SyncOperatorResolver<TArgs, TIn, TNext> {
+  return function* flatMapSyncResolver(...args) {
+    using generator = startGenerator(...args);
     for (const next of generator) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
         yield* out as any;
       } else {
-        yield out as TOutput;
+        yield out as TNext;
       }
     }
   };
 }
 
-export function flatMapAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* flatMapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function flatMapAsync<TArgs extends any[], TIn, TNext>(
+  flatMapper: (
+    next: TIn,
+  ) => TNext | readonly TNext[] | Promise<TNext | readonly TNext[]>,
+): AsyncOperatorResolver<TArgs, TIn, TNext> {
+  return async function* flatMapAsyncResolver(...args) {
+    using generator = startGenerator(...args);
     for await (const next of generator) {
-      const out = flatMapper(next);
+      const out = await flatMapper(next);
       if (Array.isArray(out)) {
-        yield* out as any;
+        yield* out as TNext[];
       } else {
-        yield out as TOutput;
+        yield out as TNext;
       }
     }
   };
 }
+
+export default defineOperator({
+  name: "flatMap",
+  flatMapAsync,
+  flatMapSync,
+  toMany: true,
+  toMaybe: true,
+});

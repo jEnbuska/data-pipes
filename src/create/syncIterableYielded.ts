@@ -33,18 +33,15 @@ import { toReverseSync } from "../generators/sorters/toReverse.ts";
 import { toSortedSync } from "../generators/sorters/toSorted.ts";
 import { flatSync } from "../generators/spreaders/flat.ts";
 import { flatMapSync } from "../generators/spreaders/flatMap.ts";
-import {
-  type SyncIterableYielded,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type SyncIterableYielded, type SyncProvider } from "../types.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 import { syncSingleYielded } from "./syncSingleYielded.ts";
 
 const stringTag = "SyncIterableYielded";
-export function syncIterableYielded<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  overrides: Partial<SyncIterableYielded<TInput>> = {},
-): SyncIterableYielded<TInput> {
+export function syncIterableYielded<TData>(
+  provider: SyncProvider<TData>,
+  overrides: Partial<SyncIterableYielded<TData>> = {},
+): SyncIterableYielded<TData> {
   return {
     ...overrides,
     [Symbol.toStringTag]: stringTag,
@@ -84,12 +81,10 @@ export function syncIterableYielded<TInput>(
         _yielded.getTrue,
       );
     },
-    filter<TOutput extends TInput>(
-      predicate: (next: TInput) => next is TOutput,
-    ) {
+    filter<TNext extends TData>(predicate: (next: TData) => next is TNext) {
       return syncIterableYielded(filterSync(provider, predicate));
     },
-    find(predicate: (next: TInput) => boolean) {
+    find(predicate: (next: TData) => boolean) {
       return syncSingleYielded(
         findSync(provider, predicate),
         _yielded.getUndefined,

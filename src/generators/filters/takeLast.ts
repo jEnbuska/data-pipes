@@ -1,34 +1,37 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function takeLastSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function takeLastSync<TArgs extends any[], TIn>(
   count: number,
-): YieldedSyncProvider<TInput, TInput[]> {
-  return function* takeLastSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* takeLastSyncResolver(...args) {
+    using generator = startGenerator(...args);
     const array = [...generator];
     const list = array.slice(Math.max(array.length - count, 0));
     yield* list;
-    return list;
   };
 }
 
-export function takeLastAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export function takeLastAsync<TArgs extends any[], TIn>(
   count: number,
-): YieldedAsyncProvider<Awaited<TInput>, TInput[]> {
-  return async function* takeLastAsyncGenerator(signal) {
-    const acc: TInput[] = [];
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* takeLastAsyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const acc: TIn[] = [];
     for await (const next of generator) {
       acc.push(next);
     }
     const list = acc.slice(Math.max(acc.length - count, 0));
     yield* list;
-    return list;
   };
 }
+
+export default defineOperator({
+  name: "takeLast",
+  takeLastSync,
+  takeLastAsync,
+});

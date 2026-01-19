@@ -1,35 +1,41 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function skipWhileSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<TInput> {
-  return function* skipWhileSyncGenerator(signal) {
+export function skipWhileSync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => boolean,
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* skipWhileSyncResolver(...args) {
+    using generator = startGenerator(...args);
     let skip = true;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (skip && predicate(next)) continue;
+    for (const value of generator) {
+      if (skip && predicate(value)) continue;
       skip = false;
-      yield next;
+      yield value;
     }
   };
 }
 
-export function skipWhileAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* skipWhileAsyncGenerator(signal) {
+export function skipWhileAsync<TArgs extends any[], TIn>(
+  predicate: (next: TIn) => boolean | Promise<boolean>,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* skipWhileAsyncResolver(...args) {
+    using generator = startGenerator(...args);
     let skip = true;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      if (skip && predicate(next)) continue;
+    for await (const value of generator) {
+      if (skip && (await predicate(value))) continue;
       skip = false;
-      yield next;
+      yield value;
     }
   };
 }
+
+export default defineOperator({
+  name: "skipWhile",
+  skipWhileSync,
+  skipWhileAsync,
+  toMaybe: true,
+});

@@ -1,49 +1,53 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
+import { startGenerator } from "../../startGenerator.ts";
 
-export function maxSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  callback: (next: TInput) => number,
-): YieldedSyncProvider<TInput> {
-  return function* maxSyncGenerator(signal) {
-    let currentMax: undefined | number;
-    let current: undefined | TInput;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+export function maxBySync<TArgs extends any[], TIn>(
+  callback: (next: TIn) => number,
+): SyncOperatorResolver<TArgs, TIn> {
+  return function* maxSyncResolver(...args) {
+    using generator = startGenerator(...args);
+    const initial = generator.next();
+    if (initial.done) return;
+    let currentMax = callback(initial.value);
+    let current = initial.value;
     for (const next of generator) {
       const value = callback(next);
-      if (currentMax === undefined || value > currentMax) {
+      if (value > currentMax) {
         current = next;
         currentMax = value;
       }
     }
-    if (currentMax === undefined) {
-      return;
-    }
-    yield current as TInput;
+    yield current;
   };
 }
 
-export function maxAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  callback: (next: TInput) => number,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* maxGenerator(signal) {
-    let currentMax: undefined | number;
-    let current: undefined | TInput;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function maxByAsync<TArgs extends any[], TIn>(
+  callback: (next: TIn) => number | Promise<number>,
+): AsyncOperatorResolver<TArgs, TIn> {
+  return async function* maxByGenerator(...args) {
+    using generator = startGenerator(...args);
+    const initial = await generator.next();
+    if (initial.done) return;
+    let currentMax = await callback(initial.value);
+    let current = initial.value;
     for await (const next of generator) {
-      const value = callback(next);
-      if (currentMax === undefined || value > currentMax) {
+      const value = await callback(next);
+      if (value > currentMax) {
         current = next;
         currentMax = value;
       }
     }
-    if (currentMax === undefined) {
-      return;
-    }
-    yield current as TInput;
+    yield current;
   };
 }
+
+export default defineOperator({
+  name: "maxBy",
+  maxByAsync,
+  maxBySync,
+  toOne: true,
+});

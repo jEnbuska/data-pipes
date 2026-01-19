@@ -49,6 +49,7 @@
     "@typescript-eslint/prefer-reduce-type-parameter": "off",
     "@typescript-eslint/no-confusing-void-expression": "off",
     "@typescript-eslint/unbound-method": "off",
+    "@typescript-eslint/await-thenable": "off",
     "@typescript-eslint/consistent-type-imports": [
       "warn",
       {
@@ -56,15 +57,6 @@
         "disallowTypeAnnotations": false // optional: allows you to still use types in annotations without prefix
       }
     ],
-    "no-duplicate-imports": "warn",
-    "sort-keys": [
-      "warn",
-      "asc",
-      {
-        "caseSensitive": false,
-        "natural": true,
-        "minKeys": 2
-      }
-    ]
+    "no-duplicate-imports": "warn"
   }
 }

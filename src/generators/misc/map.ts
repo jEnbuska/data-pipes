@@ -1,29 +1,33 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../create/createYielded.ts";
+import { defineOperator } from "../../create/createYielded.ts";
 
-export function mapSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  mapper: (next: TInput) => TOutput,
-): YieldedSyncProvider<TOutput> {
-  return function* mapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+export function mapSync<TArgs extends any[], TIn, TNext>(
+  mapper: (next: TIn) => TNext,
+): SyncOperatorResolver<TArgs, TIn, TNext> {
+  return function* map(provider) {
+    using generator = startGenerator(...args);
     for (const next of generator) {
       yield mapper(next);
     }
   };
 }
 
-export function mapAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  mapper: (next: TInput) => TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* mapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function mapAsync<TArgs extends any[], TIn, TNext>(
+  mapper: (next: TIn) => TNext,
+): AsyncOperatorResolver<TArgs, TIn, TNext> {
+  return async function* map(provider) {
+    using generator = startGenerator(...args);
     for await (const next of generator) {
       yield mapper(next);
     }
   };
 }
+
+export default defineOperator({
+  name: "map",
+  mapSync,
+  mapAsync,
+});

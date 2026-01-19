@@ -32,23 +32,20 @@ import { toReverseAsync } from "../generators/sorters/toReverse.ts";
 import { toSortedAsync } from "../generators/sorters/toSorted.ts";
 import { flatAsync } from "../generators/spreaders/flat.ts";
 import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
-import {
-  type AsyncIterableYielded,
-  type YieldedAsyncProvider,
-} from "../types.ts";
+import { type AsyncIterableYielded } from "../types.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 
 const stringTag = "AsyncIterableYielded";
-export function asyncIterableAYielded<TInput>(
-  provider: YieldedAsyncProvider<Awaited<TInput>>,
-  overrides: Partial<AsyncIterableYielded<TInput>> = {},
-): AsyncIterableYielded<TInput> {
+export function asyncIterableAYielded<TData>(
+  provider: AsyncProvider<TData>,
+  overrides: Partial<AsyncIterableYielded<TData>> = {},
+): AsyncIterableYielded<TData> {
   return {
     ...overrides,
     [Symbol.toStringTag]: stringTag,
     async *[Symbol.asyncIterator]() {
       const signal = new AbortController().signal;
-      using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+      using generator = _yielded.useAsyncGenerator(provider, signal);
       for await (const next of generator) {
         yield next;
       }
@@ -60,7 +57,7 @@ export function asyncIterableAYielded<TInput>(
       return asyncIterableAYielded(chunkByAsync(provider, fn));
     },
     consume(signal?: AbortSignal) {
-      return consumeAsync<TInput>(provider, signal);
+      return consumeAsync<TData>(provider, signal);
     },
     count() {
       return asyncSingleYielded(countAsync(provider), _yielded.getZero);
@@ -82,14 +79,12 @@ export function asyncIterableAYielded<TInput>(
         _yielded.getTrue,
       );
     },
-    filter<TOutput extends TInput>(
-      predicate: (next: TInput) => next is TOutput,
-    ) {
+    filter<TNext extends TData>(predicate: (next: TData) => next is TNext) {
       return asyncIterableAYielded(
-        filterAsync<TInput, TOutput>(provider, predicate),
+        filterAsync<TData, TNext>(provider, predicate),
       );
     },
-    find(predicate: (next: Awaited<TInput>) => boolean) {
+    find(predicate: (next: Awaited<TData>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
         _yielded.getUndefined,
