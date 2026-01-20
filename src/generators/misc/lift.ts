@@ -1,10 +1,10 @@
+import { defineOperator } from "../../defineOperator.ts";
 import type {
   AsyncOperatorGenerator,
   AsyncOperatorResolver,
   SyncOperatorGenerator,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+} from "../../types.ts";
 
 export function liftSync<TArgs extends any[], TIn, TNext>(
   middleware: (
@@ -12,7 +12,7 @@ export function liftSync<TArgs extends any[], TIn, TNext>(
   ) => SyncOperatorGenerator<TNext>,
 ): SyncOperatorResolver<TArgs, TIn, TNext> {
   return function* liftSyncResolver(...args) {
-    yield* middleware(...args);
+    yield* (middleware as any)(...args);
   };
 }
 
@@ -22,7 +22,7 @@ export function liftAsync<TArgs extends any[], TIn, TNext>(
   ) => AsyncOperatorGenerator<TNext>,
 ): AsyncOperatorResolver<TArgs, TIn, TNext> {
   return async function* liftAsyncResolver(...args) {
-    for await (const next of middleware(...args)) {
+    for await (const next of (middleware as any)(...args)) {
       yield next;
     }
   };

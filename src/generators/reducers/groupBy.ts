@@ -1,9 +1,9 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));

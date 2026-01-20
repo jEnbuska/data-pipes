@@ -1,8 +1,9 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+} from "../../types.ts";
 
 export function flatSync<
   TArgs extends any[],
@@ -10,7 +11,7 @@ export function flatSync<
   const Depth extends number = 1,
 >(depth?: Depth): SyncOperatorResolver<TArgs, TIn, FlatArray<TIn[], Depth>> {
   return function* flatSyncResolver(...args) {
-    using generator = useGenerator(...args);
+    using generator = startGenerator(...args);
     depth = depth ?? (1 as Depth);
     for (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {
@@ -28,7 +29,7 @@ export function flatAsync<
   const Depth extends number = 1,
 >(depth?: Depth): AsyncOperatorResolver<TArgs, TIn, FlatArray<TIn[], Depth>> {
   return async function* flatGenerator(...args) {
-    using generator = useGenerator(...args);
+    using generator = startGenerator(...args);
     depth = depth ?? (1 as Depth);
     for await (const next of generator) {
       if (!Array.isArray(next) || depth <= 0) {

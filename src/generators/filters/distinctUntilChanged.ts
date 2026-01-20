@@ -1,42 +1,24 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+import { getCommands } from "../../commands/Commands.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type { MaybePromise } from "../../types.ts";
 
 const defaultCompare = <TData>(a: TData, b: TData) => a === b;
 
-function distinctUntilChangedSync<TArgs extends any[], TIn>(
-  compare: (previous: TIn, current: TIn) => boolean = defaultCompare,
-): SyncOperatorResolver<TArgs, TIn> {
-  return function* distinctUntilChangedSyncResolver(...args) {
-    using generator = startGenerator(...args);
-    const initial = generator.next();
-    if (initial.done) return;
-    let previous = initial.value;
-    for (const value of generator) {
-      if (!compare(previous, value)) {
-        previous = value;
-        yield value;
-      }
-    }
-  };
-}
-
-function distinctUntilChangedAsync<TArgs extends any[], TIn>(
+function distinctUntilChanged<TAsync extends boolean, TIn>(
+  toAwaited: TAsync,
   compare: (
     previous: TIn,
     current: TIn,
-  ) => boolean | Promise<boolean> = defaultCompare,
-): AsyncOperatorResolver<TArgs, TIn> {
-  return async function* distinctUntilChangedAsyncResolver(...args) {
-    using generator = startGenerator(...args);
-    const initial = await generator.next();
-    if (initial.done) return;
-    let previous = initial.value;
-    for await (const value of generator) {
-      if (!(await compare(previous, value))) {
+  ) => MaybePromise<TAsync, boolean> = defaultCompare,
+) {
+  const { $next, $resolve } = getCommands<TIn>(toAwaited);
+  return function* distinctUntilChangedResolver() {
+    let previous = yield* $next();
+    yield previous;
+    while (true) {
+      const value = yield* $next();
+      const same = yield* $resolve(compare(previous, value));
+      if (!same) {
         previous = value;
         yield value;
       }

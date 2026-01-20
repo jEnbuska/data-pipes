@@ -1,13 +1,11 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+import { defineOperator } from "../../defineOperator.ts";
 import { startGenerator } from "../../startGenerator.ts";
+import type { AsyncOperator, SyncOperator } from "../../types.ts";
 
-export function everySync<TArgs extends any[], TIn>(
+export function* everySync<TArgs extends any[], TIn>(
   predicate: (next: TIn) => boolean,
-): SyncOperatorResolver<TArgs, TIn, boolean> {
+): SyncOperator<TArgs, TIn, boolean, boolean> {
+  yield true;
   return function* everySyncResolver(...args) {
     using generator = startGenerator(...args);
     for (const value of generator) {
@@ -20,9 +18,10 @@ export function everySync<TArgs extends any[], TIn>(
   };
 }
 
-export function everyAsync<TArgs extends any[], TIn>(
+export function* everyAsync<TArgs extends any[], TIn>(
   predicate: (next: TIn) => boolean | Promise<boolean>,
-): AsyncOperatorResolver<TArgs, TIn, boolean> {
+): AsyncOperator<TArgs, TIn, boolean, boolean> {
+  yield true;
   return async function* everyAsyncResolver(...args) {
     using generator = startGenerator(...args);
     for await (const value of generator) {

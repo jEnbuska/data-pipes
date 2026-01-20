@@ -24,6 +24,7 @@ export function asyncSingleYielded<TData, TOptional extends boolean>(
     consume(signal?: AbortSignal) {
       return consumeAsync(provider, signal);
     },
+
     find(predicate: (next: Awaited<TData>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),

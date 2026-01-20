@@ -1,8 +1,8 @@
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function batchSync<TArgs extends any[], TIn>(
   predicate: (acc: TIn[]) => boolean,

@@ -1,9 +1,9 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function tapSync<TArgs extends any[], TIn>(
   consumer: (next: TIn) => unknown,

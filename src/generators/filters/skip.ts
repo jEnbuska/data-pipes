@@ -1,15 +1,17 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+import { defineOperator } from "../../defineOperator.ts";
 import { startGenerator } from "../../startGenerator.ts";
+import {
+  AsyncOperatorGenerator,
+  AsyncOperatorResolver,
+  SyncOperatorGenerator,
+  SyncOperatorResolver,
+} from "../../types.ts";
 
 export function skipSync<TArgs extends any[], TIn>(
   count: number,
-): SyncOperatorResolver<TArgs, TIn> {
-  return function* skipSyncResolver(...args) {
-    using generator = startGenerator(...args);
+): SyncOperatorResolver<TArgs, TIn, TIn> {
+  return function* skipSyncResolver(generator: AsyncOperatorGenerator<TIn>) {
+    generator.
     let skipped = 0;
     for (const next of generator) {
       if (skipped >= count) {
@@ -20,6 +22,7 @@ export function skipSync<TArgs extends any[], TIn>(
     }
   };
 }
+
 export function skipAsync<TArgs extends any[], TIn>(
   count: number,
 ): AsyncOperatorResolver<TArgs, TIn> {

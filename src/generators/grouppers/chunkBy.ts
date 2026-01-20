@@ -1,9 +1,9 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function chunkBySync<TArgs extends any[], TIn, TIdentifier = any>(
   keySelector: (next: TIn) => TIdentifier,

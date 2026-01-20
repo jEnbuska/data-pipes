@@ -1,36 +1,22 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+import { $await } from "../../commands/$await.ts";
+import { $next } from "../../commands/$next.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type { MaybePromise, SyncOperatorResolver } from "../../types.ts";
 
-export function takeWhileSync<TArgs extends any[], TIn>(
-  predicate: (next: TIn) => boolean,
+export function takeWhile<TAsync extends boolean, TArgs extends any[], TIn>(
+  predicate: (next: TIn) => MaybePromise<TAsync, boolean>,
 ): SyncOperatorResolver<TArgs, TIn> {
-  return function* takeWhileSyncResolver(...args) {
-    using generator = startGenerator(...args);
-    for (const next of generator) {
-      if (!predicate(next)) return;
-      yield next;
-    }
-  };
-}
-
-export function takeWhileAsync<TArgs extends any[], TIn>(
-  predicate: (next: TIn) => boolean,
-): AsyncOperatorResolver<TArgs, TIn> {
-  return async function* takeWhileAsyncResolver(...args) {
-    using generator = startGenerator(...args);
-    for await (const next of generator) {
-      if (!predicate(next)) return;
-      yield next;
+  return function* takeWhileSyncResolver() {
+    while (true) {
+      const value = yield* $next<TIn>();
+      const done = !(yield* $await(predicate, value));
+      if (!done) return;
+      yield value;
     }
   };
 }
 
 export default defineOperator({
   name: "takeWhile",
-  takeWhileAsync,
-  takeWhileSync,
+  takeWhile,
 });

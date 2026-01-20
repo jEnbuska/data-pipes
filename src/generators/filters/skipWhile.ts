@@ -1,33 +1,22 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+import { $await } from "../../commands/$await.ts";
+import { $next } from "../../commands/$next.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type { MaybePromise, SyncOperatorResolver } from "../../types.ts";
 
-export function skipWhileSync<TArgs extends any[], TIn>(
-  predicate: (next: TIn) => boolean,
-): SyncOperatorResolver<TArgs, TIn> {
-  return function* skipWhileSyncResolver(...args) {
-    using generator = startGenerator(...args);
-    let skip = true;
-    for (const value of generator) {
-      if (skip && predicate(value)) continue;
-      skip = false;
-      yield value;
-    }
-  };
-}
-
-export function skipWhileAsync<TArgs extends any[], TIn>(
-  predicate: (next: TIn) => boolean | Promise<boolean>,
-): AsyncOperatorResolver<TArgs, TIn> {
-  return async function* skipWhileAsyncResolver(...args) {
-    using generator = startGenerator(...args);
-    let skip = true;
-    for await (const value of generator) {
-      if (skip && (await predicate(value))) continue;
-      skip = false;
+export function skipWhile<TAsync extends boolean, TIn>(
+  predicate: (next: TIn) => MaybePromise<TAsync, boolean>,
+): SyncOperatorResolver<TIn> {
+  return function* skipWhileResolver() {
+    let started = false;
+    while (true) {
+      const value = yield* $next<TIn>();
+      if (started) {
+        yield value;
+        continue;
+      }
+      const skip = !started && (yield* $await(predicate, value));
+      if (!skip) continue;
+      started = true;
       yield value;
     }
   };
@@ -35,7 +24,6 @@ export function skipWhileAsync<TArgs extends any[], TIn>(
 
 export default defineOperator({
   name: "skipWhile",
-  skipWhileSync,
-  skipWhileAsync,
+  skipWhile,
   toMaybe: true,
 });

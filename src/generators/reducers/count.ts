@@ -1,8 +1,8 @@
-import {
-  type AsyncOperatorResolver,
-  defineOperator,
-  type SyncOperatorResolver,
-} from "../../create/createYielded.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type {
+  AsyncOperatorResolver,
+  SyncOperatorResolver,
+} from "../../types.ts";
 import { reduceAsync, reduceSync } from "./reduce.ts";
 
 function countReducer(_acc: unknown, _next: unknown, index: number) {
@@ -28,5 +28,5 @@ export default defineOperator({
   name: "count",
   countAsync,
   countSync,
-  toOne: true,
+  toOne: false,
 });

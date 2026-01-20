@@ -1,7 +1,7 @@
 import { _yielded } from "../../_internal.ts";
-import type { AsyncOperatorResolver } from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+import { defineOperator } from "../../defineOperator.ts";
 import { startGenerator } from "../../startGenerator.ts";
+import type { AsyncOperatorResolver } from "../../types.ts";
 
 export function toAwaitedSync<TArgs extends any[], TIn>(
   parallel: number | boolean = 1,
@@ -46,7 +46,6 @@ export function toAwaitedSync<TArgs extends any[], TIn>(
 
 export default defineOperator({
   name: "toAwaited",
-  toAsync: true,
   toAwaitedSync,
   toAwaitedAsync: undefined,
 });

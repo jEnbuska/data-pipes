@@ -1,38 +1,25 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+import { createResolver } from "../../commands/$await.ts";
+import { $next } from "../../commands/$next.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type { SyncOperatorResolver } from "../../types.ts";
 
-function distinctBySync<TArgs extends any[], TIn, TSelect>(
+function distinctBySync<TAsync extends boolean, TIn, TSelect>(
+  toAwaited: TAsync,
   selector: (next: TIn) => TSelect,
-): SyncOperatorResolver<TArgs, TIn> {
-  return function* distinctBySyncResolver(...args) {
-    using generator = startGenerator(...args);
+): SyncOperatorResolver<TIn> {
+  const resolve = createResolver<TAsync>(toAwaited);
+  return function* distinctBySyncResolver() {
     const set = new Set<TSelect>();
-    for (const value of generator) {
-      const key = selector(value);
+    while (true) {
+      const value = yield* $next<TIn>();
+      const key = yield* resolve(selector, value);
       if (set.has(key)) continue;
       set.add(key);
       yield value;
     }
   };
 }
-function distinctByAsync<TArgs extends any[], TIn, TSelect>(
-  selector: (next: TIn) => Promise<TSelect> | TSelect,
-): AsyncOperatorResolver<TArgs, TIn> {
-  return async function* distinctBySyncResolver(...args) {
-    using generator = startGenerator(...args);
-    const set = new Set<TSelect>();
-    for await (const value of generator) {
-      const key = await selector(value);
-      if (set.has(key)) continue;
-      set.add(key);
-      yield value;
-    }
-  };
-}
+
 export default defineOperator({
   name: "distinctBy",
   distinctBySync,

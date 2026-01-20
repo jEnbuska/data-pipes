@@ -2,16 +2,16 @@ import type {
   AsyncOperatorProvider,
   SyncOperatorGenerator,
   SyncOperatorProvider,
-} from "./create/createYielded.ts";
+} from "./types.ts";
 
 export function startGenerator<TArgs extends any[], TIn>(
-  provider: AsyncOperatorProvider<TArgs, TIn>,
+  provider: AsyncOperatorProvider<, TIn>,
   ...args: TArgs
 ): SyncOperatorGenerator<TIn> & {
   [Symbol.dispose](): void;
 };
 export function startGenerator<TArgs extends any[], TIn>(
-  provider: SyncOperatorProvider<TArgs, TIn>,
+  provider: SyncOperatorProvider< TIn>,
   ...args: TArgs
 ): SyncOperatorGenerator<TIn> & {
   [Symbol.dispose](): void;

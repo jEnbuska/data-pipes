@@ -1,12 +1,12 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function foldSync<TArgs extends any[], TIn>(
-  fold: (acc: TIn, next: TIn, index: number) => TIn,
+  fold: (previous: TIn, next: TIn, index: number) => TIn,
 ): SyncOperatorResolver<TArgs, TIn> {
   return function* foldSyncResolver(...args) {
     using generator = startGenerator(...args);
@@ -25,7 +25,7 @@ export function foldSync<TArgs extends any[], TIn>(
 }
 
 export function foldAsync<TArgs extends any[], TIn>(
-  fold: (acc: TIn, next: TIn, index: number) => Promise<TIn> | TIn,
+  fold: (previous: TIn, next: TIn, index: number) => Promise<TIn> | TIn,
 ): AsyncOperatorResolver<TArgs, TIn> {
   return async function* foldGenerator(...args) {
     using generator = startGenerator(...args);

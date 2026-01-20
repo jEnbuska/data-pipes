@@ -1,26 +1,20 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+import { defineOperator } from "../../defineOperator.ts";
 import { startGenerator } from "../../startGenerator.ts";
+import type { AsyncOperator, SyncOperator } from "../../types.ts";
 
-export function defaultToSync<TArgs extends any[], TInput, TDefault>(
+export function* defaultToSync<TArgs extends any[], TInput, TDefault>(
   getDefault: () => TDefault,
-): SyncOperatorResolver<TArgs, TInput, TInput | TDefault> {
+): SyncOperator<TArgs, TInput, TInput, TDefault> {
+  yield getDefault();
   return function* syncDefaultToSyncResolver(...args) {
     using generator = startGenerator(...args);
-    const next = generator.next();
-    if (next.done) return yield getDefault();
-    yield next.value;
-    for (const value of generator) {
-      yield value;
-    }
+    yield* generator;
   };
 }
-export function defaultToAsync<TArgs extends any[], TInput, TDefault>(
+export function* defaultToAsync<TArgs extends any[], TInput, TDefault>(
   getDefault: () => Promise<TDefault> | TDefault,
-): AsyncOperatorResolver<TArgs, TInput, TInput | TDefault> {
+): AsyncOperator<TArgs, TInput, TInput, TDefault | Promise<TDefault>> {
+  yield getDefault();
   return async function* asyncDefaultToAsyncResolver(...args) {
     using generator = startGenerator(...args);
     const next = await generator.next();
@@ -37,6 +31,7 @@ export function defaultToAsync<TArgs extends any[], TInput, TDefault>(
 
 export default defineOperator({
   name: "defaultTo",
+  toSome: true,
   defaultToAsync,
   defaultToSync,
 });

@@ -1,44 +1,25 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
-import type { AsyncConsumerGenerator } from "../../types.ts";
+import { createResolver } from "../../commands/$await.ts";
+import { $next } from "../../commands/$next.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import type { SyncOperatorResolver } from "../../types.ts";
 
-export function filterSync<TArgs extends any[], TIn, TNext extends TIn = TIn>(
+export function filter<TAsync extends boolean, TIn, TNext extends TIn = TIn>(
+  toAwaited: TAsync,
   predicate: (next: TIn) => next is TNext,
-): SyncOperatorResolver<TArgs, TIn, TNext>;
-export function filterSync<TArgs extends any[], TIn>(
+): SyncOperatorResolver<TIn, TNext>;
+export function filter<TAsync extends boolean, TIn>(
+  toAwaited: TAsync,
   predicate: (next: TIn) => any,
-): SyncOperatorResolver<TArgs, TIn>;
-export function filterSync(
+): SyncOperatorResolver<TIn>;
+export function filter(
+  toAwaited: boolean,
   predicate: (next: unknown) => unknown,
 ): SyncOperatorResolver<unknown[], unknown, unknown> {
-  return function* filterSyncResolver(...args) {
-    using generator = startGenerator(...args);
-    for (const next of generator) {
-      if (predicate(next)) yield next;
-    }
-  };
-}
-
-export function filterAsync<TArgs extends any[], TIn, TNext extends TIn = TIn>(
-  predicate: (next: TIn) => next is TNext,
-): AsyncOperatorResolver<TArgs, TIn, TNext>;
-export function filterAsync<TArgs extends any[], TIn>(
-  predicate: (next: TIn) => any,
-): AsyncOperatorResolver<TArgs, TIn>;
-export function filterAsync(
-  predicate: (next: unknown) => unknown,
-): AsyncOperatorResolver<unknown[], unknown, unknown> {
-  return async function* filterAsyncResolver(
-    provider,
-    ...args
-  ): AsyncConsumerGenerator<unknown> {
-    using generator = startGenerator(...args);
-    for await (const next of generator) {
-      if (predicate(next)) yield next;
+  const resolve = createResolver(toAwaited);
+  return function* filterSyncResolver() {
+    while (true) {
+      const value = yield* $next<unknown>();
+      if (yield* resolve(predicate, value)) yield value;
     }
   };
 }
@@ -46,6 +27,5 @@ export function filterAsync(
 export default defineOperator({
   name: "filter",
   toMaybe: undefined,
-  filterSync,
-  filterAsync,
+  operator: filter,
 });

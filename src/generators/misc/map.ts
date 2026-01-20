@@ -1,24 +1,21 @@
-import type {
-  AsyncOperatorResolver,
-  SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
+import { $map } from "commands/$map.ts";
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
+import type { AsyncOperatorResolver } from "../../types.ts";
 
-export function mapSync<TArgs extends any[], TIn, TNext>(
-  mapper: (next: TIn) => TNext,
-): SyncOperatorResolver<TArgs, TIn, TNext> {
-  return function* map(provider) {
-    using generator = startGenerator(...args);
-    for (const next of generator) {
-      yield mapper(next);
-    }
+export function mapSync<TIn, TOut>(
+  toAsync: boolean,
+  mapper: (next: TIn) => TOut,
+) {
+  return function* map() {
+    yield* $map<TIn, TOut>(mapper, toAsync);
   };
 }
 
-export function mapAsync<TArgs extends any[], TIn, TNext>(
-  mapper: (next: TIn) => TNext,
-): AsyncOperatorResolver<TArgs, TIn, TNext> {
-  return async function* map(provider) {
+export function mapAsync<TArgs extends any[], TIn, TOut>(
+  mapper: (next: TIn) => TOut,
+): AsyncOperatorResolver<TArgs, TIn, TOut> {
+  return async function* map(...args) {
     using generator = startGenerator(...args);
     for await (const next of generator) {
       yield mapper(next);

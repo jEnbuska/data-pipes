@@ -1,9 +1,10 @@
+import { defineOperator } from "../../defineOperator.ts";
+import { startGenerator } from "../../startGenerator.ts";
 import type {
   AsyncOperatorResolver,
+  SyncOperatorGenerator,
   SyncOperatorResolver,
-} from "../../create/createYielded.ts";
-import { defineOperator } from "../../create/createYielded.ts";
-import { startGenerator } from "../../startGenerator.ts";
+} from "../../types.ts";
 
 export function createReducer<TIn, TNext>(
   reducer: (acc: TNext, next: TIn, index: number) => TNext,
@@ -20,11 +21,12 @@ export function createReducer<TIn, TNext>(
   };
 }
 
-export function reduceSync<TArgs extends any[], TIn, TNext>(
+export function reduce<TArgs extends any[], TIn, TNext>(
   reducer: (acc: TNext, next: TIn, index: number) => TNext,
   initialValue: TNext,
 ): SyncOperatorResolver<TArgs, TIn, TNext> {
-  return function* reduceSyncResolver(...args) {
+  return function* reduceSyncResolver(generator: SyncOperatorGenerator<TIn>) {
+    generator.drop(2);
     using generator = startGenerator(...args);
     let { acc, reduce } = createReducer(reducer, initialValue);
     for (const next of generator) {
