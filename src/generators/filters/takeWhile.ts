@@ -1,31 +1,19 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $done, $next } from "../actions.ts";
 
-export function takeWhileSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<TInput> {
-  return function* takeWhileSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (!predicate(next)) return;
-      yield next;
-    }
-  };
-}
-
-export function takeWhileAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* takeWhileAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      if (!predicate(next)) return;
-      yield next;
-    }
+export function takeWhile<In>(
+  predicate: (next: In, index: number) => boolean,
+): YieldedProvider<In> {
+  return () => {
+    let index = 0;
+    return {
+      *onNext(next) {
+        if (predicate(next, index++)) {
+          yield $next(next);
+          return;
+        }
+        yield $done();
+      },
+    };
   };
 }

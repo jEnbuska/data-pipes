@@ -1,29 +1,28 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $done, $next, $return } from "../actions.ts";
 
-export function findSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<TInput> {
-  return function* findSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (predicate(next)) return yield next;
-    }
-  };
-}
-
-export function findAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* findAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      if (predicate(next)) return yield next;
-    }
+export function find<In, Out extends In>(
+  predicate: (next: In) => next is Out,
+): YieldedProvider<Out | undefined, Out | undefined, Out | undefined>;
+export function find<In>(
+  predicate: (next: In, index: number) => unknown,
+): YieldedProvider<In | undefined, In | undefined, In | undefined>;
+export function find(
+  predicate: (next: unknown, index: number) => unknown,
+): YieldedProvider<unknown, unknown, unknown> {
+  return () => {
+    let found: { item: unknown };
+    let index = 0;
+    return {
+      *onNext(next) {
+        if (!predicate(next, index++)) return;
+        found = { item: next };
+        yield $done();
+      },
+      *onDone() {
+        if (found) yield $next(found.item);
+        yield $return(found?.item);
+      },
+    };
   };
 }

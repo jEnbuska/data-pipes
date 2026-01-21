@@ -1,37 +1,68 @@
-export type YieldedAsyncProvider<TOutput, TReturn = unknown | void> = (
-  signal: AbortSignal,
-) => AsyncGenerator<TOutput, TReturn, undefined & void>;
+import type { OnDoneAction, OnNextAction } from "./generators/actions.ts";
 
-export type YieldedSyncProvider<TOutput, TReturn = unknown> = (
-  signal: AbortSignal,
-) => Generator<TOutput, TReturn, undefined & void>;
+export type OnNext<In, Out = In, Return = never> = (next: In) => Generator<
+  never | OnNextAction<Out>,
+  | void
+  | undefined
+  | {
+      onNext?: (
+        next: In,
+      ) => Generator<never | OnNextAction<Out>, void | undefined, void>;
+      onDone?: OnDone<Out, Return>;
+    },
+  void
+>;
+
+export type OnDone<Out, Return = never> = () => Generator<
+  never | OnDoneAction<Out, Return>,
+  void | undefined,
+  unknown
+>;
+
+export type YieldedProvider<In, Out = In, Return = never> = () => {
+  onNext?: OnNext<In, Out, Return>;
+  onDone?: OnDone<Out, Return>;
+  preferReturn?: boolean;
+  onDispose?: () => void;
+};
 
 export type Yielded<
-  TAsync extends boolean,
+  Args extends any[],
+  Async extends boolean,
   TIterable extends boolean,
-  TInput,
-  TDefault = TInput,
+  In,
+  TDefault = In,
 > = TIterable extends true
-  ? IterableYielded<TAsync, TInput>
-  : SingleYielded<TAsync, TInput, TDefault>;
+  ? IterableYielded<Args, Async, In>
+  : SingleYielded<Args, Async, In, TDefault>;
 
 type SingleYielded<
-  TAsync extends boolean,
-  TInput,
-  TDefault = TInput,
-> = TAsync extends true
-  ? AsyncSingleYielded<TInput, TDefault>
-  : SyncSingleYielded<TInput, TDefault>;
+  Args extends any[],
+  Async extends boolean,
+  T,
+  TDefault = T,
+> = Async extends true
+  ? AsyncSingleYielded<Args, T, TDefault>
+  : SyncSingleYielded<Args, T, TDefault>;
 
-type IterableYielded<TAsync extends boolean, TInput> = TAsync extends true
-  ? AsyncIterableYielded<TInput>
-  : SyncIterableYielded<TInput>;
+type IterableYielded<
+  Args extends any[],
+  Async extends boolean,
+  In,
+> = Async extends true
+  ? AsyncIterableYielded<Args, In>
+  : SyncIterableYielded<Args, In>;
 
-export type SyncSingleYielded<TInput, TDefault> = CommonYielded<
+type MaybePromise<In, Async extends boolean> = Async extends true
+  ? Promise<In>
+  : In;
+
+export type SyncSingleYielded<Args extends any[], In, D> = CommonYielded<
+  Args,
   false,
   false,
-  TInput,
-  TDefault
+  In,
+  D
 > & {
   /**
    * @example
@@ -41,10 +72,12 @@ export type SyncSingleYielded<TInput, TDefault> = CommonYielded<
    *   .map(n => n * 2)
    *   .resolve() // Promise<number | undefined>
    * */
-  toAwaited(): AsyncSingleYielded<TInput, undefined>;
+  toAwaited(): AsyncSingleYielded<Args, In, undefined>;
   [Symbol.toStringTag]: `SyncSingleYielded`;
-  consume(signal?: AbortSignal): void;
-  resolve(signal?: AbortSignal): TInput | TDefault;
+
+  forEach(callback: (next: In) => void, ...args: Args): void;
+  consume(...args: Args): void;
+  resolve(...args: Args): In | D;
   /**
    * defaultTo Provides default value before resolving yielded for single result to avoid 'undefined' case
    * @example
@@ -55,17 +88,17 @@ export type SyncSingleYielded<TInput, TDefault> = CommonYielded<
    * */
   defaultTo<TDefault>(
     getDefault: () => TDefault,
-  ): Pick<SyncSingleYielded<TInput, TDefault>, "resolve">;
+  ): Pick<SyncSingleYielded<Args, In, TDefault>, "resolve">;
 };
-export type AsyncSingleYielded<TInput, TDefault> = CommonYielded<
-  true,
-  false,
-  Awaited<TInput>,
-  TDefault
-> & {
+export type AsyncSingleYielded<
+  Args extends any[],
+  In,
+  TDefault,
+> = CommonYielded<Args, true, false, Awaited<In>, TDefault> & {
   [Symbol.toStringTag]: `AsyncSingleYielded`;
-  consume(signal?: AbortSignal): Promise<void>;
-  resolve(signal?: AbortSignal): Promise<TInput | TDefault>;
+  consume(...args: Args): Promise<void>;
+  resolve(...args: Args): Promise<In | TDefault>;
+  forEach(callback: (next: In) => void, ...args: Args): Promise<void>;
   /**
    * defaultTo Provides default value before resolving yielded for single result to avoid 'undefined' case
    * @example
@@ -75,14 +108,15 @@ export type AsyncSingleYielded<TInput, TDefault> = CommonYielded<
    *  .defaultTo(0)
    *  .resolve() satisfies Promise<number> // Promise<0>
    */
-  defaultTo<TDefault>(
-    getDefault: () => TDefault,
-  ): Pick<AsyncSingleYielded<TInput, TDefault>, "resolve">;
+  defaultTo<D>(
+    getDefault: () => D,
+  ): Pick<AsyncSingleYielded<Args, In, D>, "resolve">;
 };
 
-export type SyncIterableYielded<TInput> = SharedIterableYielded<
+export type SyncIterableYielded<Args extends any[], In> = SharedIterableYielded<
+  Args,
   false,
-  TInput
+  In
 > & {
   /**
    * @example
@@ -92,7 +126,7 @@ export type SyncIterableYielded<TInput> = SharedIterableYielded<
    *  .map(n => n * 2)
    *  .resolve() // Promise<[1,2,3]>
    */
-  toAwaited(): AsyncIterableYielded<TInput>;
+  toAwaited(): AsyncIterableYielded<Args, In>;
   /**
    * @example
    * yielded([550, 450, 300, 10, 100])
@@ -100,27 +134,29 @@ export type SyncIterableYielded<TInput> = SharedIterableYielded<
    *  .toAwaitedParallel(3)
    *  .resolve() // Promise<[300, 10, 100, 450, 550]>
    */
-  toAwaitedParallel(count: number): AsyncIterableYielded<TInput>;
-  [Symbol.iterator](): IterableIterator<TInput>;
+  toAwaitedParallel(count: number): AsyncIterableYielded<Args, In>;
+  [Symbol.iterator](): IterableIterator<In>;
   [Symbol.toStringTag]: `SyncIterableYielded`;
-  consume(signal?: AbortSignal): void;
-  resolve(signal?: AbortSignal): TInput[];
+  consume(...args: Args): void;
+  resolve(...args: Args): In[];
+  forEach(callback: (next: In) => void, ...args: Args): void;
 };
 
-export type AsyncIterableYielded<TInput> = SharedIterableYielded<
-  true,
-  Awaited<TInput>
-> & {
-  [Symbol.asyncIterator](): AsyncIterableIterator<TInput>;
+export type AsyncIterableYielded<
+  Args extends any[],
+  In,
+> = SharedIterableYielded<Args, true, Awaited<In>> & {
+  [Symbol.asyncIterator](): AsyncIterableIterator<In>;
   [Symbol.toStringTag]: `AsyncIterableYielded`;
-  consume(signal?: AbortSignal): Promise<void>;
-  resolve(signal?: AbortSignal): Promise<Array<Awaited<TInput>>>;
+  consume(...args: Args): Promise<void>;
+  resolve(...args: Args): Promise<Array<Awaited<In>>>;
 };
 
 export type SharedIterableYielded<
-  TAsync extends boolean = false,
-  TInput = unknown,
-> = CommonYielded<TAsync, true, TInput> & {
+  Args extends any[],
+  Async extends boolean = false,
+  In = unknown,
+> = CommonYielded<Args, Async, true, In> & {
   /**
    * @example
    * yielded([1,2,3,4,5])
@@ -132,7 +168,7 @@ export type SharedIterableYielded<
    * .countBy(n => n)
    * .resolve() // 0
    * */
-  countBy(fn: (next: TInput) => number): SingleYielded<TAsync, number, number>;
+  countBy(fn: (next: In) => number): SingleYielded<Args, Async, number, number>;
   /**
    * @examples
    * yielded([1,2,3,4,5])
@@ -140,8 +176,8 @@ export type SharedIterableYielded<
    * .resolve() // [[1,3,5], [2,4]]
    * */
   chunkBy<TIdentifier>(
-    fn: (next: TInput) => TIdentifier,
-  ): IterableYielded<TAsync, TInput[]>;
+    fn: (next: In) => TIdentifier,
+  ): IterableYielded<Args, Async, In[]>;
   /**
    * Batch values into batches before feeding them as a batch to next operation
    * @example
@@ -153,9 +189,7 @@ export type SharedIterableYielded<
    *  .batch(acc => acc.length < 3)
    *  .resolve() // [];
    */
-  batch(
-    predicate: (acc: TInput[]) => boolean,
-  ): IterableYielded<TAsync, TInput[]>;
+  batch(predicate: (acc: In[]) => boolean): IterableYielded<Args, Async, In[]>;
   /**
    * Reduces items produced by the generator using the provided reducer function.
    * The final result of the reduction is yielded to the next operation.
@@ -169,48 +203,34 @@ export type SharedIterableYielded<
    *   .reduce((sum, n) => sum + n, 0)
    *   .resolve() // 0
    * */
-  reduce<TOutput>(
-    reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-    initialValue: TOutput,
-  ): SingleYielded<TAsync, TOutput>;
-  /**
-   * Just and other way to reduce items produced by the generator using the provided reducer function.
-   * The final result of the reduction is yielded to the next operation.
-   * @example
-   * yielded([1,2,3,4,5])
-   *   .fold(() => 0, (sum, n) => sum + n)
-   *   .resolve() // 15
-   * @example
-   * yielded([] as number[])
-   *   .fold(() => 0, (sum, n) => sum + n)
-   *   .resolve() // 0
-   *
-   * */
-  fold<TOutput>(
-    initial: () => TOutput,
-    reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-  ): SingleYielded<TAsync, TOutput>;
+  reduce<Out>(
+    reducer: (acc: Out, next: In, index: number) => Out,
+    initialValue: Out,
+  ): SingleYielded<Args, Async, Out>;
+  reduce<Out = In>(
+    reducer: (acc: Out, next: In, index: number) => Out,
+  ): SingleYielded<Args, Async, Out>;
   /**
    * @example
    * yielded([1,2,3,4,5])
    *   .skip(2)
    *   .resolve() // [3,4,5]
    * */
-  skip(count: number): IterableYielded<TAsync, TInput>;
+  skip(count: number): IterableYielded<Args, Async, In>;
   /**
    * skips the last `count` items produced by the generator and yields the rest to the next operation.
-   * Note. The skipLast operator stars emitting previous values to next operation, when it has the skipped amount
+   * Note. The dropLast operator stars emitting previous values to next operation, when it has the skipped amount
    * of values buffered
    * @example
    * yielded([1,2,3,4,5])
-   *  .skipLast(2)
+   *  .dropLast(2)
    *  .resolve() // [1,2,3]
    
    *
    * @example
    * yielded(['A','B','C','D', 'E'])
    *  .tap(l => storeStep.push(`${l}1`))
-   *  .skipLast(2)
+   *  .dropLast(2)
    *  .tap(l => storeStep.push(`${l}2`))
    *  .consume()
    *  // steps ->
@@ -219,7 +239,7 @@ export type SharedIterableYielded<
    *  //     B2          E1
    *  //         C2
    */
-  skipLast(count: number): IterableYielded<TAsync, TInput>;
+  skipLast(count: number): IterableYielded<Args, Async, In>;
   /**
    * skips items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
@@ -227,7 +247,7 @@ export type SharedIterableYielded<
    *  .skipWhile(n => n < 3)
    *  .resolve() // [3,4]
    * */
-  skipWhile(fn: (next: TInput) => boolean): IterableYielded<TAsync, TInput>;
+  skipWhile(fn: (next: In) => boolean): IterableYielded<Args, Async, In>;
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
@@ -235,7 +255,7 @@ export type SharedIterableYielded<
    *  .take(2)
    *  .resolve() // [1,2]
    */
-  take(count: number): IterableYielded<TAsync, TInput>;
+  take(count: number): IterableYielded<Args, Async, In>;
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
@@ -243,7 +263,7 @@ export type SharedIterableYielded<
    *  .takeLast(2)
    *  .resolve() // [4,5]
    */
-  takeLast(count: number): IterableYielded<TAsync, TInput>;
+  takeLast(count: number): IterableYielded<Args, Async, In>;
   /**
    * counts the number of items produced by the generator and then yields the total to the next operation.
    * @example
@@ -251,7 +271,7 @@ export type SharedIterableYielded<
    *  .count()
    *  .resolve() // 3
    */
-  count(): SingleYielded<TAsync, number>;
+  count(): SingleYielded<Args, Async, number>;
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
@@ -259,7 +279,7 @@ export type SharedIterableYielded<
    *  .takeWhile(n => n < 3)
    *  .resolve() // [1,2]
    */
-  takeWhile(fn: (next: TInput) => boolean): IterableYielded<TAsync, TInput>;
+  takeWhile(fn: (next: In) => boolean): IterableYielded<Args, Async, In>;
   /**
    * Sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
    * toSorted handles
@@ -270,8 +290,8 @@ export type SharedIterableYielded<
    *  .resolve() // [1,2,3,4,5]
    */
   toSorted(
-    compareFn: (a: TInput, b: TInput) => number,
-  ): IterableYielded<TAsync, TInput>;
+    compareFn: (a: In, b: In) => number,
+  ): IterableYielded<Args, Async, In>;
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
    * @example
@@ -279,10 +299,10 @@ export type SharedIterableYielded<
    *  .groupBy(n => n % 2 ? 'odd' : 'even')
    *  .resolve() // {even: [2,4], odd: [1,3,5]}
    */
-  groupBy<TKey extends PropertyKey>(
-    keySelector: (next: TInput) => TKey,
+  groupBy<K extends PropertyKey>(
+    keySelector: (next: In) => K,
     groups?: undefined,
-  ): SingleYielded<TAsync, Partial<Record<TKey, TInput[]>>>;
+  ): SingleYielded<Args, Async, Partial<Record<K, In[]>>>;
   /**
    * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
    * Defining 'groups' argument you can ensure that all these groups are part of the result
@@ -291,13 +311,13 @@ export type SharedIterableYielded<
    *  .groupBy(n => n % 2 ? 'odd' : 'even', ['odd', 'even', 'other'])
    *  .collect() // {even: [2,4], odd: [1,3,5], other:[]}
    */
-  groupBy<TKey extends PropertyKey, TGroups extends PropertyKey>(
-    keySelector: (next: TInput) => TKey,
-    groups: TGroups[],
+  groupBy<K extends PropertyKey, G extends PropertyKey>(
+    keySelector: (next: In) => K,
+    groups: G[],
   ): SingleYielded<
-    TAsync,
-    Record<TGroups, TInput[]> &
-      Partial<Record<Exclude<TKey, TGroups>, TInput[]>>
+    Args,
+    Async,
+    Record<G, In[]> & Partial<Record<Exclude<K, G>, In[]>>
   >;
   /**
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -307,9 +327,9 @@ export type SharedIterableYielded<
    *  .distinctBy(n => n % 2)
    *  .resolve() // [1,2]
    */
-  distinctBy<TValue>(
-    selector: (next: TInput) => TValue,
-  ): IterableYielded<TAsync, TInput>;
+  distinctBy<Our>(
+    selector: (next: In) => Our,
+  ): IterableYielded<Args, Async, In>;
   /**
    * filters out items produced by the generator that are equal to the previous item by the compare function.
    * If no compare function is provided, the strict equality operator is used.
@@ -325,8 +345,8 @@ export type SharedIterableYielded<
    *  .resolve() // [1,2,3]
    */
   distinctUntilChanged(
-    comparator?: (previous: TInput, current: TInput) => boolean,
-  ): IterableYielded<TAsync, TInput>;
+    comparator?: (previous: In, current: In) => unknown,
+  ): IterableYielded<Args, Async, In>;
   /**
    * takes each item produced by the generator and maps it to a number using the callback.
    * Finally, it yields the item with the lowest number to the next operation.
@@ -337,8 +357,8 @@ export type SharedIterableYielded<
    *  .resolve() // 1
    */
   min(
-    selector: (next: TInput) => number,
-  ): SingleYielded<TAsync, TInput, undefined>;
+    selector: (next: In) => number,
+  ): SingleYielded<Args, Async, In, undefined>;
   /**
    * takes each item produced by the generator and maps it to a number using the callback.
    * Finally yields the item with the highest number to the next operation.
@@ -349,8 +369,8 @@ export type SharedIterableYielded<
    *  .resolve() // 5
    */
   max(
-    selector: (next: TInput) => number,
-  ): SingleYielded<TAsync, TInput, undefined>;
+    selector: (next: In) => number,
+  ): SingleYielded<Args, Async, In, undefined>;
 
   /**
    * Filters items produced by the generator using the provided predicate
@@ -361,9 +381,9 @@ export type SharedIterableYielded<
    *   .filter((n): n is number => typeof n === "number")
    *   .resolve() satisfies number[] // [1,2,3];
    */
-  filter<TOutput extends TInput>(
-    fn: (next: TInput) => next is TOutput,
-  ): IterableYielded<TAsync, TOutput>;
+  filter<Our extends In>(
+    fn: (next: In) => next is Our,
+  ): IterableYielded<Args, Async, Our>;
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields the items that pass the predicate to the next operation.
@@ -373,7 +393,7 @@ export type SharedIterableYielded<
    *   .filter(n => n % 2)
    *   .resolve() // [1,3];
    */
-  filter(fn: (next: TInput) => any): IterableYielded<TAsync, TInput>;
+  filter(fn: (next: In) => unknown): IterableYielded<Args, Async, In>;
 
   /**
    * yields true when predicate returns true for the first time, otherwise finally it yields false after the generator is consumer. <br/>
@@ -389,7 +409,7 @@ export type SharedIterableYielded<
    *  .every(Boolean)
    *  .resolve() // false
    */
-  some(fn: (next: TInput) => boolean): SingleYielded<TAsync, boolean>;
+  some(fn: (next: In) => boolean): SingleYielded<Args, Async, boolean>;
   /**
    * yields false when predicate returns false for the first time, otherwise finally it yields true after the generator is consumer. <br/>
    * if the generator is empty yields true
@@ -404,7 +424,7 @@ export type SharedIterableYielded<
    *  .every(Boolean)
    *  .resolve() // true
    */
-  every(fn: (next: TInput) => boolean): SingleYielded<TAsync, boolean>;
+  every(fn: (next: In) => boolean): SingleYielded<Args, Async, boolean>;
   /**
    * yields the items in reverse order after the parent generator is consumed
    * @example
@@ -412,13 +432,14 @@ export type SharedIterableYielded<
    *  .toReverse()
    *  .resolve() // [3,2,1]
    */
-  toReverse(): IterableYielded<TAsync, TInput>;
+  toReverse(): IterableYielded<Args, Async, In>;
 };
 
 type CommonYielded<
-  TAsync extends boolean,
+  Args extends any[],
+  Async extends boolean,
   TIterable extends boolean,
-  TInput,
+  In,
   TDefault = undefined,
 > = {
   /**
@@ -435,9 +456,9 @@ type CommonYielded<
    *  .map(n => n * 2)
    *  .resolve() satisfies number | undefined
    */
-  map<TOutput = unknown>(
-    mapper: (next: TInput) => TOutput,
-  ): Yielded<TAsync, TIterable, TOutput, undefined>;
+  map<Out = unknown>(
+    mapper: (next: In) => Out,
+  ): Yielded<Args, Async, TIterable, Out, undefined>;
 
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
@@ -448,8 +469,8 @@ type CommonYielded<
    *  .consume();
    * */
   tap(
-    callback: (next: TInput) => unknown,
-  ): Yielded<TAsync, TIterable, TInput, TDefault>;
+    callback: (next: In) => unknown,
+  ): Yielded<Args, Async, TIterable, In, TDefault>;
   /**
    * Returns a new array with all sub-array elements concatenated into it recursively up to the
    * specified depth.
@@ -466,10 +487,10 @@ type CommonYielded<
    * */
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): IterableYielded<TAsync, FlatArray<TInput[], Depth>>;
-  flatMap<TOutput>(
-    callback: (value: TInput) => TOutput | TOutput[],
-  ): IterableYielded<TAsync, TOutput>;
+  ): IterableYielded<Args, Async, FlatArray<In[], Depth>>;
+  flatMap<Out>(
+    callback: (value: In) => Out | Out[],
+  ): IterableYielded<Args, Async, Out>;
   /**
    * takes each item produced by the generator until predicate returns true, and then it yields the value to the next operation
    * @example
@@ -478,8 +499,9 @@ type CommonYielded<
    *  .resolve() // [3]
    */
   find(
-    predicate: (next: TInput) => boolean,
-  ): SingleYielded<TAsync, TInput, undefined>;
+    predicate: (next: In) => boolean,
+    ...args: Args
+  ): MaybePromise<In | undefined, Async>;
 
   /**
    * @example
@@ -492,9 +514,9 @@ type CommonYielded<
    *   .find((p): n is Male => p.gender === 'male')
    *   .resolve() // Male[];
    */
-  find<TOutput extends TInput>(
-    predicate: (next: TInput) => next is TOutput,
-  ): SingleYielded<TAsync, TOutput, undefined>;
+  find<Out extends In>(
+    predicate: (next: In) => next is Out,
+  ): MaybePromise<Out | undefined, Async>;
   /**
    * Accepts a generator function that accepts the  previous generator
    *
@@ -531,15 +553,7 @@ type CommonYielded<
    *  })
    *  .collect() // "a.b.c"
    * */
-  lift<TOutput = never>(
-    middleware: YieldedLiftMiddleware<TAsync, TInput, TOutput>,
-  ): IterableYielded<TAsync, TOutput>;
+  lift<Out = never>(
+    middleware: YieldedLiftMiddleware<Async, In, Out>,
+  ): IterableYielded<Args, Async, Out>;
 };
-
-export type YieldedLiftMiddleware<TAsync, TInput, TOutput> = TAsync extends true
-  ? (
-      generator: ReturnType<YieldedAsyncProvider<TInput>>,
-    ) => ReturnType<YieldedAsyncProvider<TOutput>>
-  : (
-      generator: ReturnType<YieldedSyncProvider<TInput>>,
-    ) => ReturnType<YieldedSyncProvider<TOutput>>;

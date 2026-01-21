@@ -4,12 +4,12 @@ import { consumeSync } from "../consumers/consume.ts";
 import { toArraySync, toArraySyncFromReturn } from "../consumers/toArray.ts";
 import { distinctBySync } from "../generators/filters/distinctBy.ts";
 import { distinctUntilChangedSync } from "../generators/filters/distinctUntilChanged.ts";
-import { filterSync } from "../generators/filters/filter.ts";
-import { skipSync } from "../generators/filters/skip.ts";
-import { skipLastSync } from "../generators/filters/skipLast.ts";
-import { skipWhileSync } from "../generators/filters/skipWhile.ts";
+import { skipSync } from "../generators/filters/drop.ts";
+import { skipLastSync } from "../generators/filters/dropLast.ts";
+import { skipWhileSync } from "../generators/filters/dropWhile.ts";
+import { filter } from "../generators/filters/filter.ts";
 import { takeSync } from "../generators/filters/take.ts";
-import { takeLastSync } from "../generators/filters/takeLast.ts";
+import { takeLast } from "../generators/filters/takeLast.ts";
 import { takeWhileSync } from "../generators/filters/takeWhile.ts";
 import { everySync } from "../generators/finders/every.ts";
 import { findSync } from "../generators/finders/find.ts";
@@ -21,30 +21,26 @@ import { tapSync } from "../generators/misc/tap.ts";
 import { toAwaited, toAwaitedParallel } from "../generators/misc/toAwaited.ts";
 import { countSync } from "../generators/reducers/count.ts";
 import { countBySync } from "../generators/reducers/countBy.ts";
-import { foldSync } from "../generators/reducers/fold.ts";
 import {
   createInitialGroups,
   groupBySync,
 } from "../generators/reducers/groupBy.ts";
-import { maxSync } from "../generators/reducers/max.ts";
-import { minSync } from "../generators/reducers/min.ts";
+import { maxSync } from "../generators/reducers/maxBy.ts";
+import { minSync } from "../generators/reducers/minBy.ts";
 import { reduceSync } from "../generators/reducers/reduce.ts";
 import { toReverseSync } from "../generators/sorters/toReverse.ts";
 import { toSortedSync } from "../generators/sorters/toSorted.ts";
 import { flatSync } from "../generators/spreaders/flat.ts";
 import { flatMapSync } from "../generators/spreaders/flatMap.ts";
-import {
-  type SyncIterableYielded,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type SyncIterableYielded, type YieldedProvider } from "../types.ts";
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 import { syncSingleYielded } from "./syncSingleYielded.ts";
 
 const stringTag = "SyncIterableYielded";
-export function syncIterableYielded<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  overrides: Partial<SyncIterableYielded<TInput>> = {},
-): SyncIterableYielded<TInput> {
+export function syncIterableYielded<In>(
+  provider: YieldedProvider<In>,
+  overrides: Partial<SyncIterableYielded<In>> = {},
+): SyncIterableYielded<In> {
   return {
     ...overrides,
     [Symbol.toStringTag]: stringTag,
@@ -84,12 +80,10 @@ export function syncIterableYielded<TInput>(
         _yielded.getTrue,
       );
     },
-    filter<TOutput extends TInput>(
-      predicate: (next: TInput) => next is TOutput,
-    ) {
-      return syncIterableYielded(filterSync(provider, predicate));
+    filter<Out extends In>(predicate: (next: In) => next is R) {
+      return syncIterableYielded(filter(provider, predicate));
     },
-    find(predicate: (next: TInput) => boolean) {
+    find(predicate: (next: In) => boolean) {
       return syncSingleYielded(
         findSync(provider, predicate),
         _yielded.getUndefined,
@@ -100,13 +94,6 @@ export function syncIterableYielded<TInput>(
     },
     flatMap(callback) {
       return syncIterableYielded(flatMapSync(provider, callback));
-    },
-    fold(initial, reducer) {
-      const initialOnce = _yielded.once(initial);
-      return syncSingleYielded(
-        foldSync(provider, initialOnce, reducer),
-        initialOnce,
-      );
     },
     groupBy(
       keySelector: (next: any) => PropertyKey,
@@ -159,7 +146,7 @@ export function syncIterableYielded<TInput>(
       return syncIterableYielded(takeSync(provider, count));
     },
     takeLast(count) {
-      const takeLastProvider = takeLastSync(provider, count);
+      const takeLastProvider = takeLast(provider, count);
       return syncIterableYielded(takeLastProvider, {
         resolve(signal?: AbortSignal) {
           return toArraySyncFromReturn(takeLastProvider, signal);

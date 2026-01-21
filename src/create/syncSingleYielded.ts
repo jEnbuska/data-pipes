@@ -8,15 +8,15 @@ import { tapSync } from "../generators/misc/tap.ts";
 import { toAwaited } from "../generators/misc/toAwaited.ts";
 import { flatSync } from "../generators/spreaders/flat.ts";
 import { flatMapSync } from "../generators/spreaders/flatMap.ts";
-import { type SyncSingleYielded, type YieldedSyncProvider } from "../types.ts";
+import { type SyncSingleYielded, type YieldedProvider } from "../types.ts";
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 import { syncIterableYielded } from "./syncIterableYielded.ts";
 
 const stringTag = "SyncSingleYielded";
-export function syncSingleYielded<TInput, TDefault>(
-  provider: YieldedSyncProvider<TInput>,
+export function syncSingleYielded<In, TDefault>(
+  provider: YieldedProvider<In>,
   getDefault: () => TDefault,
-): SyncSingleYielded<TInput, TDefault> {
+): SyncSingleYielded<In, TDefault> {
   return {
     [Symbol.toStringTag]: stringTag,
     consume(signal?: AbortSignal) {
@@ -26,7 +26,7 @@ export function syncSingleYielded<TInput, TDefault>(
       const { resolve } = syncSingleYielded(provider, getDefault);
       return { resolve };
     },
-    find(predicate: (next: TInput) => boolean) {
+    find(predicate: (next: In) => boolean) {
       return syncSingleYielded(
         findSync(provider, predicate),
         _yielded.getUndefined,

@@ -1,39 +1,17 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next, $nextFlat } from "../actions.ts";
 
-export function flatMapSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedSyncProvider<TOutput> {
-  return function* flatMapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
+export function flatMap<In, Out>(
+  flatMapper: (next: In) => Out | readonly Out[],
+): YieldedProvider<In, Out> {
+  return () => ({
+    *onNext(next: In) {
       const out = flatMapper(next);
       if (Array.isArray(out)) {
-        yield* out as any;
+        yield $nextFlat(out as Out[]);
       } else {
-        yield out as TOutput;
+        yield $next(out as Out);
       }
-    }
-  };
-}
-
-export function flatMapAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* flatMapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      const out = flatMapper(next);
-      if (Array.isArray(out)) {
-        yield* out as any;
-      } else {
-        yield out as TOutput;
-      }
-    }
-  };
+    },
+  });
 }

@@ -1,14 +1,11 @@
 import { _yielded } from "../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type YieldedAsyncProvider, type YieldedProvider } from "../types.ts";
 
-export function toArraySync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
+export function toArraySync<In>(
+  provider: YieldedProvider<In>,
   signal = new AbortController().signal,
-): TInput[] {
-  const acc: TInput[] = [];
+): In[] {
+  const acc: In[] = [];
   if (!signal) return acc;
 
   for (const next of provider(signal)) {
@@ -18,12 +15,12 @@ export function toArraySync<TInput>(
   return acc;
 }
 
-export async function toArrayAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
+export async function toArrayAsync<In>(
+  provider: YieldedAsyncProvider<In>,
   signal = new AbortController().signal,
-): Promise<Array<Awaited<TInput>>> {
-  const acc: TInput[] = [];
-  const resolvable = Promise.withResolvers<Array<Awaited<TInput>>>();
+): Promise<Array<Awaited<In>>> {
+  const acc: In[] = [];
+  const resolvable = Promise.withResolvers<Array<Awaited<In>>>();
   signal.addEventListener("abort", () => resolvable.resolve([]));
   return Promise.race([
     resolvable.promise,
@@ -37,10 +34,10 @@ export async function toArrayAsync<TInput>(
   ]) as any;
 }
 
-export function toArraySyncFromReturn<TInput>(
-  provider: YieldedSyncProvider<TInput, TInput[]>,
+export function toArraySyncFromReturn<In>(
+  provider: YieldedProvider<In, In[]>,
   signal = new AbortController().signal,
-): TInput[] {
+): In[] {
   if (signal.aborted) return [];
   using generator = Object.assign(provider(signal), {
     [Symbol.dispose]() {
@@ -56,10 +53,10 @@ export function toArraySyncFromReturn<TInput>(
   }
 }
 
-export function toArrayAsyncFromReturn<TInput>(
-  provider: YieldedAsyncProvider<TInput, TInput[]>,
+export function toArrayAsyncFromReturn<In>(
+  provider: YieldedAsyncProvider<In, In[]>,
   signal = new AbortController().signal,
-): Promise<Array<Awaited<TInput>>> {
+): Promise<Array<Awaited<In>>> {
   const resolvable = Promise.withResolvers<any[]>();
   if (signal.aborted) return Promise.resolve([]);
   signal.addEventListener("abort", () => resolvable.resolve([]));
@@ -74,5 +71,5 @@ export function toArrayAsyncFromReturn<TInput>(
         result = await generator.next();
       }
     }),
-  ]) as Promise<Array<Awaited<TInput>>>;
+  ]) as Promise<Array<Awaited<In>>>;
 }

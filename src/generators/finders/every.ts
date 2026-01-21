@@ -1,30 +1,22 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $done, $next, $return } from "../actions.ts";
 
-export function everySync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<boolean> {
-  return function* everySyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (!predicate(next)) return yield false;
-    }
-    yield true;
-  };
-}
-export function everyAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<boolean> {
-  return async function* everyAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      if (!predicate(next)) return yield false;
-    }
-    yield true;
+export function every<In>(
+  predicate: (next: In, index: number) => unknown,
+): YieldedProvider<In, boolean, boolean> {
+  return () => {
+    let acc = true;
+    let index = 0;
+    return {
+      *onNext(next) {
+        if (predicate(next, index++)) return;
+        acc = false;
+        yield $done();
+      },
+      *onDone() {
+        yield $next(acc);
+        yield $return(acc);
+      },
+    };
   };
 }

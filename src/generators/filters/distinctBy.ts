@@ -1,44 +1,21 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next } from "../actions.ts";
 
-export function distinctBySync<TInput, TSelect>(
-  provider: YieldedSyncProvider<TInput>,
-  selector: (next: TInput) => TSelect,
-): YieldedSyncProvider<TInput>;
-export function distinctBySync(
-  provider: YieldedSyncProvider<any, any>,
-  selector: (next: any) => any,
-) {
-  return function* distinctBySyncGenerator(
-    signal: AbortSignal,
-  ): Generator<any, void, undefined & void> {
-    const set = new Set<any>();
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      const key = selector(next);
-      if (set.has(key)) {
-        continue;
-      }
-      set.add(key);
-      yield next;
-    }
-  };
-}
-export function distinctByAsync<TInput, TSelect>(
-  provider: YieldedAsyncProvider<TInput>,
-  selector: (next: TInput) => TSelect,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* distinctByAsyncGenerator(signal) {
-    const set = new Set<TSelect>();
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      const key = selector(next);
-      if (set.has(key)) continue;
-      set.add(key);
-      yield next;
-    }
+export function distinctBy<In, TSelect>(
+  selector: (next: In) => TSelect,
+): YieldedProvider<In>;
+export function distinctBy(
+  selector: (next: unknown) => unknown,
+): YieldedProvider<unknown> {
+  return () => {
+    const set = new Set<unknown>();
+    return {
+      *onNext(next) {
+        const selected = selector(next);
+        if (set.has(selected)) return;
+        set.add(selected);
+        yield $next(next);
+      },
+    };
   };
 }

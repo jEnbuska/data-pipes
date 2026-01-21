@@ -1,24 +1,21 @@
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../types.ts";
+import { type YieldedAsyncProvider, type YieldedProvider } from "../types.ts";
 
-export function firstSync<TInput, TDefault>(
-  provider: YieldedSyncProvider<TInput>,
+export function firstSync<In, TDefault>(
+  provider: YieldedProvider<In>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
-): TInput | TDefault {
+): T | TDefault {
   if (signal.aborted) return getDefault();
   const result = provider(signal).next();
   if (signal.aborted || result.done) return getDefault();
   return result.value;
 }
 
-export async function firstAsync<TInput, TDefault>(
-  provider: YieldedAsyncProvider<TInput>,
+export async function firstAsync<In, TDefault>(
+  provider: YieldedAsyncProvider<In>,
   getDefault: () => TDefault,
   signal = new AbortController().signal,
-): Promise<TInput | TDefault> {
+): Promise<T | TDefault> {
   const resolvable = Promise.withResolvers<TDefault>();
 
   if (signal.aborted) return getDefault();

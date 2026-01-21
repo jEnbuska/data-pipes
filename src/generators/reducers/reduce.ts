@@ -1,37 +1,60 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next, $return } from "../actions.ts";
 
-export function reduceSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-  initialValue: TOutput,
-): YieldedSyncProvider<TOutput> {
-  return function* reduceSyncGenerator(signal) {
-    let acc = initialValue;
+export function reduce<In, Out = In>(
+  reducer: (acc: Out, next: In, index: number) => Out,
+  initialValue: Out,
+): YieldedProvider<In, Out, Out>;
+export function reduce<In>(
+  reducer: (acc: In, next: In, index: number) => In,
+): YieldedProvider<In, In, In | undefined>;
+export function reduce(
+  reducer: (acc: unknown, next: unknown, index: number) => unknown,
+  ...rest: [] | [unknown]
+): YieldedProvider<unknown, unknown, unknown> {
+  if (!rest.length) {
+    return reduceWithoutInitialValue(reducer);
+  }
+  return reduceWithInitialValue(reducer, rest[0]);
+}
+
+function reduceWithInitialValue<In, Out>(
+  reducer: (acc: Out, next: In, index: number) => Out,
+  initialValue: Out,
+): YieldedProvider<In, Out, Out> {
+  return () => {
     let index = 0;
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      acc = reducer(acc, next, index++);
-    }
-    yield acc;
+    let acc = initialValue;
+    return {
+      *onNext(next) {
+        acc = reducer(acc, next, index++);
+      },
+      *onDone() {
+        yield $next(acc);
+        yield $return(acc);
+      },
+    };
   };
 }
 
-export function reduceAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  reducer: (acc: TOutput, next: TInput, index: number) => TOutput,
-  initialValue: TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* reduceAsyncGenerator(signal) {
-    let acc = initialValue;
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+export function reduceWithoutInitialValue<In>(
+  reducer: (acc: In, next: In, index: number) => In,
+): YieldedProvider<In, In, In | undefined> {
+  return () => {
     let index = 0;
-    for await (const next of generator) {
-      acc = reducer(acc, next, index++);
-    }
-    yield acc;
+    return {
+      *onNext(first) {
+        let acc = first;
+        return {
+          *onNext(next) {
+            acc = reducer(acc, next, index++);
+          },
+          *onDone() {
+            yield $return(acc);
+            yield $next(acc);
+          },
+        };
+      },
+    };
   };
 }

@@ -56,15 +56,6 @@
         "disallowTypeAnnotations": false // optional: allows you to still use types in annotations without prefix
       }
     ],
-    "no-duplicate-imports": "warn",
-    "sort-keys": [
-      "warn",
-      "asc",
-      {
-        "caseSensitive": false,
-        "natural": true,
-        "minKeys": 2
-      }
-    ]
+    "no-duplicate-imports": "warn"
   }
 }

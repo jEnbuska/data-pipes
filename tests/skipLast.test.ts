@@ -1,7 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 
-describe("skipLast", () => {
+describe("dropLast", () => {
   test("skip last when array is empty", () => {
     expect(yielded([]).skipLast(3).resolve()).toStrictEqual([]);
   });

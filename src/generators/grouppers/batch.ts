@@ -1,43 +1,23 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next } from "../actions.ts";
 
-export function batchSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (acc: TInput[]) => boolean,
-): YieldedSyncProvider<TInput[]> {
-  return function* batchSyncGenerator(signal) {
-    let acc: TInput[] = [];
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      acc.push(next);
-      if (!predicate(acc)) {
-        continue;
-      }
-      yield acc;
-      acc = [];
-    }
-    if (acc.length) {
-      yield acc;
-    }
-  };
-}
-
-export function batchAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (batch: TInput[]) => boolean,
-): YieldedAsyncProvider<TInput[]> {
-  return async function* batchGenerator(signal) {
-    let acc: TInput[] = [];
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      acc.push(next);
-      if (!predicate(acc)) continue;
-      yield acc;
-      acc = [];
-    }
-    if (acc.length) yield acc;
+export function batch<In>(
+  predicate: (acc: In[]) => boolean,
+): YieldedProvider<In, In[]> {
+  return () => {
+    let acc: In[] = [];
+    return {
+      *onNext(next) {
+        acc.push(next);
+        if (!predicate(acc)) return;
+        yield $next(acc);
+        acc = [];
+      },
+      *onDone() {
+        if (!acc.length) return;
+        yield $next(acc);
+        acc = [];
+      },
+    };
   };
 }

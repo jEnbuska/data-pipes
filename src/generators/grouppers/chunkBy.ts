@@ -1,37 +1,26 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $nextFlat, $returnFlat } from "../actions.ts";
 
-export function chunkBySync<TInput, TIdentifier = any>(
-  provider: YieldedSyncProvider<TInput>,
-  keySelector: (next: TInput) => TIdentifier,
-): YieldedSyncProvider<TInput[]> {
-  return function* chunkBySyncGenerator(signal) {
-    const map = new Map<any, TInput[]>();
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      const key = keySelector(next);
-      if (!map.has(next)) map.set(next, []);
-      map.get(key)!.push(next);
-    }
-    yield* map.values();
-  };
-}
-
-export function chunkByAsync<TInput, TIdentifier = any>(
-  provider: YieldedAsyncProvider<TInput>,
-  keySelector: (next: TInput) => TIdentifier,
-): YieldedAsyncProvider<TInput[]> {
-  return async function* chunkByAsyncGenerator(signal) {
-    const map = new Map<any, TInput[]>();
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      const key = keySelector(next);
-      if (!map.has(next)) map.set(next, []);
-      map.get(key)!.push(next);
-    }
-    yield* map.values();
+export function chunkBy<In, TIdentifier = any>(
+  keySelector: (next: In) => TIdentifier,
+): YieldedProvider<In, In[], In[]> {
+  return () => {
+    const arr: In[][] = [];
+    const map = new Map<TIdentifier, number>();
+    return {
+      *onNext(next) {
+        const key = keySelector(next);
+        if (!map.has(key)) {
+          const index = arr.length;
+          map.set(key, arr.length);
+          arr[index] = [];
+        }
+        arr[map.get(key)!].push(next);
+      },
+      *onDone() {
+        yield $nextFlat(arr);
+        yield $returnFlat(arr);
+      },
+    };
   };
 }

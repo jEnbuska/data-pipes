@@ -14,10 +14,10 @@ import {
 import { asyncIterableAYielded } from "./asyncIterableAYielded.ts";
 
 const stringTag = "AsyncSingleYielded";
-export function asyncSingleYielded<TInput, TDefault>(
-  provider: YieldedAsyncProvider<Awaited<TInput>>,
+export function asyncSingleYielded<In, TDefault>(
+  provider: YieldedAsyncProvider<Awaited<In>>,
   getDefault: () => TDefault,
-): AsyncSingleYielded<TInput, TDefault> {
+): AsyncSingleYielded<In, TDefault> {
   return {
     [Symbol.toStringTag]: stringTag,
     consume(signal?: AbortSignal) {
@@ -27,7 +27,7 @@ export function asyncSingleYielded<TInput, TDefault>(
       const { resolve } = asyncSingleYielded(provider, getDefault);
       return { resolve };
     },
-    find(predicate: (next: Awaited<TInput>) => boolean) {
+    find(predicate: (next: Awaited<In>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
         _yielded.getUndefined,

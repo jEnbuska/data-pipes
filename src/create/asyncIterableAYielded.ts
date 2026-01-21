@@ -3,10 +3,10 @@ import { consumeAsync } from "../consumers/consume.ts";
 import { toArrayAsync, toArrayAsyncFromReturn } from "../consumers/toArray.ts";
 import { distinctByAsync } from "../generators/filters/distinctBy.ts";
 import { distinctUntilChangedAsync } from "../generators/filters/distinctUntilChanged.ts";
+import { skipAsync } from "../generators/filters/drop.ts";
+import { skipLastAsync } from "../generators/filters/dropLast.ts";
+import { skipWhileAsync } from "../generators/filters/dropWhile.ts";
 import { filterAsync } from "../generators/filters/filter.ts";
-import { skipAsync } from "../generators/filters/skip.ts";
-import { skipLastAsync } from "../generators/filters/skipLast.ts";
-import { skipWhileAsync } from "../generators/filters/skipWhile.ts";
 import { takeAsync } from "../generators/filters/take.ts";
 import { takeLastAsync } from "../generators/filters/takeLast.ts";
 import { takeWhileAsync } from "../generators/filters/takeWhile.ts";
@@ -20,13 +20,12 @@ import { mapAsync } from "../generators/misc/map.ts";
 import { tapAsync } from "../generators/misc/tap.ts";
 import { countAsync } from "../generators/reducers/count.ts";
 import { countByAsync } from "../generators/reducers/countBy.ts";
-import { foldAsync } from "../generators/reducers/fold.ts";
 import {
   createInitialGroups,
   groupByAsync,
 } from "../generators/reducers/groupBy.ts";
-import { maxAsync } from "../generators/reducers/max.ts";
-import { minAsync } from "../generators/reducers/min.ts";
+import { maxAsync } from "../generators/reducers/maxBy.ts";
+import { minAsync } from "../generators/reducers/minBy.ts";
 import { reduceAsync } from "../generators/reducers/reduce.ts";
 import { toReverseAsync } from "../generators/sorters/toReverse.ts";
 import { toSortedAsync } from "../generators/sorters/toSorted.ts";
@@ -39,10 +38,10 @@ import {
 import { asyncSingleYielded } from "./asyncSingleYielded.ts";
 
 const stringTag = "AsyncIterableYielded";
-export function asyncIterableAYielded<TInput>(
-  provider: YieldedAsyncProvider<Awaited<TInput>>,
-  overrides: Partial<AsyncIterableYielded<TInput>> = {},
-): AsyncIterableYielded<TInput> {
+export function asyncIterableAYielded<In>(
+  provider: YieldedAsyncProvider<Awaited<In>>,
+  overrides: Partial<AsyncIterableYielded<In>> = {},
+): AsyncIterableYielded<In> {
   return {
     ...overrides,
     [Symbol.toStringTag]: stringTag,
@@ -60,7 +59,7 @@ export function asyncIterableAYielded<TInput>(
       return asyncIterableAYielded(chunkByAsync(provider, fn));
     },
     consume(signal?: AbortSignal) {
-      return consumeAsync<TInput>(provider, signal);
+      return consumeAsync<In>(provider, signal);
     },
     count() {
       return asyncSingleYielded(countAsync(provider), _yielded.getZero);
@@ -82,14 +81,10 @@ export function asyncIterableAYielded<TInput>(
         _yielded.getTrue,
       );
     },
-    filter<TOutput extends TInput>(
-      predicate: (next: TInput) => next is TOutput,
-    ) {
-      return asyncIterableAYielded(
-        filterAsync<TInput, TOutput>(provider, predicate),
-      );
+    filter<Out extends In>(predicate: (next: In) => next is R) {
+      return asyncIterableAYielded(filterAsync<In, Out>(provider, predicate));
     },
-    find(predicate: (next: Awaited<TInput>) => boolean) {
+    find(predicate: (next: Awaited<In>) => boolean) {
       return asyncSingleYielded(
         findAsync(provider, predicate),
         _yielded.getUndefined,
@@ -100,13 +95,6 @@ export function asyncIterableAYielded<TInput>(
     },
     flatMap(callback) {
       return asyncIterableAYielded(flatMapAsync(provider, callback));
-    },
-    fold(initial, reducer) {
-      const initialOnce = _yielded.once(initial);
-      return asyncSingleYielded(
-        foldAsync(provider, initialOnce, reducer),
-        initialOnce,
-      );
     },
     groupBy(
       keySelector: (next: any) => PropertyKey,

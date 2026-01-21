@@ -1,45 +1,22 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next } from "../actions.ts";
 
-export function filterSync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => next is TOutput,
-): YieldedSyncProvider<TOutput>;
-export function filterSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-  predicate: (next: TInput) => any,
-): YieldedSyncProvider<TInput>;
-export function filterSync(
-  provider: YieldedSyncProvider<any, any>,
-  predicate: (next: unknown) => unknown,
-): YieldedSyncProvider<any, any> {
-  return function* filterSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
-      if (predicate(next)) yield next;
-    }
-  };
-}
-
-export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => next is TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>>;
-export function filterAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => any,
-): YieldedAsyncProvider<Awaited<TInput>>;
-export function filterAsync(
-  provider: YieldedAsyncProvider<any, any>,
-  predicate: (next: unknown) => any,
-): YieldedAsyncProvider<any, any> {
-  return async function* filterAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      if (predicate(next)) yield next;
-    }
+export function filter<In, Out extends In = In>(
+  predicate: (next: In, index: number) => next is Out,
+): YieldedProvider<In, Out>;
+export function filter<In>(
+  predicate: (next: In, index: number) => any,
+): YieldedProvider<In>;
+export function filter(
+  predicate: (next: unknown, index: number) => unknown,
+): YieldedProvider<unknown, unknown> {
+  return () => {
+    let index = 0;
+    return {
+      *onNext(next) {
+        if (!predicate(next, index++)) return;
+        yield $next(next);
+      },
+    };
   };
 }

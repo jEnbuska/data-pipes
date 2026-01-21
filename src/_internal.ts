@@ -1,11 +1,8 @@
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "./types.ts";
+import { type YieldedProvider } from "./types.ts";
 
 export const _yielded = {
-  getDisposableAsyncGenerator<TInput>(
-    provider: YieldedAsyncProvider<TInput>,
+  getDisposableAsyncGenerator<T>(
+    provider: YieldedAsyncProvider<T>,
     signal: AbortSignal,
   ) {
     const generator = provider(signal);
@@ -15,10 +12,7 @@ export const _yielded = {
       },
     });
   },
-  getDisposableGenerator<TInput>(
-    provider: YieldedSyncProvider<TInput>,
-    signal: AbortSignal,
-  ) {
+  getDisposableGenerator<T>(provider: YieldedProvider<T>, signal: AbortSignal) {
     const generator = provider(signal);
     return Object.assign(generator, {
       [Symbol.dispose]() {
@@ -31,6 +25,20 @@ export const _yielded = {
   getZero: () => 0,
   invoke<T>(cb: () => T) {
     return cb();
+  },
+  createMemoize1<T, R>(cb: (arg: T) => R) {
+    const map = new Map<T, R>();
+    return Object.assign(
+      (next: T) => {
+        if (!map.has(next)) return map.set(next, cb(next));
+        return map.get(next)!;
+      },
+      {
+        dispose() {
+          map.clear();
+        },
+      },
+    );
   },
   once<TArgs extends any[], TReturn>(cb: (...args: TArgs) => TReturn) {
     let result: undefined | { value: TReturn };

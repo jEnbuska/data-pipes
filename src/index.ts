@@ -7,7 +7,7 @@ import {
   type SyncIterableYielded,
   type SyncSingleYielded,
   type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedProvider,
 } from "./types.ts";
 
 /**
@@ -31,22 +31,18 @@ import {
  *  .resolve() satisfies number | undefined // 2
  */
 
-function yielded<TInput>(
-  asyncGeneratorFunction: YieldedAsyncProvider<TInput>,
-): AsyncIterableYielded<TInput>;
-function yielded<TInput>(
-  provider: YieldedSyncProvider<TInput>,
-): SyncIterableYielded<TInput>;
-function yielded<TInput>(
-  asyncIterable: AsyncIterator<TInput>,
-): AsyncIterableYielded<TInput>;
-function yielded<TInput>(
-  iterable: Iterable<TInput>,
-): SyncIterableYielded<TInput>;
-function yielded<TInput>(
-  callback: (signal: AbortSignal) => TInput,
-): SyncSingleYielded<TInput, undefined>;
-function yielded<TInput>(value: TInput): SyncSingleYielded<TInput, undefined>;
+function yielded<In>(
+  asyncGeneratorFunction: YieldedAsyncProvider<In>,
+): AsyncIterableYielded<In>;
+function yielded<In>(provider: YieldedProvider<In>): SyncIterableYielded<In>;
+function yielded<In>(
+  asyncIterable: AsyncIterator<In>,
+): AsyncIterableYielded<In>;
+function yielded<In>(iterable: Iterable<In>): SyncIterableYielded<In>;
+function yielded<In>(
+  callback: (signal: AbortSignal) => T,
+): SyncSingleYielded<In, undefined>;
+function yielded<In>(value: T): SyncSingleYielded<In, undefined>;
 
 function yielded(source: any) {
   if (isAsyncGeneratorFunction<any>(source)) {
@@ -94,9 +90,9 @@ function yielded(source: any) {
 
 export default yielded;
 
-function isAsyncGeneratorFunction<TInput>(
+function isAsyncGeneratorFunction<In>(
   provider: unknown,
-): provider is YieldedAsyncProvider<TInput> {
+): provider is YieldedAsyncProvider<In> {
   return (
     Boolean(provider) &&
     Object.getPrototypeOf(provider).constructor.name ===

@@ -1,47 +1,51 @@
-import { _yielded } from "../../_internal.ts";
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "../../types.ts";
+import { type YieldedProvider } from "../../types.ts";
+import { $next, $return } from "../actions.ts";
 
-export function createInitialGroups(groups: any[] = []) {
+function createInitialGroups(groups: any[] = []) {
   return new Map<PropertyKey, any[]>(groups?.map((key) => [key, [] as any[]]));
 }
 
-export function groupBySync(
-  provider: YieldedSyncProvider<any, any>,
-  keySelector: (next: any) => PropertyKey,
+/**
+ * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
+ * @example
+ * yielded([1,2,3,4,5])
+ *  .groupBy(n => n % 2 ? 'odd' : 'even')
+ *  .resolve() // {even: [2,4], odd: [1,3,5]}
+ */
+export function groupBy<In, K extends PropertyKey>(
+  keySelector: (next: In) => K,
+  groups?: undefined,
+): YieldedProvider<In, Partial<Record<K, In[]>>>;
+/**
+ * Groups items produced by the generator by the key returned by the keySelector and finally then yields the grouped data to the next operation.
+ * Defining 'groups' argument you can ensure that all these groups are part of the result
+ * @example
+ * yielded([1,2,3,4,5])
+ *  .groupBy(n => n % 2 ? 'odd' : 'even', ['odd', 'even', 'other'])
+ *  .collect() // {even: [2,4], odd: [1,3,5], other:[]}
+ */
+export function groupBy<In, K extends PropertyKey, G extends PropertyKey>(
+  keySelector: (next: In) => K,
+  groups: G[],
+): YieldedProvider<In, Record<G, In[]> & Partial<Record<Exclude<K, G>, In[]>>>;
+export function groupBy(
+  keySelector: (next: unknown) => PropertyKey,
   groups: PropertyKey[] = [],
-): YieldedSyncProvider<any> {
-  return function* groupBySyncGenerator(signal: AbortSignal) {
-    const record = createInitialGroups(groups);
-    using generator = _yielded.getDisposableGenerator(provider, signal);
-    for (const next of generator) {
+): YieldedProvider<unknown, Partial<Record<PropertyKey, any[]>>> {
+  const map = createInitialGroups(groups);
+  return () => ({
+    *onNext(next) {
       const key = keySelector(next);
-      if (!record.has(key)) {
-        record.set(key, []);
-      }
-      record.get(key)!.push(next);
-    }
-    yield Object.fromEntries(record);
-  };
-}
-
-export function groupByAsync(
-  provider: YieldedAsyncProvider<any, any>,
-  keySelector: (next: any) => PropertyKey,
-  groups: PropertyKey[] = [],
-): YieldedAsyncProvider<Awaited<any>> {
-  return async function* groupByAsyncGenerator(signal: AbortSignal) {
-    const record = createInitialGroups(groups);
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
-    for await (const next of generator) {
-      const key = keySelector(next);
-      if (!record.has(key)) {
-        record.set(key, []);
-      }
-      record.get(key)!.push(next);
-    }
-    yield Object.fromEntries(record);
-  };
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(map);
+    },
+    *onDone() {
+      const entries = Object.fromEntries(map);
+      $next(entries);
+      $return(entries);
+    },
+    onDispose() {
+      map.clear();
+    },
+  });
 }
