@@ -8,8 +8,8 @@ export function countBySync<TInput>(
 }
 
 export async function countByAsync<TInput>(
-  mapper: (next: TInput) => Promise<number> | number,
   invoke: YieldedAsyncProvider<TInput>,
+  mapper: (next: TInput) => Promise<number> | number,
 ): Promise<number> {
   let acc = 0;
   function increment(value: number) {

@@ -1,14 +1,4 @@
-import { _yielded } from "../_internal.ts";
-import { everyAsync } from "../consumers/every.ts";
-import { findAsync } from "../consumers/find.ts";
-import { groupByAsync } from "../consumers/groupBy.ts";
-import { maxByAsync } from "../consumers/maxBy.ts";
-import { minByAsync } from "../consumers/minBy.ts";
-import { reduceAsync } from "../consumers/reduce.ts";
-import { someAsync } from "../consumers/some.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
-import { toReverseAsync } from "../consumers/toReverse.ts";
-import { toSortedAsync } from "../consumers/toSorted.ts";
 import { distinctByAsync } from "../generators/filters/distinctBy.ts";
 import { distinctUntilChangedAsync } from "../generators/filters/distinctUntilChanged.ts";
 import { skipAsync } from "../generators/filters/drop.ts";
@@ -22,16 +12,14 @@ import { batchAsync } from "../generators/grouppers/batch.ts";
 import { chunkByAsync } from "../generators/grouppers/chunkBy.ts";
 import { liftAsync } from "../generators/misc/lift.ts";
 import { mapAsync } from "../generators/misc/map.ts";
+import parallel from "../generators/misc/parallel.ts";
 import { tapAsync } from "../generators/misc/tap.ts";
-import { countByAsync } from "../generators/reducers/countBy.ts";
 import { flatAsync } from "../generators/spreaders/flat.ts";
 import { flatMapAsync } from "../generators/spreaders/flatMap.ts";
 import type { AsyncYieldedIterator, YieldedSyncGenerator } from "../types.ts";
 import { nextToParent } from "./toInvokable.ts";
 
 const stringTag = "YieldedAsyncIterable";
-
-type T = IteratorObject<boolean>;
 
 export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
   returnsResult: TReturn extends TInput[] ? true : false,
@@ -45,6 +33,9 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
         yield next;
       }
     },
+    parallel(count: number) {
+      return yieldedAsyncIterable(false, parallel(false));
+    },
     batch(predicate) {
       return yieldedAsyncIterable(
         false,
@@ -55,11 +46,7 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       return yieldedAsyncIterable(false, chunkByAsync(current, fn));
     },
     countBy(fn) {
-      return yieldedAsyncIterable(
-        false,
-        countByAsync(current, fn),
-        _yielded.getZero,
-      );
+      // TODO
     },
     distinctBy(selector) {
       return yieldedAsyncIterable(false, distinctByAsync(current, selector));
@@ -71,7 +58,7 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       );
     },
     every(predicate) {
-      return yieldedAsyncIterable(false, everyAsync(current, predicate));
+      // TODO
     },
     filter<TOutput extends TInput>(
       predicate: (next: TInput) => next is TOutput,
@@ -81,7 +68,7 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       );
     },
     find(predicate: (next: Awaited<TInput>) => boolean) {
-      return yieldedAsyncIterable(findAsync(current, predicate));
+      // TODO
     },
     flat(depth) {
       return yieldedAsyncIterable(flatAsync(current, depth));
@@ -93,10 +80,7 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       keySelector: (next: any) => PropertyKey,
       groups: PropertyKey[] = [],
     ) {
-      return yieldedAsyncIterable(
-        false,
-        groupByAsync(current, keySelector, groups),
-      );
+      // TODO
     },
     lift(middleware) {
       return yieldedAsyncIterable(liftAsync(current, middleware));
@@ -105,19 +89,16 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       return yieldedAsyncIterable(mapAsync(current, mapper));
     },
     maxBy(callback) {
-      return yieldedAsyncIterable(maxByAsync(current, callback));
+      // TODO
     },
     minBy(callback) {
-      return yieldedAsyncIterable(minByAsync(current, callback));
+      // TODO
     },
-    reduce(reducer, initialValue) {
-      return yieldedAsyncIterable(
-        reduceAsync(current, reducer, initialValue),
-        () => initialValue,
-      );
+    reduce(...args: TArgs) {
+      // TODO
     },
-    toArray(...args: TArgs) {
-      return toArrayAsync(returnsResult, current, args);
+    toArray() {
+      return toArrayAsync(returnsResult, current);
     },
     skip(count) {
       return yieldedAsyncIterable(false, skipAsync(current, count));
@@ -129,11 +110,7 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       return yieldedAsyncIterable(false, dropWhileAsync(current, predicate));
     },
     some(predicate) {
-      return yieldedAsyncIterable(
-        false,
-        someAsync(current, predicate),
-        () => false,
-      );
+      // TODO
     },
     take(count) {
       return yieldedAsyncIterable(false, takeAsync(current, count));
@@ -148,14 +125,10 @@ export function yieldedAsyncIterable<TArgs extends any[], TInput, TReturn>(
       return yieldedAsyncIterable(false, tapAsync(current, callback));
     },
     toReverse() {
-      return yieldedAsyncIterable(false, rue, toReverseAsync(current));
+      // TODO
     },
     toSorted(comparator) {
-      return yieldedAsyncIterable(
-        false,
-        rue,
-        toSortedAsync(current, comparator),
-      );
+      // TODO
     },
   };
 }
