@@ -1,23 +1,18 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function filterSync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): YieldedSyncProvider<TOutput>;
+): YieldedSyncMiddleware<TOutput>;
 export function filterSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => any,
-): YieldedSyncProvider<TInput>;
+): YieldedSyncMiddleware<TInput>;
 export function filterSync(
-  provider: YieldedSyncProvider<any, any>,
   predicate: (next: unknown) => unknown,
-): YieldedSyncProvider<any, any> {
-  return function* filterSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): YieldedSyncMiddleware<any, any> {
+  return function* filterSyncResolver(generator) {
     for (const next of generator) {
       if (predicate(next)) yield next;
     }
@@ -25,21 +20,17 @@ export function filterSync(
 }
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
-  provider: YieldedAsyncProvider<TInput>,
   predicate: (next: TInput) => next is TOutput,
-): YieldedAsyncProvider<Awaited<TOutput>>;
+): YieldedAsyncMiddleware<Awaited<TOutput>>;
 export function filterAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
   predicate: (next: TInput) => any,
-): YieldedAsyncProvider<Awaited<TInput>>;
+): YieldedAsyncMiddleware<Awaited<TInput>>;
 export function filterAsync(
-  provider: YieldedAsyncProvider<any, any>,
   predicate: (next: unknown) => any,
-): YieldedAsyncProvider<any, any> {
-  return async function* filterAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+): YieldedAsyncMiddleware<any, any> {
+  return async function* filterAsyncResolver(generator) {
     for await (const next of generator) {
-      if (predicate(next)) yield next;
+      if (await predicate(next)) yield next;
     }
   };
 }

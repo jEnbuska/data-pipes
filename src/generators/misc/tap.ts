@@ -1,15 +1,12 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function tapSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): YieldedSyncProvider<TInput> {
-  return function* tapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): YieldedSyncMiddleware<TInput> {
+  return function* tapSyncResolver(generator) {
     for (const next of generator) {
       consumer(next);
       yield next;
@@ -18,11 +15,9 @@ export function tapSync<TInput>(
 }
 
 export function tapAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
   consumer: (next: TInput) => unknown,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* tapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+): YieldedAsyncMiddleware<TInput> {
+  return async function* tapAsyncResolver(generator) {
     for await (const next of generator) {
       consumer(next);
       yield next;

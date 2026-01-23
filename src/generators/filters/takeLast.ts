@@ -1,15 +1,12 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function takeLastSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
   count: number,
-): YieldedSyncProvider<TInput, TInput[]> {
-  return function* takeLastSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): YieldedSyncMiddleware<TInput, TInput, TInput[]> {
+  return function* takeLastSyncResolver(generator) {
     const array = [...generator];
     const list = array.slice(Math.max(array.length - count, 0));
     yield* list;
@@ -18,12 +15,10 @@ export function takeLastSync<TInput>(
 }
 
 export function takeLastAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
   count: number,
-): YieldedAsyncProvider<Awaited<TInput>, TInput[]> {
-  return async function* takeLastAsyncGenerator(signal) {
+): YieldedAsyncMiddleware<TInput, TInput, TInput[]> {
+  return async function* takeLastAsyncResolver(generator) {
     const acc: TInput[] = [];
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
     for await (const next of generator) {
       acc.push(next);
     }

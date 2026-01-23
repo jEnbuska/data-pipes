@@ -1,15 +1,12 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function takeWhileSync<TInput>(
-  provider: YieldedSyncProvider<TInput>,
   predicate: (next: TInput) => boolean,
-): YieldedSyncProvider<TInput> {
-  return function* takeWhileSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): YieldedSyncMiddleware<TInput> {
+  return function* takeWhileSyncResolver(generator) {
     for (const next of generator) {
       if (!predicate(next)) return;
       yield next;
@@ -18,13 +15,11 @@ export function takeWhileSync<TInput>(
 }
 
 export function takeWhileAsync<TInput>(
-  provider: YieldedAsyncProvider<TInput>,
-  predicate: (next: TInput) => boolean,
-): YieldedAsyncProvider<Awaited<TInput>> {
-  return async function* takeWhileAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+  predicate: (next: TInput) => Promise<boolean> | boolean,
+): YieldedAsyncMiddleware<Awaited<TInput>> {
+  return async function* takeWhileAsyncResolver(generator) {
     for await (const next of generator) {
-      if (!predicate(next)) return;
+      if (!(await predicate(next))) return;
       yield next;
     }
   };

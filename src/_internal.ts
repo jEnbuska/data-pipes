@@ -1,13 +1,5 @@
-import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
-} from "./types.ts";
-
 export const _yielded = {
-  getDisposableAsyncGenerator<TInput>(
-    provider: YieldedAsyncProvider<TInput>,
-    signal: AbortSignal,
-  ) {
+  getDisposableAsyncGenerator<TInput>(signal: AbortSignal) {
     const generator = provider(signal);
     return Object.assign(generator, {
       [Symbol.dispose]() {
@@ -15,10 +7,7 @@ export const _yielded = {
       },
     });
   },
-  getDisposableGenerator<TInput>(
-    provider: YieldedSyncProvider<TInput>,
-    signal: AbortSignal,
-  ) {
+  getDisposableGenerator<TInput>(signal: AbortSignal) {
     const generator = provider(signal);
     return Object.assign(generator, {
       [Symbol.dispose]() {

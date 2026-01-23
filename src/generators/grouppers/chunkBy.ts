@@ -1,37 +1,42 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function chunkBySync<TInput, TIdentifier = any>(
-  provider: YieldedSyncProvider<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): YieldedSyncProvider<TInput[]> {
-  return function* chunkBySyncGenerator(signal) {
-    const map = new Map<any, TInput[]>();
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+): YieldedSyncMiddleware<TInput, TInput[]> {
+  return function* chunkBySyncResolver(generator) {
+    const acc: TInput[][] = [];
+    const indexMap = new Map<TIdentifier, number>();
     for (const next of generator) {
       const key = keySelector(next);
-      if (!map.has(next)) map.set(next, []);
-      map.get(key)!.push(next);
+      if (!indexMap.has(key)) {
+        indexMap.set(key, acc.length);
+        acc.push([]);
+      }
+      const index = indexMap.get(key)!;
+      acc[index].push(next);
     }
-    yield* map.values();
+    yield* acc;
   };
 }
 
 export function chunkByAsync<TInput, TIdentifier = any>(
-  provider: YieldedAsyncProvider<TInput>,
-  keySelector: (next: TInput) => TIdentifier,
-): YieldedAsyncProvider<TInput[]> {
-  return async function* chunkByAsyncGenerator(signal) {
-    const map = new Map<any, TInput[]>();
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+  keySelector: (next: TInput) => Promise<TIdentifier> | TIdentifier,
+): YieldedAsyncMiddleware<TInput, TInput[]> {
+  return async function* chunkByAsyncResolver(generator) {
+    const acc: TInput[][] = [];
+    const indexMap = new Map<TIdentifier, number>();
     for await (const next of generator) {
-      const key = keySelector(next);
-      if (!map.has(next)) map.set(next, []);
-      map.get(key)!.push(next);
+      const key = await keySelector(next);
+      if (!indexMap.has(key)) {
+        indexMap.set(key, acc.length);
+        acc.push([]);
+      }
+      const index = indexMap.get(key)!;
+      acc[index].push(next);
     }
-    yield* map.values();
+    yield* acc;
   };
 }

@@ -1,17 +1,15 @@
-import { _yielded } from "../../_internal.ts";
 import {
-  type YieldedAsyncProvider,
-  type YieldedSyncProvider,
+  type YieldedAsyncMiddleware,
+  type YieldedSyncMiddleware,
 } from "../../types.ts";
 
 export function flatMapSync<TInput, TOutput>(
-  provider: YieldedSyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedSyncProvider<TOutput> {
-  return function* flatMapSyncGenerator(signal) {
-    using generator = _yielded.getDisposableGenerator(provider, signal);
+  flatMapper: (next: TInput, index: number) => TOutput | readonly TOutput[],
+): YieldedSyncMiddleware<TInput, TOutput> {
+  return function* flatMapSyncResolver(generator) {
+    let index = 0;
     for (const next of generator) {
-      const out = flatMapper(next);
+      const out = flatMapper(next, index++);
       if (Array.isArray(out)) {
         yield* out as any;
       } else {
@@ -22,13 +20,15 @@ export function flatMapSync<TInput, TOutput>(
 }
 
 export function flatMapAsync<TInput, TOutput>(
-  provider: YieldedAsyncProvider<TInput>,
-  flatMapper: (next: TInput) => TOutput | readonly TOutput[],
-): YieldedAsyncProvider<Awaited<TOutput>> {
-  return async function* flatMapAsyncGenerator(signal) {
-    using generator = _yielded.getDisposableAsyncGenerator(provider, signal);
+  flatMapper: (
+    next: TInput,
+    index: number,
+  ) => Promise<TOutput | readonly TOutput[]> | TOutput | readonly TOutput[],
+): YieldedAsyncMiddleware<TInput, TOutput> {
+  return async function* flatMapAsyncResolver(generator) {
+    let index = 0;
     for await (const next of generator) {
-      const out = flatMapper(next);
+      const out = await flatMapper(next, index++);
       if (Array.isArray(out)) {
         yield* out as any;
       } else {
