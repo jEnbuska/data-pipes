@@ -21,6 +21,7 @@ export async function countByAsync<T>(
   }
   const pending = new Set<Promise<unknown>>();
   for await (const next of generator) {
+    // If mapper takes some time, but it does not matter at what order the return value gets incremented
     const promise = Promise.resolve(mapper(next)).then(increment);
     pending.add(promise);
     void promise.then(() => pending.delete(promise));

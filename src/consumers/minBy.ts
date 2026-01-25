@@ -32,6 +32,8 @@ export async function minByAsync<T>(
   let min = callback(acc);
   const pending = new Set<Promise<unknown> | unknown>([min]);
   for await (const next of generator) {
+    // If callback might, possibly take some time to be resolved.
+    // We can anyway find the min in any order possible
     const promise = Promise.resolve(callback(next)).then(async (numb) => {
       if (numb < (await min)) {
         acc = next;

@@ -92,9 +92,12 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   }
 
   flatMap<TOut>(
-    callback: (value: T) => TOut | readonly TOut[] | IteratorObject<TOut>,
+    flatMapper: (
+      next: T,
+      index: number,
+    ) => TOut | readonly TOut[] | IteratorObject<TOut>,
   ) {
-    return this.#next(flatMapSync, callback);
+    return this.#next(flatMapSync, flatMapper);
   }
 
   lift<TOut = never>(

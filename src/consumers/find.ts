@@ -14,6 +14,7 @@ export async function findAsync(
 ): Promise<unknown | undefined> {
   const index = 0;
   for await (const next of generator) {
+    // Do not perform predicates, since we might want to stop at any point
     if (await predicate(next, index)) return next;
   }
 }

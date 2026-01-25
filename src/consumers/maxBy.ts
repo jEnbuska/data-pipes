@@ -32,6 +32,8 @@ export async function maxByAsync<T>(
   let max = callback(acc);
   const pending = new Set<Promise<unknown> | unknown>([max]);
   for await (const next of generator) {
+    // If callback might, possibly take some time to be resolved.
+    // We can anyway find the max in any order possible
     const promise = Promise.resolve(callback(next)).then(async (numb) => {
       if (numb > (await max)) {
         acc = next;

@@ -110,9 +110,8 @@ export class AsyncYielded<T>
   flatMap<TOut>(
     callback: (
       value: T,
-    ) => PromiseOrNot<
-      TOut | readonly TOut[] | IteratorObject<TOut> | AsyncIteratorObject<TOut>
-    >,
+      index: number,
+    ) => PromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
   ) {
     return this.#next(flatMapAsync, callback);
   }

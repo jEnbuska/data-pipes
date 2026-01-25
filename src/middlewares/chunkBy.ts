@@ -28,14 +28,23 @@ export async function* chunkByAsync<T, TIdentifier = any>(
 ): YieldedAsyncGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
+
+  const pending = new Set<Promise<unknown> | unknown>([]);
   for await (const next of generator) {
-    const key = await keySelector(next);
-    if (!indexMap.has(key)) {
-      indexMap.set(key, acc.length);
-      acc.push([]);
-    }
-    const index = indexMap.get(key)!;
-    acc[index].push(next);
+    // Start waiting for the next one even though resolving the key might take a while
+    const promise = Promise.resolve(keySelector(next)).then((key) => {
+      if (!indexMap.has(key)) {
+        indexMap.set(key, acc.length);
+        acc.push([]);
+      }
+      const index = indexMap.get(key)!;
+      acc[index].push(next);
+    });
+    pending.add(promise);
+    void promise.then(() => {
+      pending.delete(promise);
+    });
   }
+  await Promise.all(pending.values());
   yield* acc;
 }

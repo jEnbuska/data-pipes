@@ -1,4 +1,8 @@
-import type { CallbackReturn, YieldedGenerator } from "./shared.types.ts";
+import type {
+  CallbackReturn,
+  PromiseOrNot,
+  YieldedGenerator,
+} from "./shared.types.ts";
 
 export interface IAsyncYielded<T> extends IYieldedOperations<T, true> {
   /**
@@ -28,6 +32,19 @@ type NextYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;
 
+type FlatMap<T, TAsync extends boolean> = TAsync extends true
+  ? <TOut>(
+      mapper: (
+        next: T,
+        index: number,
+      ) => PromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
+    ) => IAsyncYielded<TOut>
+  : <TOut>(
+      mapper: (
+        next: T,
+        index: number,
+      ) => TOut | readonly TOut[] | IteratorObject<TOut>,
+    ) => IYielded<TOut>;
 export interface IYieldedOperations<T, TAsync extends boolean> {
   /**
    * @examples
@@ -235,9 +252,6 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
   flat<Depth extends number = 1>(
     depth?: Depth,
   ): NextYielded<FlatArray<T[], Depth>, TAsync>;
-  flatMap<TOut>(
-    callback: (value: T) => CallbackReturn<TOut | TOut[], TAsync>,
-  ): NextYielded<TOut, TAsync>;
   /**
    * Accepts a generator function that accepts the  previous generator
    *
@@ -278,5 +292,12 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
     middleware: (
       generator: YieldedGenerator<T, TAsync>,
     ) => YieldedGenerator<TOut, TAsync>,
+  ): NextYielded<TOut, TAsync>;
+
+  flatMap<TOut>(
+    mapper: (
+      next: T,
+      index: number,
+    ) => CallbackReturn<TOut | readonly TOut[] | IteratorObject<TOut>, TAsync>,
   ): NextYielded<TOut, TAsync>;
 }

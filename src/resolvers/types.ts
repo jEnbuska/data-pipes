@@ -1,5 +1,6 @@
 import type { CallbackReturn } from "../shared.types.ts";
 
+/** If Async then Promise<T> otherwise T */
 type ReturnValue<T, TAsync extends boolean> = TAsync extends true
   ? Promise<T>
   : T;

@@ -27,9 +27,7 @@ export async function* flatMapAsync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => PromiseOrNot<
-    TOut | readonly TOut[] | IteratorObject<TOut> | AsyncIteratorObject<TOut>
-  >,
+  ) => PromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
 ): YieldedAsyncGenerator<TOut> {
   let index = 0;
   for await (const next of generator) {

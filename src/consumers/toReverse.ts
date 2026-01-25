@@ -15,7 +15,6 @@ export async function toReversedAsync<T>(
   generator: YieldedAsyncGenerator<T>,
 ): Promise<T[]> {
   const acc: T[] = [];
-
   for await (const next of generator) {
     acc.unshift(next);
   }
