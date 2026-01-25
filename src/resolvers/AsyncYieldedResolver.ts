@@ -27,12 +27,15 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & YieldedAsyncGenerator<T>;
 
   protected constructor(
-    parent: undefined | YieldedAsyncGenerator | YieldedIterator,
+    parent:
+      | undefined
+      | ((YieldedAsyncGenerator | YieldedIterator) & Disposable),
     generator: YieldedAsyncGenerator<T>,
   ) {
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
-        void parent?.return?.(undefined);
+        void generator.return(undefined);
+        void parent?.[Symbol.dispose]();
       },
     });
   }

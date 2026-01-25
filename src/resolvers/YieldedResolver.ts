@@ -13,12 +13,13 @@ import type { IYieldedResolver } from "./resolver.types.ts";
 export class YieldedResolver<T> implements IYieldedResolver<T> {
   protected readonly generator: Disposable & YieldedIterator<T>;
   protected constructor(
-    parent: undefined | YieldedIterator,
+    parent: undefined | (YieldedIterator & Disposable),
     generator: YieldedIterator<T>,
   ) {
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
-        void parent?.return?.(undefined);
+        void generator.return?.(undefined);
+        void parent?.[Symbol.dispose]();
       },
     });
   }

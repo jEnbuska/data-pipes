@@ -30,7 +30,9 @@ export class AsyncYielded<T>
   implements IAsyncYielded<T>
 {
   public constructor(
-    parent: undefined | YieldedAsyncGenerator | YieldedIterator,
+    parent:
+      | undefined
+      | (Disposable & (YieldedAsyncGenerator | YieldedIterator)),
     generator: YieldedAsyncGenerator<T>,
   ) {
     super(parent, generator);
