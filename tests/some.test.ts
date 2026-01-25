@@ -1,16 +1,16 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 
 describe("some", () => {
   test("has some", () => {
-    expect(yielded([false, true, false]).some(Boolean).toArray()).toBe(true);
+    expect(Yielded.from([false, true, false]).some(Boolean)).toBe(true);
   });
 
   test("has none", () => {
-    expect(yielded([false, false, false]).some(Boolean).toArray()).toBe(false);
+    expect(Yielded.from([false, false, false]).some(Boolean)).toBe(false);
   });
 
   test("has every", () => {
-    expect(yielded([true, true, true]).some(Boolean).toArray()).toBe(true);
+    expect(Yielded.from([true, true, true]).some(Boolean)).toBe(true);
   });
 });

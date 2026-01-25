@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* flatMapSync<TInput, TOutput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   flatMapper: (next: TInput, index: number) => TOutput | readonly TOutput[],
-): YieldedSyncGenerator<TOutput> {
+): YieldedIterator<TOutput> {
   let index = 0;
   for (const next of generator) {
     const out = flatMapper(next, index++);

@@ -1,15 +1,15 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(yielded([]).distinctUntilChanged().toArray()).toStrictEqual([]);
+    expect(Yielded.from([]).distinctUntilChanged().toArray()).toStrictEqual([]);
   });
 
   test("all unique", () => {
     expect(
-      yielded([1, 2, 3])
+      Yielded.from([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -17,7 +17,7 @@ describe("distinctUntilChanged", () => {
 
   test("similar consecutive values", () => {
     expect(
-      yielded([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
+      Yielded.from([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
     ).toStrictEqual([1, 2, 3, 4]);
   });
 

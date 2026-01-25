@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("filter", () => {
   test("chainable", () => {
     expect(
-      yielded([1, 2, 3, 4])
+      Yielded.from([1, 2, 3, 4])
         .filter((n) => n % 2)
         .toArray(),
     ).toStrictEqual([1, 3]);

@@ -1,8 +1,8 @@
-import type { YieldedSyncGenerator } from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export async function* awaited<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
-): AsyncGenerator<TInput, void, undefined & void> {
+  generator: YieldedIterator<TInput>,
+): YieldedAsyncGenerator<Awaited<TInput>> {
   for (const next of generator) {
     yield next;
   }

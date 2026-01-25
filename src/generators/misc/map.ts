@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* mapSync<TInput, TOutput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   mapper: (next: TInput) => TOutput,
-): YieldedSyncGenerator<TOutput> {
+): YieldedIterator<TOutput> {
   yield* generator.map(mapper);
 }
 

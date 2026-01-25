@@ -1,7 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
 export function maxBySync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   callback: (next: TInput) => number,
 ): TInput | undefined {
   const next = generator.next();

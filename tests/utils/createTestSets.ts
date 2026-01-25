@@ -1,24 +1,24 @@
-import yielded from "../../src/index.ts";
+import { AsyncYielded, Yielded } from "../../src/index.ts";
 
 export function createTestSets<T>(array: T[]) {
   return {
-    fromEmpty: yielded<T>([]),
-    fromEmptyAsync: yielded(async function* () {
+    fromEmpty: Yielded.from<T>([]),
+    fromEmptyAsync: AsyncYielded.from<T>(async function* () {
       yield* array.slice(0, 0);
     }),
-    fromAsyncGenerator: yielded(async function* () {
+    fromAsyncGenerator: AsyncYielded.from<T>(async function* () {
       for await (const value of array) {
         yield value;
       }
     }),
-    fromGenerator: yielded(function* () {
+    fromGenerator: Yielded.from<T>(function* () {
       yield* array;
     }),
-    fromArray: yielded(array),
-    fromSingle: yielded(array[0]),
-    fromSingleAsync: yielded(array[0]).awaited(),
-    fromPromises: yielded(array).map((next) => Promise.resolve(next)),
-    fromResolvedPromises: yielded(array)
+    fromArray: Yielded.from<T>(array),
+    fromSingle: Yielded.from<T>(array[0]),
+    fromSingleAsync: Yielded.from<T>(array[0]).awaited(),
+    fromPromises: Yielded.from<T>(array).map((next) => Promise.resolve(next)),
+    fromResolvedPromises: Yielded.from<T>(array)
       .map((next) => Promise.resolve(next))
       .awaited()
       .map((next) => Promise.resolve(next)),

@@ -24,7 +24,7 @@ describe("maxBy", () => {
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4)).toEqual(numbers[0]);
+    expect(fromSingle.map(modulo4).first()).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {

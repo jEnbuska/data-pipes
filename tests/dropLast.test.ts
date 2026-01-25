@@ -1,28 +1,28 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 
-describe("skipLast", () => {
-  test("skip last when array is empty", () => {
-    expect(yielded([]).skipLast(3).toArray()).toStrictEqual([]);
+describe("dropLast", () => {
+  test("drop last when array is empty", () => {
+    expect(Yielded.from([]).dropLast(3).toArray()).toStrictEqual([]);
   });
 
   test("when count is more than number of inputs", () => {
-    expect(yielded([1, 2]).skipLast(3).toArray()).toStrictEqual([]);
+    expect(Yielded.from([1, 2]).dropLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is same as than number of inputs", () => {
-    expect(yielded([1, 2, 3]).skipLast(3).toArray()).toStrictEqual([]);
+    expect(Yielded.from([1, 2, 3]).dropLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is 1 less than as than number of inputs", () => {
-    expect(yielded([1, 2, 3]).skipLast(2).toArray()).toStrictEqual([1]);
+    expect(Yielded.from([1, 2, 3]).dropLast(2).toArray()).toStrictEqual([1]);
   });
   test("when count less than as than number of inputs", () => {
     let lastEmitted: number | undefined;
     const emittedBySkipLast: Array<{ after?: number; value: number }> = [];
-    yielded([1, 2, 3, 4, 5])
+    Yielded.from([1, 2, 3, 4, 5])
       .tap((n) => {
         lastEmitted = n;
       })
-      .skipLast(2)
+      .dropLast(2)
       .tap((n) => {
         emittedBySkipLast.push({ after: lastEmitted, value: n });
       })

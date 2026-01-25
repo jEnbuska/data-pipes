@@ -1,5 +1,5 @@
-import { expect, test, describe } from "vitest";
-import yielded from "../src/index.ts";
+import { describe, expect, test } from "vitest";
+import { Yielded } from "../src/index.ts";
 
 describe("providers", () => {
   const numbers = [1, 2, 3];
@@ -7,23 +7,23 @@ describe("providers", () => {
     yield* numbers;
   }
   test("single", () => {
-    const first = yielded(numbers[0]).resolve();
+    const first = Yielded.from(numbers[0]).first();
     expect(first).toStrictEqual(numbers[0]);
   });
 
   test("array", () => {
-    expect(yielded(numbers).resolve()).toStrictEqual([1, 2, 3]);
+    expect(Yielded.from(numbers).toArray()).toStrictEqual([1, 2, 3]);
   });
 
   test("generator function", () => {
     expect(
-      yielded(generatorFunction).resolve() satisfies number[],
+      Yielded.from(generatorFunction).toArray() satisfies number[],
     ).toStrictEqual(numbers);
   });
 
   test("generator", () => {
     expect(
-      yielded(generatorFunction()).resolve() satisfies number[],
+      Yielded.from(generatorFunction()).toArray() satisfies number[],
     ).toStrictEqual(numbers);
   });
 });

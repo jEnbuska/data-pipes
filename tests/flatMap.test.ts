@@ -1,11 +1,11 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("flatMap", () => {
   test("flatten non array", () => {
     expect(
-      yielded([1, 2, 3])
+      Yielded.from([1, 2, 3])
         .flatMap((it) => it)
         .toArray() satisfies number[],
     ).toStrictEqual([1, 2, 3]);

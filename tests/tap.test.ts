@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 import { simpleMock } from "./utils/simpleMock.ts";
 
@@ -10,7 +10,7 @@ describe("tap", () => {
       called++;
       expect(n).toBe(1);
     };
-    yielded(1).tap(callback).consume();
+    Yielded.from(1).tap(callback).consume();
     expect(called).toBe(1);
   });
 
@@ -19,7 +19,7 @@ describe("tap", () => {
     let called = 0;
     const callback = () => called++;
 
-    yielded(args).tap(callback).consume();
+    Yielded.from(args).tap(callback).consume();
     expect(called).toBe(2);
   });
 

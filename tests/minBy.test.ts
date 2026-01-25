@@ -24,7 +24,7 @@ describe("minBy", () => {
   });
 
   test("from single", () => {
-    expect(fromSingle satisfies number | undefined).toEqual(numbers[0]);
+    expect(fromSingle.first() satisfies number | undefined).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {

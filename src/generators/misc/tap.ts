@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* tapSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   consumer: (next: TInput) => unknown,
-): YieldedSyncGenerator<TInput> {
+): YieldedIterator<TInput> {
   for (const next of generator) {
     consumer(next);
     yield next;

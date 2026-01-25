@@ -1,7 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
 export function countBySync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   mapper: (next: TInput) => number,
 ): number {
   return generator.reduce((acc, next) => mapper(next) + acc, 0);

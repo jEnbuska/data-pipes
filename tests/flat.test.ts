@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 /* Verify typing after flatmap is expected */
@@ -11,7 +11,7 @@ describe("flat", () => {
     const numbers = [1, 2, 3];
     function flatten<T, const D extends number>(input: T[], depth: D) {
       return (
-        yielded(input)
+        Yielded.from(input)
           .tap(verify<FlatArray<T[], 0>>())
           .flat(depth)
           // Verify typing works correctly

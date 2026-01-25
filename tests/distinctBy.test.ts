@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctBy", () => {
   const module2Predicate = (it: number) => it % 2;
   test("empty", () => {
     expect(
-      yielded([])
+      Yielded.from([])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([]);
@@ -14,7 +14,7 @@ describe("distinctBy", () => {
 
   test("all unique", () => {
     expect(
-      yielded([1, 2, 3])
+      Yielded.from([1, 2, 3])
         .distinctBy((it) => it)
         .toArray(),
     ).toStrictEqual([1, 2, 3]);
@@ -22,7 +22,7 @@ describe("distinctBy", () => {
 
   test("by module 2", () => {
     expect(
-      yielded([1, 2, 3, 4])
+      Yielded.from([1, 2, 3, 4])
         .distinctBy((it) => it % 2)
         .toArray(),
     ).toStrictEqual([1, 2]);

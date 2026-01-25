@@ -1,14 +1,10 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* reversedSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
-): YieldedSyncGenerator<TInput> {
+  generator: YieldedIterator<TInput>,
+): YieldedIterator<TInput> {
   const acc: TInput[] = [];
   for (const next of generator) {
-    yield next;
     acc.unshift(next);
   }
   yield* acc;

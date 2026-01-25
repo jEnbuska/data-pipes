@@ -1,24 +1,4 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
-
-export function filterSync<TInput, TOutput extends TInput = TInput>(
-  generator: YieldedSyncGenerator<TInput>,
-  predicate: (next: TInput) => next is TOutput,
-): YieldedSyncGenerator<TOutput>;
-export function filterSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
-  predicate: (next: TInput) => unknown,
-): YieldedSyncGenerator<TInput>;
-export function* filterSync(
-  generator: YieldedSyncGenerator,
-  predicate: (next: unknown) => unknown,
-): YieldedSyncGenerator {
-  for (const next of generator) {
-    if (predicate(next)) yield next;
-  }
-}
+import type { YieldedAsyncGenerator } from "../../types.ts";
 
 export function filterAsync<TInput, TOutput extends TInput = TInput>(
   generator: YieldedAsyncGenerator<TInput>,

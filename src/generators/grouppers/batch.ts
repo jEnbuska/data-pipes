@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* batchSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   predicate: (acc: TInput[]) => boolean,
-): YieldedSyncGenerator<TInput[]> {
+): YieldedIterator<TInput[]> {
   let acc: TInput[] = [];
   for (const next of generator) {
     acc.push(next);

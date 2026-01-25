@@ -1,11 +1,11 @@
-import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
 export function createInitialGroups(groups: undefined | PropertyKey[] = []) {
   return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }
 
 export function groupBySync<TInput, TKey extends PropertyKey>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   keySelector: (next: TInput) => TKey,
   groups?: undefined,
 ): Partial<Record<TKey, TInput[]>>;
@@ -14,13 +14,13 @@ export function groupBySync<
   TKey extends PropertyKey,
   TGroups extends PropertyKey,
 >(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   keySelector: (next: TInput) => TKey,
   groups: TGroups[],
 ): Record<TGroups, TInput[]> &
   Partial<Record<Exclude<TKey, TGroups>, TInput[]>>;
 export function groupBySync(
-  generator: YieldedSyncGenerator,
+  generator: YieldedIterator,
   keySelector: (next: unknown) => PropertyKey,
   groups: undefined | PropertyKey[],
 ): Partial<Record<PropertyKey, unknown[]>> {

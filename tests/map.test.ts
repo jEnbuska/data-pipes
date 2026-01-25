@@ -23,7 +23,7 @@ describe("map", () => {
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4).toArray() satisfies number | void).toEqual(
+    expect(fromSingle.map(modulo4).first() satisfies number | void).toEqual(
       expected[0],
     );
   });

@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* takeSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   count: number,
-): YieldedSyncGenerator<TInput> {
+): YieldedIterator<TInput> {
   if (count <= 0) return;
   for (const next of generator) {
     yield next;

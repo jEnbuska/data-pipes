@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* distinctBySync<TInput, TSelect>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   selector: (next: TInput) => TSelect,
-): YieldedSyncGenerator<TInput> {
+): YieldedIterator<TInput> {
   const set = new Set<TSelect>();
   for (const next of generator) {
     const key = selector(next);

@@ -1,14 +1,10 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
-    expect(
-      yielded<number>([])
-        .countBy((next) => next)
-        .toArray(),
-    ).toBe(0);
+    expect(Yielded.from<number>([]).countBy((next) => next)).toBe(0);
   });
 
   const objects = [{ value: 1 }, { value: 2 }, { value: 3 }];
@@ -24,73 +20,43 @@ describe("countBy", () => {
 
   test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises
-        .countBy((next) => next.value)
-        .toArray() satisfies Promise<number>),
+      await (fromResolvedPromises.countBy(
+        (next) => next.value,
+      ) satisfies Promise<number>),
     ).toBe(6);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator
-        .countBy((next) => next.value)
-        .toArray() satisfies Promise<number>),
+      await (fromAsyncGenerator.countBy(
+        (next) => next.value,
+      ) satisfies Promise<number>),
     ).toBe(6);
   });
 
   test("from promises", async () => {
-    expect(
-      await fromPromises
-        .awaited()
-        .countBy((next) => next.value)
-        .toArray(),
-    ).toBe(6);
+    expect(await fromPromises.awaited().countBy((next) => next.value)).toBe(6);
   });
 
   test("from generator", async () => {
-    expect(
-      fromGenerator.countBy((next) => next.value).toArray() satisfies number,
-    ).toBe(6);
+    expect(fromGenerator.countBy((next) => next.value) satisfies number).toBe(
+      6,
+    );
   });
 
   test("from array", () => {
-    expect(
-      fromArray.countBy((next) => next.value).toArray() satisfies number,
-    ).toBe(6);
+    expect(fromArray.countBy((next) => next.value) satisfies number).toBe(6);
   });
 
   test("from empty", () => {
-    expect(
-      fromEmpty.countBy((next) => next.value).toArray() satisfies number,
-    ).toBe(0);
+    expect(fromEmpty.countBy((next) => next.value) satisfies number).toBe(0);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync
-        .countBy((next) => next.value)
-        .toArray() satisfies Promise<number>),
-    ).toBe(0);
-  });
-
-  test("from aborted", () => {
-    const controller = new AbortController();
-    controller.abort();
-    expect(
-      yielded([1, 2, 3])
-        .countBy((next) => next)
-        .resolve(controller.signal) satisfies number,
-    ).toBe(0);
-  });
-
-  test("from aborted async", async () => {
-    const controller = new AbortController();
-    controller.abort();
-    expect(
-      (await yielded([1, 2, 3])
-        .awaited()
-        .countBy((next) => next)
-        .resolve(controller.signal)) satisfies number,
+      await (fromEmptyAsync.countBy(
+        (next) => next.value,
+      ) satisfies Promise<number>),
     ).toBe(0);
   });
 });

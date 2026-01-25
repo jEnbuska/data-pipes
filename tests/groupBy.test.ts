@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("groupBy", () => {
@@ -11,7 +11,7 @@ describe("groupBy", () => {
     };
 
     test("chainable", () => {
-      const groups = yielded([1, 2, 3]).groupBy((x) => x);
+      const groups = Yielded.from([1, 2, 3]).groupBy((x) => x);
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -24,7 +24,7 @@ describe("groupBy", () => {
       4: [],
     };
     test("chainable", () => {
-      const groups = yielded([1, 2, 3]).groupBy((x) => x, [1, 2, 4]);
+      const groups = Yielded.from([1, 2, 3]).groupBy((x) => x, [1, 2, 4]);
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -35,7 +35,7 @@ describe("groupBy", () => {
       0: [2, 4],
     };
     test("chainable", () => {
-      const groups = yielded([1, 2, 3, 4]).groupBy((x) => x % 2);
+      const groups = Yielded.from([1, 2, 3, 4]).groupBy((x) => x % 2);
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -47,7 +47,7 @@ describe("groupBy", () => {
       other: [],
     };
     test("chainable", () => {
-      const groups = yielded([1, 2, 3, 4]).groupBy(
+      const groups = Yielded.from([1, 2, 3, 4]).groupBy(
         (x) => (x % 2 ? "odd" : "even"),
         ["even", "other"],
       ) satisfies Record<"even" | "other", number[]> &
@@ -62,7 +62,7 @@ describe("groupBy", () => {
       even: [2, 4],
     };
     test("chainable", () => {
-      const groups = yielded([1, 2, 3, 4]).groupBy((x) =>
+      const groups = Yielded.from([1, 2, 3, 4]).groupBy((x) =>
         x % 2 ? "odd" : "even",
       );
       expect(groups).toStrictEqual(expected);
@@ -123,7 +123,7 @@ describe("groupBy", () => {
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
-  test("from empty", () =>
+  test("from empty", () => {
     expect(
       fromEmpty.groupBy(getKey) satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({});

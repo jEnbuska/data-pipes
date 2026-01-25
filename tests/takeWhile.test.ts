@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { AsyncYielded, Yielded } from "../src/index.ts";
 import { simpleMock } from "./utils/simpleMock.ts";
 
 describe("takeWhile", () => {
   const numbers = [-2, -1, 0, 1, 2];
   test("takeWhile negative", () => {
     const callback = simpleMock(numbers);
-    const result = yielded(numbers)
+    const result = Yielded.from(numbers)
       .tap(callback)
       .takeWhile((n) => n < 0)
       .toArray();
@@ -16,7 +16,7 @@ describe("takeWhile", () => {
 
   test("takeWhile always", () => {
     const callback = simpleMock(numbers);
-    const result = yielded(numbers)
+    const result = Yielded.from(numbers)
       .tap((n: number) => callback(n))
       .takeWhile(() => true)
       .toArray();
@@ -26,7 +26,7 @@ describe("takeWhile", () => {
 
   test("takeWhile never", () => {
     const callback = simpleMock(numbers);
-    const array = yielded(numbers)
+    const array = Yielded.from(numbers)
       .tap(callback)
       .takeWhile(() => false)
       .toArray();

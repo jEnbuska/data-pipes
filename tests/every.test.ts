@@ -1,17 +1,17 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("every", () => {
   test("has every", () => {
-    expect(yielded([true, true, true]).every(Boolean).toArray()).toBe(true);
+    expect(Yielded.from([true, true, true]).every(Boolean)).toBe(true);
   });
   test("has none", () => {
-    expect(yielded([false, false, false]).every(Boolean).toArray()).toBe(false);
+    expect(Yielded.from([false, false, false]).every(Boolean)).toBe(false);
   });
 
   test("has some", () => {
-    expect(yielded([false, false, false]).every(Boolean).toArray()).toBe(false);
+    expect(Yielded.from([false, false, false]).every(Boolean)).toBe(false);
   });
 
   const numbers = [1, 2, 3, 4];
@@ -30,55 +30,50 @@ describe("every", () => {
 
   test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises
-        .every(isGreaterThenZero)
-        .toArray() satisfies Promise<boolean>),
+      await (fromResolvedPromises.every(
+        isGreaterThenZero,
+      ) satisfies Promise<boolean>),
     ).toStrictEqual(true);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator
-        .every(isGreaterThenZero)
-        .toArray() satisfies Promise<boolean>),
+      await (fromAsyncGenerator.every(
+        isGreaterThenZero,
+      ) satisfies Promise<boolean>),
     ).toStrictEqual(true);
   });
 
   test("from promises", async () => {
     expect(
-      (await fromPromises
-        .awaited()
-        .every(isGreaterThenZero)
-        .toArray()) satisfies boolean,
+      (await fromPromises.awaited().every(isGreaterThenZero)) satisfies boolean,
     ).toStrictEqual(true);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.every(isGreaterThenZero).toArray() satisfies boolean,
+      fromGenerator.every(isGreaterThenZero) satisfies boolean,
     ).toStrictEqual(true);
   });
 
   test("from array", () => {
-    expect(
-      fromArray.every(isGreaterThenZero).toArray() satisfies boolean,
-    ).toStrictEqual(true);
+    expect(fromArray.every(isGreaterThenZero) satisfies boolean).toStrictEqual(
+      true,
+    );
   });
 
   function isGreaterThan100(value: number) {
     return value > 100;
   }
   test("from empty", () => {
-    expect(
-      fromEmpty.every(isGreaterThan100).toArray() satisfies boolean | void,
-    ).toStrictEqual(true);
+    expect(fromEmpty.every(isGreaterThan100) satisfies boolean).toStrictEqual(
+      true,
+    );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.every(isGreaterThan100).resolve() satisfies Promise<
-        boolean | void
-      >),
+      await (fromEmptyAsync.every(isGreaterThan100) satisfies Promise<boolean>),
     ).toStrictEqual(true);
   });
 });

@@ -1,14 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* liftSync<TInput, TOutput>(
-  generator: YieldedSyncGenerator<TInput>,
-  middleware: (
-    generator: YieldedSyncGenerator<TInput>,
-  ) => YieldedSyncGenerator<TOutput>,
-): YieldedSyncGenerator<TOutput> {
+  generator: YieldedIterator<TInput>,
+  middleware: (generator: YieldedIterator<TInput>) => YieldedIterator<TOutput>,
+): YieldedIterator<TOutput> {
   yield* middleware(generator);
 }
 

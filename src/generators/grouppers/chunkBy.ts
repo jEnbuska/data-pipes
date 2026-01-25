@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* chunkBySync<TInput, TIdentifier = any>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   keySelector: (next: TInput) => TIdentifier,
-): YieldedSyncGenerator<TInput[]> {
+): YieldedIterator<TInput[]> {
   const acc: TInput[][] = [];
   const indexMap = new Map<TIdentifier, number>();
   for (const next of generator) {

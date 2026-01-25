@@ -1,8 +1,8 @@
 import { _yielded } from "../_internal.ts";
-import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
 export function toSortedSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   compareFn: (a: TInput, b: TInput) => number,
 ): TInput[] {
   const acc: TInput[] = [];

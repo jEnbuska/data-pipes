@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* dropWhileSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   predicate: (next: TInput) => boolean,
-): YieldedSyncGenerator<TInput> {
+): YieldedIterator<TInput> {
   for (const next of generator) {
     if (predicate(next)) continue;
     yield next;

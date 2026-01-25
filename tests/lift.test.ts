@@ -1,9 +1,9 @@
 import { describe, expect, test } from "vitest";
-import yielded from "../src/index.ts";
+import { AsyncYielded, Yielded } from "../src/index.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
-    const array = yielded([1, 2, 3])
+    const array = Yielded.from([1, 2, 3])
       .lift(function* multiplyByTwo(generator) {
         for (const next of generator) {
           yield next * 2;
@@ -14,7 +14,7 @@ describe("lift", () => {
   });
 
   test("lift single", () => {
-    const array = yielded(1)
+    const array = Yielded.from(1)
       .lift(function* multiplyByTwo(generator) {
         for (const next of generator) {
           yield next * 2;
@@ -24,7 +24,7 @@ describe("lift", () => {
     expect(array).toStrictEqual([2]);
   });
   test("lift filter", () => {
-    const array = yielded([-2, 1, 2, -3, 4])
+    const array = Yielded.from([-2, 1, 2, -3, 4])
       .lift(function* filterNegatives(generator) {
         for (const next of generator) {
           if (next < 0) continue;
@@ -36,7 +36,7 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = yielded(function* () {
+    const text = Yielded.from(function* () {
       yield* ["a", "b", "c"];
     })
       .lift(function* joinStrings(generator) {
@@ -46,12 +46,12 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .resolve(new AbortController().signal) satisfies string[];
+      .toArray() satisfies string[];
     expect(text).toStrictEqual(["a.b.c"]);
   });
 
   test("lift async", async () => {
-    const text = (await yielded(async function* () {
+    const text = (await AsyncYielded.from(async function* () {
       yield "a";
       yield "b";
       yield "c";
@@ -63,7 +63,7 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .resolve(new AbortController().signal)) satisfies string[];
+      .toArray()) satisfies string[];
     expect(text).toStrictEqual(["a.b.c"]);
   });
 });

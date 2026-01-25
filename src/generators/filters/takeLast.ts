@@ -1,12 +1,9 @@
-import type {
-  YieldedAsyncGenerator,
-  YieldedSyncGenerator,
-} from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
 
 export function* takeLastSync<TInput>(
-  generator: YieldedSyncGenerator<TInput>,
+  generator: YieldedIterator<TInput>,
   count: number,
-): YieldedSyncGenerator<TInput> {
+): YieldedIterator<TInput> {
   const array = [...generator]; // TODO store only last N ones
   const list = array.slice(Math.max(array.length - count, 0));
   yield* list;
