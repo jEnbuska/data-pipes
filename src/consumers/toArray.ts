@@ -1,9 +1,9 @@
 import type { YieldedAsyncGenerator } from "../types.ts";
 
-export async function toArrayAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-): Promise<TInput[]> {
-  const acc: TInput[] = [];
+export async function toArrayAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+): Promise<T[]> {
+  const acc: T[] = [];
   for await (const next of generator) acc.push(next);
   return acc;
 }

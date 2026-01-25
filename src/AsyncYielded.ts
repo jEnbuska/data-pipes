@@ -1,42 +1,45 @@
-import { distinctByAsync } from "./generators/filters/distinctBy.ts";
-import { distinctUntilChangedAsync } from "./generators/filters/distinctUntilChanged.ts";
-import { dropAsync } from "./generators/filters/drop.ts";
-import { dropLastAsync } from "./generators/filters/dropLast.ts";
-import { dropWhileAsync } from "./generators/filters/dropWhile.ts";
-import { filterAsync } from "./generators/filters/filter.ts";
-import { takeAsync } from "./generators/filters/take.ts";
-import { takeLastAsync } from "./generators/filters/takeLast.ts";
-import { takeWhileAsync } from "./generators/filters/takeWhile.ts";
-import { batchAsync } from "./generators/grouppers/batch.ts";
-import { chunkByAsync } from "./generators/grouppers/chunkBy.ts";
-import { liftAsync } from "./generators/misc/lift.ts";
-import { mapAsync } from "./generators/misc/map.ts";
-import { parallel } from "./generators/misc/parallel.ts";
-import { tapAsync } from "./generators/misc/tap.ts";
-import { reversedAsync } from "./generators/sorters/reversed.ts";
-import { sortedAsync } from "./generators/sorters/sorted.ts";
-import { flatAsync } from "./generators/spreaders/flat.ts";
-import { flatMapAsync } from "./generators/spreaders/flatMap.ts";
+import { batchAsync } from "./middlewares/batch.ts";
+import { chunkByAsync } from "./middlewares/chunkBy.ts";
+import { distinctByAsync } from "./middlewares/distinctBy.ts";
+import { distinctUntilChangedAsync } from "./middlewares/distinctUntilChanged.ts";
+import { dropAsync } from "./middlewares/drop.ts";
+import { dropLastAsync } from "./middlewares/dropLast.ts";
+import { dropWhileAsync } from "./middlewares/dropWhile.ts";
+import { filterAsync } from "./middlewares/filter.ts";
+import { flatAsync } from "./middlewares/flat.ts";
+import { flatMapAsync } from "./middlewares/flatMap.ts";
+import { liftAsync } from "./middlewares/lift.ts";
+import { mapAsync } from "./middlewares/map.ts";
+import { parallel } from "./middlewares/parallel.ts";
+import { reversedAsync } from "./middlewares/reversed.ts";
+import { sortedAsync } from "./middlewares/sorted.ts";
+import { takeAsync } from "./middlewares/take.ts";
+import { takeLastAsync } from "./middlewares/takeLast.ts";
+import { takeWhileAsync } from "./middlewares/takeWhile.ts";
+import { tapAsync } from "./middlewares/tap.ts";
 import { AsyncYieldedResolver } from "./resolvers/AsyncYieldedResolver.ts";
 import type {
   IYielded,
+  PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedMiddlewares,
 } from "./types.ts";
 
-export class AsyncYielded<TInput>
-  extends AsyncYieldedResolver<TInput>
-  implements IYielded<TInput, true>
+export class AsyncYielded<T>
+  extends AsyncYieldedResolver<T>
+  implements IYielded<T, true>
 {
-  static from<TInput>(
-    asyncGeneratorFunction: () => AsyncGenerator<TInput, unknown, unknown>,
-  ): AsyncYielded<TInput>;
-  static from<TInput>(
-    asyncGenerator: AsyncGenerator<TInput, unknown, unknown>,
-  ): AsyncYielded<TInput>;
-  static from<TInput>(
-    promise: Promise<TInput[]> | Promise<TInput>,
-  ): AsyncYielded<TInput>;
+  private constructor(generator: YieldedAsyncGenerator<T>) {
+    super(generator);
+  }
+
+  static from<T>(
+    asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
+  ): AsyncYielded<T>;
+  static from<T>(
+    asyncGenerator: AsyncGenerator<T, unknown, unknown>,
+  ): AsyncYielded<T>;
+  static from<T>(promise: Promise<T[]> | Promise<T>): AsyncYielded<T>;
   static from(source: any) {
     if (typeof source === "function") {
       source = source();
@@ -55,56 +58,52 @@ export class AsyncYielded<TInput>
     return new AsyncYielded<any>(source as YieldedAsyncGenerator<any>);
   }
 
-  batch(...args: Parameters<YieldedMiddlewares<TInput, true>["batch"]>) {
-    return new AsyncYielded<TInput[]>(batchAsync(this.generator, ...args));
+  batch(...args: Parameters<YieldedMiddlewares<T, true>["batch"]>) {
+    return new AsyncYielded<T[]>(batchAsync(this.generator, ...args));
   }
 
-  chunkBy(...args: Parameters<YieldedMiddlewares<TInput, true>["chunkBy"]>) {
+  chunkBy(...args: Parameters<YieldedMiddlewares<T, true>["chunkBy"]>) {
     return new AsyncYielded(chunkByAsync(this.generator, ...args));
   }
 
-  distinctBy(
-    ...args: Parameters<YieldedMiddlewares<TInput, true>["distinctBy"]>
-  ) {
+  distinctBy(...args: Parameters<YieldedMiddlewares<T, true>["distinctBy"]>) {
     return new AsyncYielded(distinctByAsync(this.generator, ...args));
   }
 
   distinctUntilChanged(
-    ...args: Parameters<
-      YieldedMiddlewares<TInput, true>["distinctUntilChanged"]
-    >
+    ...args: Parameters<YieldedMiddlewares<T, true>["distinctUntilChanged"]>
   ) {
     return new AsyncYielded(distinctUntilChangedAsync(this.generator, ...args));
   }
 
-  filter(...args: Parameters<YieldedMiddlewares<TInput, true>["filter"]>) {
+  filter(...args: Parameters<YieldedMiddlewares<T, true>["filter"]>) {
     return new AsyncYielded(filterAsync(this.generator, ...args));
   }
 
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): AsyncYielded<FlatArray<TInput[], Depth>> {
+  ): AsyncYielded<FlatArray<T[], Depth>> {
     return new AsyncYielded(flatAsync(this.generator, depth));
   }
 
-  flatMap<TOutput>(
+  flatMap<TOut>(
     callback: (
-      value: TInput,
-    ) => Promise<TOutput[]> | Promise<TOutput> | TOutput[] | TOutput,
+      value: T,
+    ) => PromiseOrNot<
+      TOut | readonly TOut[] | IteratorObject<TOut> | AsyncIteratorObject<TOut>
+    >,
   ) {
     return new AsyncYielded(flatMapAsync(this.generator, callback));
   }
 
-  lift<TOutput = never>(
-    middleware: (
-      generator: YieldedAsyncGenerator<TInput>,
-    ) => AsyncGenerator<TOutput>,
+  lift<TOut = never>(
+    middleware: (generator: YieldedAsyncGenerator<T>) => AsyncGenerator<TOut>,
   ) {
-    return new AsyncYielded<TOutput>(liftAsync(this.generator, middleware));
+    return new AsyncYielded<TOut>(liftAsync(this.generator, middleware));
   }
 
-  map<TOutput>(mapper: (next: TInput) => Promise<TOutput> | TOutput) {
-    return new AsyncYielded<TOutput>(mapAsync(this.generator, mapper));
+  map<TOut>(mapper: (next: T) => PromiseOrNot<TOut>) {
+    return new AsyncYielded<TOut>(mapAsync(this.generator, mapper));
   }
 
   drop(count: number) {
@@ -114,31 +113,27 @@ export class AsyncYielded<TInput>
     return new AsyncYielded(dropAsync(this.generator, count));
   }
 
-  dropLast(...args: Parameters<YieldedMiddlewares<TInput, true>["dropLast"]>) {
+  dropLast(...args: Parameters<YieldedMiddlewares<T, true>["dropLast"]>) {
     return new AsyncYielded(dropLastAsync(this.generator, ...args));
   }
 
-  dropWhile(
-    ...args: Parameters<YieldedMiddlewares<TInput, true>["dropWhile"]>
-  ) {
+  dropWhile(...args: Parameters<YieldedMiddlewares<T, true>["dropWhile"]>) {
     return new AsyncYielded(dropWhileAsync(this.generator, ...args));
   }
 
-  take(...args: Parameters<YieldedMiddlewares<TInput, true>["take"]>) {
+  take(...args: Parameters<YieldedMiddlewares<T, true>["take"]>) {
     return new AsyncYielded(takeAsync(this.generator, ...args));
   }
 
-  takeLast(...args: Parameters<YieldedMiddlewares<TInput, true>["takeLast"]>) {
+  takeLast(...args: Parameters<YieldedMiddlewares<T, true>["takeLast"]>) {
     return new AsyncYielded(takeLastAsync(this.generator, ...args));
   }
 
-  takeWhile(
-    ...args: Parameters<YieldedMiddlewares<TInput, true>["takeWhile"]>
-  ) {
+  takeWhile(...args: Parameters<YieldedMiddlewares<T, true>["takeWhile"]>) {
     return new AsyncYielded(takeWhileAsync(this.generator, ...args));
   }
 
-  tap(...args: Parameters<YieldedMiddlewares<TInput, true>["tap"]>) {
+  tap(...args: Parameters<YieldedMiddlewares<T, true>["tap"]>) {
     return new AsyncYielded(tapAsync(this.generator, ...args));
   }
 
@@ -146,11 +141,11 @@ export class AsyncYielded<TInput>
     return new AsyncYielded(reversedAsync(this.generator));
   }
 
-  sorted(...args: Parameters<YieldedMiddlewares<TInput, true>["sorted"]>) {
+  sorted(...args: Parameters<YieldedMiddlewares<T, true>["sorted"]>) {
     return new AsyncYielded(sortedAsync(this.generator, ...args));
   }
 
-  parallel(...args: Parameters<IYielded<TInput, true>["parallel"]>) {
+  parallel(...args: Parameters<IYielded<T, true>["parallel"]>) {
     return new AsyncYielded(parallel(this.generator, ...args));
   }
 }

@@ -1,9 +1,9 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
-export function* flatSync<TInput, const Depth extends number = 1>(
-  generator: YieldedIterator<TInput>,
+export function* flatSync<T, const Depth extends number = 1>(
+  generator: YieldedIterator<T>,
   depth?: Depth,
-): YieldedIterator<FlatArray<TInput[], Depth>> {
+): YieldedIterator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
   for (const next of generator) {
     if (!Array.isArray(next) || depth <= 0) {
@@ -14,10 +14,10 @@ export function* flatSync<TInput, const Depth extends number = 1>(
   }
 }
 
-export async function* flatAsync<TInput, const Depth extends number = 1>(
-  generator: YieldedAsyncGenerator<TInput>,
+export async function* flatAsync<T, const Depth extends number = 1>(
+  generator: YieldedAsyncGenerator<T>,
   depth?: Depth,
-): YieldedAsyncGenerator<FlatArray<TInput[], Depth>> {
+): YieldedAsyncGenerator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
   for await (const next of generator) {
     if (!Array.isArray(next) || depth <= 0) {

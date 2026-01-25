@@ -10,7 +10,7 @@ import type { IYieldedResolver, YieldedIterator } from "../types.ts";
 export class YieldedResolver<T> implements IYieldedResolver<T> {
   protected readonly generator: YieldedIterator<T>;
 
-  constructor(generator: YieldedIterator<T>) {
+  protected constructor(generator: YieldedIterator<T>) {
     this.generator = generator;
   }
 
@@ -22,10 +22,10 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
     return this.generator.forEach(...args);
   }
 
-  reduce<TOutput>(
-    reducer: (acc: TOutput, next: T, index: number) => TOutput,
-    initialValue: TOutput,
-  ): TOutput;
+  reduce<TOut>(
+    reducer: (acc: TOut, next: T, index: number) => TOut,
+    initialValue: TOut,
+  ): TOut;
   reduce(reducer: (acc: T, next: T, index: number) => T): T | undefined;
   reduce(...args: Parameters<IYieldedResolver<T>["reduce"]>) {
     return this.generator.reduce(...args);

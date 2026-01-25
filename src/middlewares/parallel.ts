@@ -1,19 +1,19 @@
-import type { YieldedAsyncGenerator } from "../../types.ts";
+import type { YieldedAsyncGenerator } from "../types.ts";
 
-export async function* parallel<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
+export async function* parallel<T>(
+  generator: YieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<TInput> {
+): YieldedAsyncGenerator<T> {
   if (count < 1) {
     throw new Error(`parallel count must be 1 or larger, but got ${count}`);
   }
   const promises = new Map<
     number,
-    Promise<{ key: number } & IteratorResult<TInput>>
+    Promise<{ key: number } & IteratorResult<T>>
   >();
   let nextKey = 0;
   const wasDone = false;
-  function add(next: Promise<IteratorResult<TInput>> | IteratorResult<TInput>) {
+  function add(next: Promise<IteratorResult<T>> | IteratorResult<T>) {
     const key = nextKey++;
     promises.set(
       key,

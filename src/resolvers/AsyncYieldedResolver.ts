@@ -11,12 +11,16 @@ import { minByAsync } from "../consumers/minBy.ts";
 import { reduceAsync } from "../consumers/reduce.ts";
 import { someAsync } from "../consumers/some.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
-import type { IYieldedResolver, YieldedAsyncGenerator } from "../types.ts";
+import type {
+  IYieldedResolver,
+  PromiseOrNot,
+  YieldedAsyncGenerator,
+} from "../types.ts";
 
 export class AsyncYieldedResolver<T> implements IYieldedResolver<T, true> {
   protected readonly generator: YieldedAsyncGenerator<T>;
 
-  constructor(generator: YieldedAsyncGenerator<T>) {
+  protected constructor(generator: YieldedAsyncGenerator<T>) {
     this.generator = generator;
   }
 
@@ -28,14 +32,10 @@ export class AsyncYieldedResolver<T> implements IYieldedResolver<T, true> {
     return forEachAsync(this.generator, ...args);
   }
 
-  reduce<TOutput>(
-    reducer: (
-      acc: TOutput,
-      next: T,
-      index: number,
-    ) => Promise<TOutput> | TOutput,
-    initialValue: Promise<TOutput> | TOutput,
-  ): Promise<TOutput>;
+  reduce<TOut>(
+    reducer: (acc: TOut, next: T, index: number) => PromiseOrNot<TOut>,
+    initialValue: PromiseOrNot<TOut>,
+  ): Promise<TOut>;
   reduce(
     reducer: (acc: T, next: T, index: number) => T,
   ): Promise<T | undefined>;

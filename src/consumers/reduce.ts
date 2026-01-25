@@ -1,22 +1,14 @@
-import type { YieldedAsyncGenerator } from "../types.ts";
+import type { PromiseOrNot, YieldedAsyncGenerator } from "../types.ts";
 
-export async function reduceAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  reducer: (
-    acc: TInput,
-    next: TInput,
-    index: number,
-  ) => Promise<TInput> | TInput,
-): Promise<TInput>;
-export async function reduceAsync<TInput, TOutput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  reducer: (
-    acc: TOutput,
-    next: TInput,
-    index: number,
-  ) => Promise<TOutput> | TOutput,
-  initialValue: TOutput,
-): Promise<TOutput>;
+export async function reduceAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+  reducer: (acc: T, next: T, index: number) => PromiseOrNot<T>,
+): Promise<T>;
+export async function reduceAsync<T, TOut>(
+  generator: YieldedAsyncGenerator<T>,
+  reducer: (acc: TOut, next: T, index: number) => PromiseOrNot<TOut>,
+  initialValue: PromiseOrNot<TOut>,
+): Promise<TOut>;
 export async function reduceAsync(
   generator: YieldedAsyncGenerator,
   reducer: (acc: unknown, next: unknown, index: number) => unknown,

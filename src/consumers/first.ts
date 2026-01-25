@@ -1,12 +1,10 @@
 import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
-export function firstSync<TInput>(generator: YieldedIterator<TInput>) {
+export function firstSync<T>(generator: YieldedIterator<T>) {
   return generator.next().value;
 }
 
-export async function firstAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-) {
+export async function firstAsync<T>(generator: YieldedAsyncGenerator<T>) {
   const next = await generator.next();
   return next.value;
 }

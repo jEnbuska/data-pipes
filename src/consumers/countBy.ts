@@ -1,15 +1,19 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  PromiseOrNot,
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../types.ts";
 
-export function countBySync<TInput>(
-  generator: YieldedIterator<TInput>,
-  mapper: (next: TInput) => number,
+export function countBySync<T>(
+  generator: YieldedIterator<T>,
+  mapper: (next: T) => number,
 ): number {
   return generator.reduce((acc, next) => mapper(next) + acc, 0);
 }
 
-export async function countByAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  mapper: (next: TInput) => Promise<number> | number,
+export async function countByAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+  mapper: (next: T) => PromiseOrNot<number>,
 ): Promise<number> {
   let acc = 0;
   function increment(value: number) {

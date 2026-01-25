@@ -1,5 +1,7 @@
+import type { PromiseOrNot } from "./types.ts";
+
 export const _yielded = {
-  getDisposableAsyncGenerator<TInput>(signal: AbortSignal) {
+  getDisposableAsyncGenerator<T>(signal: AbortSignal) {
     const generator = provider(signal);
     return Object.assign(generator, {
       [Symbol.dispose]() {
@@ -7,7 +9,7 @@ export const _yielded = {
       },
     });
   },
-  getDisposableGenerator<TInput>(signal: AbortSignal) {
+  getDisposableGenerator<T>(signal: AbortSignal) {
     const generator = provider(signal);
     return Object.assign(generator, {
       [Symbol.dispose]() {
@@ -29,11 +31,8 @@ export const _yielded = {
       return result.value;
     };
   },
-  createIndexFinder<TInput>(
-    arr: TInput[],
-    comparator: (a: TInput, b: TInput) => number,
-  ) {
-    return function findIndex(next: TInput, low = 0, high = arr.length - 1) {
+  createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
+    return function findIndex(next: T, low = 0, high = arr.length - 1) {
       if (low > high) {
         return low;
       }
@@ -45,12 +44,12 @@ export const _yielded = {
       return findIndex(next, mid + 1, high);
     };
   },
-  createIndexFinderAsync<TInput>(
-    arr: TInput[],
-    comparator: (a: TInput, b: TInput) => Promise<number> | number,
+  createIndexFinderAsync<T>(
+    arr: T[],
+    comparator: (a: T, b: T) => PromiseOrNot<number>,
   ) {
     return async function findIndexAsync(
-      next: TInput,
+      next: T,
       low = 0,
       high = arr.length - 1,
     ) {

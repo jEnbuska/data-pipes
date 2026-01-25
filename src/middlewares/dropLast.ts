@@ -1,10 +1,10 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
+import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
-export function* dropLastSync<TInput>(
-  generator: YieldedIterator<TInput>,
+export function* dropLastSync<T>(
+  generator: YieldedIterator<T>,
   count: number,
-): YieldedIterator<TInput> {
-  const buffer: TInput[] = [];
+): YieldedIterator<T> {
+  const buffer: T[] = [];
   let skipped = 0;
   for (const next of generator) {
     buffer.push(next);
@@ -16,11 +16,11 @@ export function* dropLastSync<TInput>(
   }
 }
 
-export async function* dropLastAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
+export async function* dropLastAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<TInput> {
-  const buffer: TInput[] = [];
+): YieldedAsyncGenerator<T> {
+  const buffer: T[] = [];
   let skipped = 0;
   for await (const next of generator) {
     buffer.push(next);

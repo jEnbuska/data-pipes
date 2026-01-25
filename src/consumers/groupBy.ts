@@ -1,24 +1,27 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  PromiseOrNot,
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../types.ts";
 
 export function createInitialGroups(groups: undefined | PropertyKey[] = []) {
   return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }
 
-export function groupBySync<TInput, TKey extends PropertyKey>(
-  generator: YieldedIterator<TInput>,
-  keySelector: (next: TInput) => TKey,
+export function groupBySync<T, TKey extends PropertyKey>(
+  generator: YieldedIterator<T>,
+  keySelector: (next: T) => TKey,
   groups?: undefined,
-): Partial<Record<TKey, TInput[]>>;
+): Partial<Record<TKey, T[]>>;
 export function groupBySync<
-  TInput,
+  T,
   TKey extends PropertyKey,
   TGroups extends PropertyKey,
 >(
-  generator: YieldedIterator<TInput>,
-  keySelector: (next: TInput) => TKey,
+  generator: YieldedIterator<T>,
+  keySelector: (next: T) => TKey,
   groups: TGroups[],
-): Record<TGroups, TInput[]> &
-  Partial<Record<Exclude<TKey, TGroups>, TInput[]>>;
+): Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>;
 export function groupBySync(
   generator: YieldedIterator,
   keySelector: (next: unknown) => PropertyKey,
@@ -38,7 +41,7 @@ export function groupBySync(
 
 export async function groupByAsync(
   generator: YieldedAsyncGenerator,
-  keySelector: (next: unknown) => Promise<PropertyKey> | PropertyKey,
+  keySelector: (next: unknown) => PromiseOrNot<PropertyKey>,
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);

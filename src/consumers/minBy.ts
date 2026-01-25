@@ -1,9 +1,13 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  PromiseOrNot,
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../types.ts";
 
-export function minBySync<TInput>(
-  generator: YieldedIterator<TInput>,
-  callback: (next: TInput) => number,
-): TInput | undefined {
+export function minBySync<T>(
+  generator: YieldedIterator<T>,
+  callback: (next: T) => number,
+): T | undefined {
   const next = generator.next();
   if (next.done) return;
   let current = next.value;
@@ -18,10 +22,10 @@ export function minBySync<TInput>(
   return current;
 }
 
-export async function minByAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  callback: (next: TInput) => Promise<number> | number,
-): Promise<TInput | undefined> {
+export async function minByAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+  callback: (next: T) => PromiseOrNot<number>,
+): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;
   let acc = next.value;

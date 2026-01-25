@@ -1,10 +1,14 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../../types.ts";
+import type {
+  PromiseOrNot,
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../types.ts";
 
-export function* chunkBySync<TInput, TIdentifier = any>(
-  generator: YieldedIterator<TInput>,
-  keySelector: (next: TInput) => TIdentifier,
-): YieldedIterator<TInput[]> {
-  const acc: TInput[][] = [];
+export function* chunkBySync<T, TIdentifier = any>(
+  generator: YieldedIterator<T>,
+  keySelector: (next: T) => TIdentifier,
+): YieldedIterator<T[]> {
+  const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
   for (const next of generator) {
     const key = keySelector(next);
@@ -18,11 +22,11 @@ export function* chunkBySync<TInput, TIdentifier = any>(
   yield* acc;
 }
 
-export async function* chunkByAsync<TInput, TIdentifier = any>(
-  generator: YieldedAsyncGenerator<TInput>,
-  keySelector: (next: TInput) => Promise<TIdentifier> | TIdentifier,
-): YieldedAsyncGenerator<TInput[]> {
-  const acc: TInput[][] = [];
+export async function* chunkByAsync<T, TIdentifier = any>(
+  generator: YieldedAsyncGenerator<T>,
+  keySelector: (next: T) => PromiseOrNot<TIdentifier>,
+): YieldedAsyncGenerator<T[]> {
+  const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
   for await (const next of generator) {
     const key = await keySelector(next);

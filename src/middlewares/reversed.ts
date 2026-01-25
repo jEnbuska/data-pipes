@@ -1,20 +1,21 @@
 import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
 
-export function toReversedSync<T>(generator: YieldedIterator<T>): T[] {
+export function* reversedSync<T>(
+  generator: YieldedIterator<T>,
+): YieldedIterator<T> {
   const acc: T[] = [];
   for (const next of generator) {
     acc.unshift(next);
   }
-  return acc;
+  yield* acc;
 }
 
-export async function toReversedAsync<T>(
+export async function* reversedAsync<T>(
   generator: YieldedAsyncGenerator<T>,
-): Promise<T[]> {
+): YieldedAsyncGenerator<T> {
   const acc: T[] = [];
-
   for await (const next of generator) {
     acc.unshift(next);
   }
-  return acc;
+  yield* acc;
 }

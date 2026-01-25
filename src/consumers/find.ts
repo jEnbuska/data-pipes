@@ -1,13 +1,13 @@
 import type { YieldedAsyncGenerator } from "../types.ts";
 
-export function findAsync<TInput, TOutput extends TInput = TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  predicate: (value: TInput, index: number) => value is TOutput,
-): Promise<TOutput | undefined>;
-export function findAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  predicate: (value: TInput, index: number) => unknown,
-): Promise<TInput | undefined>;
+export function findAsync<T, TOut extends T = T>(
+  generator: YieldedAsyncGenerator<T>,
+  predicate: (value: T, index: number) => value is TOut,
+): Promise<TOut | undefined>;
+export function findAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+  predicate: (value: T, index: number) => unknown,
+): Promise<T | undefined>;
 export async function findAsync(
   generator: YieldedAsyncGenerator,
   predicate: (value: unknown, index: number) => unknown,

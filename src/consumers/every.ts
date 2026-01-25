@@ -1,8 +1,8 @@
 import type { YieldedAsyncGenerator } from "../types.ts";
 
-export async function everyAsync<TInput>(
-  generator: YieldedAsyncGenerator<TInput>,
-  predicate: (value: TInput, index: number) => unknown,
+export async function everyAsync<T>(
+  generator: YieldedAsyncGenerator<T>,
+  predicate: (value: T, index: number) => unknown,
 ): Promise<boolean> {
   let index = 0;
   for await (const next of generator) {
