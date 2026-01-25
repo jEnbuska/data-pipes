@@ -19,11 +19,11 @@ import { takeWhileAsync } from "./middlewares/takeWhile.ts";
 import { tapAsync } from "./middlewares/tap.ts";
 import { AsyncYieldedResolver } from "./resolvers/AsyncYieldedResolver.ts";
 import type {
-  IAsyncYielded,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "./types.ts";
+} from "./shared.types.ts";
+import type { IAsyncYielded } from "./types.ts";
 
 export class AsyncYielded<T>
   extends AsyncYieldedResolver<T>

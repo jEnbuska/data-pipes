@@ -1,4 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../shared.types.ts";
 
 export function* flatSync<T, const Depth extends number = 1>(
   generator: YieldedIterator<T>,

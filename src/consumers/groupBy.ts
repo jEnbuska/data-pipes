@@ -2,7 +2,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 
 export function createInitialGroups(groups: undefined | PropertyKey[] = []) {
   return Object.fromEntries(groups.map((key) => [key, [] as any[]]));

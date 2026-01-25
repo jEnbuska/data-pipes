@@ -1,4 +1,4 @@
-import type { PromiseOrNot, YieldedAsyncGenerator } from "../types.ts";
+import type { PromiseOrNot, YieldedAsyncGenerator } from "../shared.types.ts";
 
 export async function* mapAsync<T, TOut>(
   generator: YieldedAsyncGenerator<T>,

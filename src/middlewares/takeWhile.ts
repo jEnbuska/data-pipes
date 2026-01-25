@@ -2,7 +2,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 
 export function* takeWhileSync<T>(
   generator: YieldedIterator<T>,

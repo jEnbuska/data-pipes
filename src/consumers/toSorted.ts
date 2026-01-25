@@ -2,7 +2,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 
 function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
   return function findIndex(next: T, low = 0, high = arr.length - 1) {

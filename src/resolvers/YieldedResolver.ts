@@ -5,7 +5,7 @@ import { firstSync } from "../consumers/first.ts";
 import { groupBySync } from "../consumers/groupBy.ts";
 import { maxBySync } from "../consumers/maxBy.ts";
 import { minBySync } from "../consumers/minBy.ts";
-import type { YieldedIterator } from "../types.ts";
+import type { YieldedIterator } from "../shared.types.ts";
 import type { IYieldedResolver } from "./types.ts";
 
 export class YieldedResolver<T> implements IYieldedResolver<T> {

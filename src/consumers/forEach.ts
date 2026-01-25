@@ -1,4 +1,4 @@
-import type { YieldedAsyncGenerator } from "../types.ts";
+import type { YieldedAsyncGenerator } from "../shared.types.ts";
 
 export async function forEachAsync<T>(
   generator: YieldedAsyncGenerator<T>,

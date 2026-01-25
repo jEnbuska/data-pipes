@@ -1,4 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../shared.types.ts";
 
 export function firstSync<T>(generator: YieldedIterator<T>) {
   return generator.next().value;

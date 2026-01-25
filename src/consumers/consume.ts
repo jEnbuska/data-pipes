@@ -1,4 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../shared.types.ts";
 
 export function consumeSync(generator: YieldedIterator) {
   for (const _ of generator) {

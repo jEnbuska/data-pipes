@@ -1,21 +1,6 @@
-export type YieldedIterator<TOut = unknown> = IteratorObject<
-  TOut,
-  undefined,
-  unknown
->;
+import type { YieldedGenerator } from "./shared.types.ts";
 
-export type YieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
-  TOut,
-  undefined,
-  unknown
->;
-
-export type PromiseOrNot<T> = Promise<T> | T;
-
-export type YieldedGenerator<T, TAsync extends boolean> = TAsync extends true
-  ? YieldedAsyncGenerator<T>
-  : YieldedIterator<T>;
-export interface IAsyncYielded<T> extends ISharedYieldedOperations<T, true> {
+export interface IAsyncYielded<T> extends IYieldedOperations<T, true> {
   /**
    * @example
    * Yielded.from([550, 450, 300, 10, 100])
@@ -27,7 +12,7 @@ export interface IAsyncYielded<T> extends ISharedYieldedOperations<T, true> {
   parallel(count: number): IAsyncYielded<T>;
 }
 
-export interface IYielded<T> extends ISharedYieldedOperations<T, false> {
+export interface IYielded<T> extends IYieldedOperations<T, false> {
   /**
    * @example
    * await Yielded.from([1,2,3])
@@ -39,15 +24,15 @@ export interface IYielded<T> extends ISharedYieldedOperations<T, false> {
   awaited(): IAsyncYielded<Awaited<T>>;
 }
 
-export type IAnyYielded<T, TAsync extends boolean> = TAsync extends true
+type AnyYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;
 
-type MaybePromise<T, TAsync extends boolean> = TAsync extends true
+type CallbackReturn<T, TAsync extends boolean> = TAsync extends true
   ? Promise<T> | T
   : T;
 
-export interface ISharedYieldedOperations<T, TAsync extends boolean> {
+export interface IYieldedOperations<T, TAsync extends boolean> {
   /**
    * @examples
    * Yielded.from([1,2,3,4,5])
@@ -55,8 +40,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    * .toArray(); // ([[1,3,5], [2,4]]) number[][]
    */
   chunkBy<TIdentifier>(
-    fn: (next: T) => MaybePromise<TIdentifier, TAsync>,
-  ): IAnyYielded<T[], TAsync>;
+    fn: (next: T) => CallbackReturn<TIdentifier, TAsync>,
+  ): AnyYielded<T[], TAsync>;
   /**
    * Batch values into batches before feeding them as a batch to next operation
    * @example
@@ -69,15 +54,15 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray(); // ([]) number[][] ;
    */
   batch(
-    predicate: (acc: T[]) => MaybePromise<boolean, TAsync>,
-  ): IAnyYielded<T[], TAsync>;
+    predicate: (acc: T[]) => CallbackReturn<boolean, TAsync>,
+  ): AnyYielded<T[], TAsync>;
   /**
    * @example
    * Yielded.from([1,2,3,4,5])
    *   .drop(2)
    *   .toArray // ([3,4,5]) number[]
    */
-  drop(count: number): IAnyYielded<T, TAsync>;
+  drop(count: number): AnyYielded<T, TAsync>;
   /**
    * drops the last `count` items produced by the generator and yields the rest to the next operation.
    * Note. The dropLast operator stars emitting previous values to next operation, when it has the dropped amount
@@ -99,7 +84,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  //     B2          E1
    *  //         C2
    */
-  dropLast(count: number): IAnyYielded<T, TAsync>;
+  dropLast(count: number): AnyYielded<T, TAsync>;
   /**
    * drops items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
@@ -108,8 +93,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() // ([3,4]) number[]
    */
   dropWhile(
-    fn: (next: T) => MaybePromise<boolean, TAsync>,
-  ): IAnyYielded<T, TAsync>;
+    fn: (next: T) => CallbackReturn<boolean, TAsync>,
+  ): AnyYielded<T, TAsync>;
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
@@ -117,7 +102,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .take(2)
    *  .toArray() satisfies number[] // [1,2]
    */
-  take(count: number): IAnyYielded<T, TAsync>;
+  take(count: number): AnyYielded<T, TAsync>;
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
@@ -125,7 +110,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .takeLast(2)
    *  .toArray() satisfies number[] // [4,5]
    */
-  takeLast(count: number): IAnyYielded<T, TAsync>;
+  takeLast(count: number): AnyYielded<T, TAsync>;
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
@@ -134,8 +119,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() satisfies number[] // [1,2]
    */
   takeWhile(
-    fn: (next: T) => MaybePromise<boolean, TAsync>,
-  ): IAnyYielded<T, TAsync>;
+    fn: (next: T) => CallbackReturn<boolean, TAsync>,
+  ): AnyYielded<T, TAsync>;
 
   /**
    * Sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
@@ -147,8 +132,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() // ([1,2,3,4,5]) number[]
    */
   sorted(
-    compareFn: (a: T, b: T) => MaybePromise<number, TAsync>,
-  ): IAnyYielded<T, TAsync>;
+    compareFn: (a: T, b: T) => CallbackReturn<number, TAsync>,
+  ): AnyYielded<T, TAsync>;
 
   /**
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -159,8 +144,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() satisfies number[] // [1,2]
    */
   distinctBy<TValue>(
-    selector: (next: T) => MaybePromise<TValue, TAsync>,
-  ): IAnyYielded<T, TAsync>;
+    selector: (next: T) => CallbackReturn<TValue, TAsync>,
+  ): AnyYielded<T, TAsync>;
   /**
    * filters out items produced by the generator that are equal to the previous item by the compare function.
    * If no compare function is provided, the strict equality operator is used.
@@ -176,8 +161,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() satisfies number[] // [1,2,3]
    */
   distinctUntilChanged(
-    comparator?: (previous: T, current: T) => MaybePromise<boolean, TAsync>,
-  ): IAnyYielded<T, TAsync>;
+    comparator?: (previous: T, current: T) => CallbackReturn<boolean, TAsync>,
+  ): AnyYielded<T, TAsync>;
 
   /**
    * Filters items produced by the generator using the provided predicate
@@ -190,7 +175,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    */
   filter<TOut extends T>(
     fn: (next: T) => next is TOut,
-  ): IAnyYielded<TOut, TAsync>;
+  ): AnyYielded<TOut, TAsync>;
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields the items that pass the predicate to the next operation.
@@ -200,7 +185,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *   .filter(n => n % 2)
    *   .toArray() satisfies number[] // [1,3] ;
    */
-  filter(fn: (next: T) => any): IAnyYielded<T, TAsync>;
+  filter(fn: (next: T) => any): AnyYielded<T, TAsync>;
 
   /**
    * yields the items in reverse order after the parent generator is consumed
@@ -209,7 +194,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .reversed()
    *  .toArray() satisfies number[] // [3,2,1]
    */
-  reversed(): IAnyYielded<T, TAsync>;
+  reversed(): AnyYielded<T, TAsync>;
   /**
    * Maps next item produced by the generator using the provided transform function and yields it
    * to the next operation.
@@ -225,8 +210,8 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .toArray() satisfies number[] // [2]
    */
   map<TOut>(
-    mapper: (next: T) => MaybePromise<TOut, TAsync>,
-  ): IAnyYielded<TOut, TAsync>;
+    mapper: (next: T) => CallbackReturn<TOut, TAsync>,
+  ): AnyYielded<TOut, TAsync>;
 
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
@@ -236,7 +221,7 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    *  .tab(n => console.log(n))
    *  .toArray() satisfies number[] // ([1, 2, 3])
    */
-  tap(callback: (next: T) => unknown): IAnyYielded<T, TAsync>;
+  tap(callback: (next: T) => unknown): AnyYielded<T, TAsync>;
   /**
    * Returns a new array with all sub-array elements concatenated into it recursively up to the
    * specified depth.
@@ -253,10 +238,10 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
    */
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): IAnyYielded<FlatArray<T[], Depth>, TAsync>;
+  ): AnyYielded<FlatArray<T[], Depth>, TAsync>;
   flatMap<TOut>(
-    callback: (value: T) => MaybePromise<TOut | TOut[], TAsync>,
-  ): IAnyYielded<TOut, TAsync>;
+    callback: (value: T) => CallbackReturn<TOut | TOut[], TAsync>,
+  ): AnyYielded<TOut, TAsync>;
   /**
    * Accepts a generator function that accepts the  previous generator
    *
@@ -297,5 +282,5 @@ export interface ISharedYieldedOperations<T, TAsync extends boolean> {
     middleware: (
       generator: YieldedGenerator<T, TAsync>,
     ) => YieldedGenerator<TOut, TAsync>,
-  ): IAnyYielded<TOut, TAsync>;
+  ): AnyYielded<TOut, TAsync>;
 }

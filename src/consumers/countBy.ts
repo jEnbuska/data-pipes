@@ -2,7 +2,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 
 export function countBySync<T>(
   generator: YieldedIterator<T>,

@@ -3,7 +3,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 
 export function* sortedSync<T>(
   generator: YieldedIterator<T>,

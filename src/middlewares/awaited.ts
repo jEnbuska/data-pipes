@@ -1,4 +1,7 @@
-import type { YieldedAsyncGenerator, YieldedIterator } from "../types.ts";
+import type {
+  YieldedAsyncGenerator,
+  YieldedIterator,
+} from "../shared.types.ts";
 
 export async function* awaited<T>(
   generator: YieldedIterator<T>,

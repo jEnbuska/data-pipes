@@ -15,7 +15,7 @@ import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
-} from "../types.ts";
+} from "../shared.types.ts";
 import type { IAsyncYieldedResolver } from "./types.ts";
 
 export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
