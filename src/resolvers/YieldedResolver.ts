@@ -8,7 +8,7 @@ import { minBySync } from "../consumers/minBy.ts";
 import { toReversedSync } from "../consumers/toReverse.ts";
 import { toSortedSync } from "../consumers/toSorted.ts";
 import type { YieldedIterator } from "../shared.types.ts";
-import type { IYieldedResolver } from "./types.ts";
+import type { IYieldedResolver } from "./resolver.types.ts";
 
 export class YieldedResolver<T> implements IYieldedResolver<T> {
   protected readonly generator: Disposable & YieldedIterator<T>;

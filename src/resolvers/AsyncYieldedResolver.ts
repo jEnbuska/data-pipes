@@ -18,7 +18,10 @@ import type {
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
-import type { IAsyncYieldedResolver, IYieldedResolver } from "./types.ts";
+import type {
+  IAsyncYieldedResolver,
+  IYieldedResolver,
+} from "./resolver.types.ts";
 
 export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & YieldedAsyncGenerator<T>;

@@ -23,7 +23,7 @@ import type {
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "./shared.types.ts";
-import type { IAsyncYielded } from "./types.ts";
+import type { IAsyncYielded } from "./yielded.types.ts";
 
 export class AsyncYielded<T>
   extends AsyncYieldedResolver<T>

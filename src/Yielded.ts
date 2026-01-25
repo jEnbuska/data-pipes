@@ -17,7 +17,7 @@ import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
 import type { YieldedIterator } from "./shared.types.ts";
-import type { IYielded } from "./types.ts";
+import type { IYielded } from "./yielded.types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
