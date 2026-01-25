@@ -43,11 +43,11 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    * @example
    * Yielded.from([1,2,3,4,5])
    *  .batch(acc => acc.length < 3)
-   *  .toArray(); // ([[1,2], [3,4] [5]]) number[][];
+   *  .toArray() satisfies number[][] // [[1,2], [3,4] [5]]
    * @example
    *  Yielded.from([] as number[])
    *  .batch(acc => acc.length < 3)
-   *  .toArray(); // ([]) number[][] ;
+   *  .toArray() satisfies number[][] // []
    */
   batch(
     predicate: (acc: T[]) => CallbackReturn<boolean, TAsync>,
@@ -66,14 +66,14 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    * @example
    * Yielded.from([1,2,3,4,5])
    *  .dropLast(2)
-   *  .toArray(); // ([1,2,3]) number[]
+   *  .toArray() satisfies number[] // [1,2,3]
    *
    * @example
    * Yielded.from(['A','B','C','D', 'E'])
    *  .tap(l => storeStep.push(`${l}1`))
    *  .dropLast(2)
    *  .tap(l => storeStep.push(`${l}2`))
-   *  .toArray(); (['A', 'B', 'C']) string[]
+   *  .toArray() satisfies string[] // ['A', 'B', 'C']
    *  // steps ->
    *  // A1  B1  C1
    *  // A2          D1
@@ -86,7 +86,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    * @example
    * Yielded.from([1,2,3,4])
    *  .dropWhile(n => n < 3)
-   *  .toArray() // ([3,4]) number[]
+   *  .toArray() satisfies number[] // [3,4]
    */
   dropWhile(
     fn: (next: T) => CallbackReturn<boolean, TAsync>,
@@ -125,7 +125,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    * @example
    * Yielded.from([3,2,1,4,5])
    *  .sorted((a, z) => a - z)
-   *  .toArray() // ([1,2,3,4,5]) number[]
+   *  .toArray() satisfies number[] // [1,2,3,4,5]
    */
   sorted(
     compareFn: (a: T, b: T) => CallbackReturn<number, TAsync>,
@@ -149,7 +149,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    * @example
    * Yielded.from([1,2,2,2,3])
    *  .distinctUntilChanged()
-   *  .toArray() // ([1,2,3]) number[]
+   *  .toArray() satisfies number[] // [1,2,3]
    *
    * @example
    * Yielded.from([1, 2, 5, 8, 3])
@@ -269,7 +269,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *      }
    *      yield acc.join(".");
    *  })
-   *  .toArray() satisfies string[] // ["a.b.c"]
+   *  .first() satisfies string | undefined // "a.b.c"
    */
   lift<TOut = never>(
     middleware: (
@@ -281,6 +281,6 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
     mapper: (
       next: T,
       index: number,
-    ) => CallbackReturn<TOut | readonly TOut[] | IteratorObject<TOut>, TAsync>,
+    ) => CallbackReturn<readonly TOut[] | Iterable<TOut> | TOut, TAsync>,
   ): NextYielded<TOut, TAsync>;
 }
