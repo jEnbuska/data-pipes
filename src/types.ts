@@ -1,8 +1,4 @@
-import type {
-  CallbackReturn,
-  PromiseOrNot,
-  YieldedGenerator,
-} from "./shared.types.ts";
+import type { CallbackReturn, YieldedGenerator } from "./shared.types.ts";
 
 export interface IAsyncYielded<T> extends IYieldedOperations<T, true> {
   /**
@@ -32,19 +28,6 @@ type NextYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;
 
-type FlatMap<T, TAsync extends boolean> = TAsync extends true
-  ? <TOut>(
-      mapper: (
-        next: T,
-        index: number,
-      ) => PromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
-    ) => IAsyncYielded<TOut>
-  : <TOut>(
-      mapper: (
-        next: T,
-        index: number,
-      ) => TOut | readonly TOut[] | IteratorObject<TOut>,
-    ) => IYielded<TOut>;
 export interface IYieldedOperations<T, TAsync extends boolean> {
   /**
    * @examples
