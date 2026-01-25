@@ -3,24 +3,23 @@ import type {
   YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function* takeSync<TInput>(
+export function* reversedSync<TInput>(
   generator: YieldedSyncGenerator<TInput>,
-  count: number,
 ): YieldedSyncGenerator<TInput> {
-  if (count <= 0) return;
+  const acc: TInput[] = [];
   for (const next of generator) {
     yield next;
-    if (!--count) return;
+    acc.unshift(next);
   }
+  yield* acc;
 }
 
-export async function* takeAsync<TInput>(
+export async function* reversedAsync<TInput>(
   generator: YieldedAsyncGenerator<TInput>,
-  count: number,
 ): YieldedAsyncGenerator<TInput> {
-  if (count <= 0) return;
+  const acc: TInput[] = [];
   for await (const next of generator) {
-    yield next;
-    if (!--count) return;
+    acc.unshift(next);
   }
+  yield* acc;
 }

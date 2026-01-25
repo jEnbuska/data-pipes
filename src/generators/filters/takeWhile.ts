@@ -1,26 +1,24 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function takeWhileSync<TInput>(
+export function* takeWhileSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   predicate: (next: TInput) => boolean,
-): YieldedSyncMiddleware<TInput> {
-  return function* takeWhileSyncResolver(generator) {
-    for (const next of generator) {
-      if (!predicate(next)) return;
-      yield next;
-    }
-  };
+): YieldedSyncGenerator<TInput> {
+  for (const next of generator) {
+    if (!predicate(next)) return;
+    yield next;
+  }
 }
 
-export function takeWhileAsync<TInput>(
+export async function* takeWhileAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   predicate: (next: TInput) => Promise<boolean> | boolean,
-): YieldedAsyncMiddleware<Awaited<TInput>> {
-  return async function* takeWhileAsyncResolver(generator) {
-    for await (const next of generator) {
-      if (!(await predicate(next))) return;
-      yield next;
-    }
-  };
+): YieldedAsyncGenerator<TInput> {
+  for await (const next of generator) {
+    if (!(await predicate(next))) return;
+    yield next;
+  }
 }

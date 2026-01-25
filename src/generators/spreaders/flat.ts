@@ -1,34 +1,32 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function flatSync<TInput, const Depth extends number = 1>(
+export function* flatSync<TInput, const Depth extends number = 1>(
+  generator: YieldedSyncGenerator<TInput>,
   depth?: Depth,
-): YieldedSyncMiddleware<TInput, FlatArray<TInput[], Depth>> {
-  return function* flatSyncResolver(generator) {
-    depth = depth ?? (1 as Depth);
-    for (const next of generator) {
-      if (!Array.isArray(next) || depth <= 0) {
-        yield next;
-        continue;
-      }
-      yield* next.flat(depth - 1) as any;
+): YieldedSyncGenerator<FlatArray<TInput[], Depth>> {
+  depth = depth ?? (1 as Depth);
+  for (const next of generator) {
+    if (!Array.isArray(next) || depth <= 0) {
+      yield next as any;
+      continue;
     }
-  };
+    yield* next.flat(depth - 1) as any;
+  }
 }
 
-export function flatAsync<TInput, const Depth extends number = 1>(
+export async function* flatAsync<TInput, const Depth extends number = 1>(
+  generator: YieldedAsyncGenerator<TInput>,
   depth?: Depth,
-): YieldedAsyncMiddleware<TInput, FlatArray<TInput[], Depth>> {
-  return async function* flatResolver(generator) {
-    depth = depth ?? (1 as Depth);
-    for await (const next of generator) {
-      if (!Array.isArray(next) || depth <= 0) {
-        yield next;
-        continue;
-      }
-      yield* next.flat(depth - 1) as any;
+): YieldedAsyncGenerator<FlatArray<TInput[], Depth>> {
+  depth = depth ?? (1 as Depth);
+  for await (const next of generator) {
+    if (!Array.isArray(next) || depth <= 0) {
+      yield next as any;
+      continue;
     }
-  };
+    yield* next.flat(depth - 1) as any;
+  }
 }

@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
@@ -6,8 +6,9 @@ describe("parallel", () => {
   test("Parallel with empty list", async () => {
     const result = (await yielded([] as number[])
       .map((it) => it)
-      .toAwaitedParallel(10)
-      .resolve()) satisfies number[];
+      .awaited()
+      .parallel(10)
+      .toArray()) satisfies number[];
 
     expect(result).toStrictEqual([]);
   });
@@ -16,16 +17,18 @@ describe("parallel", () => {
       .map(async (it) => {
         return await sleep(it).then(() => it);
       })
-      .toAwaitedParallel(5)
-      .resolve() satisfies Promise<number[]>);
+      .awaited(5)
+      .parallel(5)
+      .toArray() satisfies Promise<number[]>);
     expect(result).toStrictEqual([100, 200, 300, 404, 500]);
   });
 
   test("Parallel with 3 parallel count", async () => {
     const result = (await yielded([550, 450, 300, 10, 100])
       .map(async (it) => sleep(it).then(() => it))
-      .toAwaitedParallel(3)
-      .resolve()) satisfies number[];
+      .awaited()
+      .parallel(3)
+      .toArray()) satisfies number[];
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
 });

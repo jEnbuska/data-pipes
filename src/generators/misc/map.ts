@@ -1,22 +1,20 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function mapSync<TInput, TOutput>(
+export function* mapSync<TInput, TOutput>(
+  generator: YieldedSyncGenerator<TInput>,
   mapper: (next: TInput) => TOutput,
-): YieldedSyncMiddleware<TInput, TOutput> {
-  return function* mapSyncResolver(generator) {
-    yield* generator.map(mapper);
-  };
+): YieldedSyncGenerator<TOutput> {
+  yield* generator.map(mapper);
 }
 
-export function mapAsync<TInput, TOutput>(
+export async function* mapAsync<TInput, TOutput>(
+  generator: YieldedAsyncGenerator<TInput>,
   mapper: (next: TInput) => Promise<TOutput> | TOutput,
-): YieldedAsyncMiddleware<TInput, TOutput> {
-  return async function* mapAsyncResolver(generator) {
-    for await (const next of generator) {
-      yield mapper(next);
-    }
-  };
+): YieldedAsyncGenerator<TOutput> {
+  for await (const next of generator) {
+    yield mapper(next);
+  }
 }

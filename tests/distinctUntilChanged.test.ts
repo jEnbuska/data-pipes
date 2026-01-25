@@ -1,23 +1,23 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctUntilChanged", () => {
   test("empty ", () => {
-    expect(yielded([]).distinctUntilChanged().resolve()).toStrictEqual([]);
+    expect(yielded([]).distinctUntilChanged().toArray()).toStrictEqual([]);
   });
 
   test("all unique", () => {
     expect(
       yielded([1, 2, 3])
         .distinctUntilChanged((a, b) => a === b)
-        .resolve(),
+        .toArray(),
     ).toStrictEqual([1, 2, 3]);
   });
 
   test("similar consecutive values", () => {
     expect(
-      yielded([1, 1, 2, 3, 3, 4]).distinctUntilChanged().resolve(),
+      yielded([1, 1, 2, 3, 3, 4]).distinctUntilChanged().toArray(),
     ).toStrictEqual([1, 2, 3, 4]);
   });
 
@@ -38,7 +38,7 @@ describe("distinctUntilChanged", () => {
     expect(
       await (fromResolvedPromises
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2, 1]);
   });
 
@@ -46,16 +46,16 @@ describe("distinctUntilChanged", () => {
     expect(
       await (fromAsyncGenerator
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2, 1]);
   });
 
   test("from promises", async () => {
     expect(
       (await fromPromises
-        .toAwaited()
+        .awaited()
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve()) satisfies number[],
+        .toArray()) satisfies number[],
     ).toStrictEqual([1, 2, 1]);
   });
 
@@ -63,7 +63,7 @@ describe("distinctUntilChanged", () => {
     expect(
       fromGenerator
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies number[],
+        .toArray() satisfies number[],
     ).toStrictEqual([1, 2, 1]);
   });
 
@@ -71,7 +71,7 @@ describe("distinctUntilChanged", () => {
     expect(
       fromArray
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies number[],
+        .toArray() satisfies number[],
     ).toStrictEqual([1, 2, 1]);
   });
 
@@ -79,7 +79,7 @@ describe("distinctUntilChanged", () => {
     expect(
       fromEmpty
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies number[],
+        .toArray() satisfies number[],
     ).toStrictEqual([]);
   });
 
@@ -87,7 +87,7 @@ describe("distinctUntilChanged", () => {
     expect(
       await (fromEmptyAsync
         .distinctUntilChanged(fullTwosPredicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

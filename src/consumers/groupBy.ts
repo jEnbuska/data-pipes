@@ -1,42 +1,54 @@
-import type {
-  YieldedAsyncProvider,
-  YieldedSyncMiddleware,
-  YieldedSyncProvider,
-} from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
 
-export function createInitialGroups(groups: any[] = []) {
-  return Object.fromEntries(groups?.map((key) => [key, [] as any[]]));
+export function createInitialGroups(groups: undefined | PropertyKey[] = []) {
+  return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }
 
+export function groupBySync<TInput, TKey extends PropertyKey>(
+  generator: YieldedSyncGenerator<TInput>,
+  keySelector: (next: TInput) => TKey,
+  groups?: undefined,
+): Partial<Record<TKey, TInput[]>>;
+export function groupBySync<
+  TInput,
+  TKey extends PropertyKey,
+  TGroups extends PropertyKey,
+>(
+  generator: YieldedSyncGenerator<TInput>,
+  keySelector: (next: TInput) => TKey,
+  groups: TGroups[],
+): Record<TGroups, TInput[]> &
+  Partial<Record<Exclude<TKey, TGroups>, TInput[]>>;
 export function groupBySync(
-  invoke: YieldedSyncProvider,
+  generator: YieldedSyncGenerator,
   keySelector: (next: unknown) => PropertyKey,
-  groups: PropertyKey[] = [],
-): YieldedSyncMiddleware<unknown, unknown> {
+  groups: undefined | PropertyKey[],
+): Partial<Record<PropertyKey, unknown[]>> {
   const record = createInitialGroups(groups);
-  const generator = invoke();
   for (const next of generator) {
     const key = keySelector(next);
     if (!(key in record)) {
+      // @ts-expect-error
       record[key] = [];
-    }
+    } // @ts-expect-error
     record[key].push(next);
   }
   return record;
 }
 
 export async function groupByAsync(
-  invoke: YieldedAsyncProvider,
+  generator: YieldedAsyncGenerator,
   keySelector: (next: unknown) => Promise<PropertyKey> | PropertyKey,
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);
   const pending = new Set<Promise<unknown>>();
-  for await (const next of invoke()) {
+  for await (const next of generator) {
     const promise = Promise.resolve(keySelector(next)).then((key) => {
       if (!(key in record)) {
+        // @ts-expect-error
         record[key] = [];
-      }
+      } // @ts-expect-error
       record[key].push(next);
     });
     pending.add(promise);

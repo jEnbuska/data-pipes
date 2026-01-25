@@ -16,11 +16,11 @@ export function createTestSets<T>(array: T[]) {
     }),
     fromArray: yielded(array),
     fromSingle: yielded(array[0]),
-    fromSingleAsync: yielded(array[0]).toAwaited(),
+    fromSingleAsync: yielded(array[0]).awaited(),
     fromPromises: yielded(array).map((next) => Promise.resolve(next)),
     fromResolvedPromises: yielded(array)
       .map((next) => Promise.resolve(next))
-      .toAwaited()
+      .awaited()
       .map((next) => Promise.resolve(next)),
   };
 }

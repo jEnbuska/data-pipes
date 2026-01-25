@@ -1,24 +1,24 @@
 import type {
-  YieldedAsyncMiddleware,
-  YieldedSyncMiddleware,
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function dropSync<TInput>(count: number): YieldedSyncMiddleware<TInput> {
-  return function* dropSyncResolver(generator) {
-    yield* generator.drop(count);
-  };
-}
-export function skipAsync<TInput>(
+export function* dropSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   count: number,
-): YieldedAsyncMiddleware<TInput> {
-  return async function* skipAsyncResolver(generator) {
-    let skipped = 0;
-    for await (const next of generator) {
-      if (skipped < count) {
-        skipped++;
-        continue;
-      }
-      yield next;
+): YieldedSyncGenerator<TInput> {
+  yield* generator.drop(count);
+}
+export async function* dropAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
+  count: number,
+): YieldedAsyncGenerator<TInput> {
+  let skipped = 0;
+  for await (const next of generator) {
+    if (skipped < count) {
+      skipped++;
+      continue;
     }
-  };
+    yield next;
+  }
 }

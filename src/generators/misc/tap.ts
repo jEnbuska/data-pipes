@@ -1,26 +1,24 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function tapSync<TInput>(
+export function* tapSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   consumer: (next: TInput) => unknown,
-): YieldedSyncMiddleware<TInput> {
-  return function* tapSyncResolver(generator) {
-    for (const next of generator) {
-      consumer(next);
-      yield next;
-    }
-  };
+): YieldedSyncGenerator<TInput> {
+  for (const next of generator) {
+    consumer(next);
+    yield next;
+  }
 }
 
-export function tapAsync<TInput>(
+export async function* tapAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   consumer: (next: TInput) => unknown,
-): YieldedAsyncMiddleware<TInput> {
-  return async function* tapAsyncResolver(generator) {
-    for await (const next of generator) {
-      consumer(next);
-      yield next;
-    }
-  };
+): YieldedAsyncGenerator<TInput> {
+  for await (const next of generator) {
+    consumer(next);
+    yield next;
+  }
 }

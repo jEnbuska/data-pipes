@@ -1,19 +1,19 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 
 describe("skipLast", () => {
   test("skip last when array is empty", () => {
-    expect(yielded([]).skipLast(3).resolve()).toStrictEqual([]);
+    expect(yielded([]).skipLast(3).toArray()).toStrictEqual([]);
   });
 
   test("when count is more than number of inputs", () => {
-    expect(yielded([1, 2]).skipLast(3).resolve()).toStrictEqual([]);
+    expect(yielded([1, 2]).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is same as than number of inputs", () => {
-    expect(yielded([1, 2, 3]).skipLast(3).resolve()).toStrictEqual([]);
+    expect(yielded([1, 2, 3]).skipLast(3).toArray()).toStrictEqual([]);
   });
   test("when count is 1 less than as than number of inputs", () => {
-    expect(yielded([1, 2, 3]).skipLast(2).resolve()).toStrictEqual([1]);
+    expect(yielded([1, 2, 3]).skipLast(2).toArray()).toStrictEqual([1]);
   });
   test("when count less than as than number of inputs", () => {
     let lastEmitted: number | undefined;

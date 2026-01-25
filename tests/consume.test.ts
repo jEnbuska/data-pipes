@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 
 describe("consume", () => {
@@ -16,7 +16,7 @@ describe("consume", () => {
     const consumed: number[] = [];
     await yielded(numbers)
       .map((value) => Promise.resolve(value))
-      .toAwaited()
+      .awaited()
       .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);

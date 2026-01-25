@@ -1,14 +1,14 @@
-import type { YieldedAsyncProvider, YieldedSyncProvider } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
 
 export function countBySync<TInput>(
-  invoke: YieldedSyncProvider<TInput>,
+  generator: YieldedSyncGenerator<TInput>,
   mapper: (next: TInput) => number,
 ): number {
-  return invoke().reduce((acc, next) => mapper(next) + acc, 0);
+  return generator.reduce((acc, next) => mapper(next) + acc, 0);
 }
 
 export async function countByAsync<TInput>(
-  invoke: YieldedAsyncProvider<TInput>,
+  generator: YieldedAsyncGenerator<TInput>,
   mapper: (next: TInput) => Promise<number> | number,
 ): Promise<number> {
   let acc = 0;
@@ -16,7 +16,7 @@ export async function countByAsync<TInput>(
     acc += value;
   }
   const pending = new Set<Promise<unknown>>();
-  for await (const next of invoke()) {
+  for await (const next of generator) {
     const promise = Promise.resolve(mapper(next)).then(increment);
     pending.add(promise);
     void promise.then(() => pending.delete(promise));

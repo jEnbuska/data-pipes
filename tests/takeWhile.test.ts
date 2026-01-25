@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 import { simpleMock } from "./utils/simpleMock.ts";
 
@@ -9,7 +9,7 @@ describe("takeWhile", () => {
     const result = yielded(numbers)
       .tap(callback)
       .takeWhile((n) => n < 0)
-      .resolve();
+      .toArray();
     expect(result).toStrictEqual([-2, -1]);
     expect(callback.getCalled()).toBe(3);
   });
@@ -19,7 +19,7 @@ describe("takeWhile", () => {
     const result = yielded(numbers)
       .tap((n: number) => callback(n))
       .takeWhile(() => true)
-      .resolve();
+      .toArray();
     expect(result).toStrictEqual(numbers);
     expect(callback.getCalled()).toBe(numbers.length);
   });
@@ -29,7 +29,7 @@ describe("takeWhile", () => {
     const array = yielded(numbers)
       .tap(callback)
       .takeWhile(() => false)
-      .resolve();
+      .toArray();
     expect(array).toStrictEqual([]);
     expect(callback.getCalled()).toBe(1);
   });

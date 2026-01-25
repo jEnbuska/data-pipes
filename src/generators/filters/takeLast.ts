@@ -1,29 +1,25 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function takeLastSync<TInput>(
+export function* takeLastSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   count: number,
-): YieldedSyncMiddleware<TInput, TInput, TInput[]> {
-  return function* takeLastSyncResolver(generator) {
-    const array = [...generator];
-    const list = array.slice(Math.max(array.length - count, 0));
-    yield* list;
-    return list;
-  };
+): YieldedSyncGenerator<TInput> {
+  const array = [...generator]; // TODO store only last N ones
+  const list = array.slice(Math.max(array.length - count, 0));
+  yield* list;
 }
 
-export function takeLastAsync<TInput>(
+export async function* takeLastAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   count: number,
-): YieldedAsyncMiddleware<TInput, TInput, TInput[]> {
-  return async function* takeLastAsyncResolver(generator) {
-    const acc: TInput[] = [];
-    for await (const next of generator) {
-      acc.push(next);
-    }
-    const list = acc.slice(Math.max(acc.length - count, 0));
-    yield* list;
-    return list;
-  };
+): YieldedAsyncGenerator<TInput> {
+  const acc: TInput[] = [];
+  for await (const next of generator) {
+    acc.push(next); // TODO store only last N ones
+  }
+  const list = acc.slice(Math.max(acc.length - count, 0));
+  yield* list;
 }

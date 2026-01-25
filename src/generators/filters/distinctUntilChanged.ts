@@ -1,41 +1,39 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
 const defaultCompare = <TInput>(a: TInput, b: TInput) => a === b;
 
-export function distinctUntilChangedSync<TInput>(
+export function* distinctUntilChangedSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   compare: (previous: TInput, current: TInput) => boolean = defaultCompare,
-): YieldedSyncMiddleware<TInput> {
-  return function* distinctUntilChangedSyncResolver(generator) {
-    const first = generator.next();
-    if (first.done) return;
-    let previous = first.value;
-    for (const next of generator) {
-      if (compare(previous, next)) {
-        previous = next;
-        yield next;
-      }
+): YieldedSyncGenerator<TInput> {
+  const first = generator.next();
+  if (first.done) return;
+  let previous = first.value;
+  for (const next of generator) {
+    if (compare(previous, next)) {
+      previous = next;
+      yield next;
     }
-  };
+  }
 }
 
-export function distinctUntilChangedAsync<TInput>(
+export async function* distinctUntilChangedAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   compare: (
     previous: TInput,
     current: TInput,
   ) => Promise<boolean> | boolean = defaultCompare,
-): YieldedAsyncMiddleware<TInput> {
-  return async function* distinctUntilChangedAsyncResolver(generator) {
-    const first = await generator.next();
-    if (first.done) return;
-    let previous = first.value;
-    for await (const next of generator) {
-      if (await compare(previous, next)) {
-        previous = next;
-        yield next;
-      }
+): YieldedAsyncGenerator<TInput> {
+  const first = await generator.next();
+  if (first.done) return;
+  let previous = first.value;
+  for await (const next of generator) {
+    if (await compare(previous, next)) {
+      previous = next;
+      yield next;
     }
-  };
+  }
 }

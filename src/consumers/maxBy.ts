@@ -1,10 +1,9 @@
-import type { YieldedAsyncProvider, YieldedSyncProvider } from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
 
 export function maxBySync<TInput>(
-  invoke: YieldedSyncProvider<TInput>,
+  generator: YieldedSyncGenerator<TInput>,
   callback: (next: TInput) => number,
 ): TInput | undefined {
-  const generator = invoke();
   const next = generator.next();
   if (next.done) return;
   let current = next.value;
@@ -20,10 +19,9 @@ export function maxBySync<TInput>(
 }
 
 export async function maxByAsync<TInput>(
-  invoke: YieldedAsyncProvider<TInput>,
+  generator: YieldedAsyncGenerator<TInput>,
   callback: (next: TInput) => Promise<number> | number,
 ): Promise<TInput | undefined> {
-  const generator = invoke();
   const next = await generator.next();
   if (next.done) return;
   let acc = next.value;

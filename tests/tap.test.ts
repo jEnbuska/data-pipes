@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 import { createTestSets } from "./utils/createTestSets.ts";
 import { simpleMock } from "./utils/simpleMock.ts";
@@ -60,7 +60,7 @@ describe("tap", () => {
 
   test("from promises", async () => {
     const callback = simpleMock(numbers);
-    (await fromPromises.toAwaited().tap(callback).consume()) satisfies void;
+    (await fromPromises.awaited().tap(callback).consume()) satisfies void;
     expect(callback.getCalled()).toBe(2);
   });
 

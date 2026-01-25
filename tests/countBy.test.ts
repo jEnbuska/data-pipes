@@ -1,13 +1,13 @@
-import { describe, test, expect } from "vitest";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("countBy", () => {
   test("countBy with empty", () => {
     expect(
       yielded<number>([])
         .countBy((next) => next)
-        .resolve(),
+        .toArray(),
     ).toBe(0);
   });
 
@@ -26,7 +26,7 @@ describe("countBy", () => {
     expect(
       await (fromResolvedPromises
         .countBy((next) => next.value)
-        .resolve() satisfies Promise<number>),
+        .toArray() satisfies Promise<number>),
     ).toBe(6);
   });
 
@@ -34,34 +34,34 @@ describe("countBy", () => {
     expect(
       await (fromAsyncGenerator
         .countBy((next) => next.value)
-        .resolve() satisfies Promise<number>),
+        .toArray() satisfies Promise<number>),
     ).toBe(6);
   });
 
   test("from promises", async () => {
     expect(
       await fromPromises
-        .toAwaited()
+        .awaited()
         .countBy((next) => next.value)
-        .resolve(),
+        .toArray(),
     ).toBe(6);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.countBy((next) => next.value).resolve() satisfies number,
+      fromGenerator.countBy((next) => next.value).toArray() satisfies number,
     ).toBe(6);
   });
 
   test("from array", () => {
     expect(
-      fromArray.countBy((next) => next.value).resolve() satisfies number,
+      fromArray.countBy((next) => next.value).toArray() satisfies number,
     ).toBe(6);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.countBy((next) => next.value).resolve() satisfies number,
+      fromEmpty.countBy((next) => next.value).toArray() satisfies number,
     ).toBe(0);
   });
 
@@ -69,7 +69,7 @@ describe("countBy", () => {
     expect(
       await (fromEmptyAsync
         .countBy((next) => next.value)
-        .resolve() satisfies Promise<number>),
+        .toArray() satisfies Promise<number>),
     ).toBe(0);
   });
 
@@ -88,7 +88,7 @@ describe("countBy", () => {
     controller.abort();
     expect(
       (await yielded([1, 2, 3])
-        .toAwaited()
+        .awaited()
         .countBy((next) => next)
         .resolve(controller.signal)) satisfies number,
     ).toBe(0);

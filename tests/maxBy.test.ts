@@ -1,7 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import { createTestSets } from "./utils/createTestSets.ts";
 
-describe("max", () => {
+describe("maxBy", () => {
   const numbers = [2, 1, 3, 5, 4];
   const {
     fromResolvedPromises,
@@ -17,55 +17,50 @@ describe("max", () => {
 
   test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.max(modulo4).resolve() satisfies Promise<
+      await (fromResolvedPromises.maxBy(modulo4) satisfies Promise<
         number | void
       >),
     ).toStrictEqual(3);
   });
 
   test("from single", () => {
-    expect(fromSingle.map(modulo4).resolve()).toEqual(numbers[0]);
+    expect(fromSingle.map(modulo4)).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.max(modulo4).resolve() satisfies Promise<
+      await (fromAsyncGenerator.maxBy(modulo4) satisfies Promise<
         number | undefined
       >),
     ).toStrictEqual(3);
   });
 
   test("from promises", async () => {
-    const first = fromPromises
-      .toAwaited()
-      .max(modulo4)
-      .resolve() satisfies Promise<number | void>;
+    const first = fromPromises.awaited().maxBy(modulo4) satisfies Promise<
+      number | void
+    >;
     expect(await first).toStrictEqual(3);
   });
 
   test("from generator", async () => {
-    expect(
-      fromGenerator.max(modulo4).resolve() satisfies number | void,
-    ).toStrictEqual(3);
+    expect(fromGenerator.maxBy(modulo4) satisfies number | void).toStrictEqual(
+      3,
+    );
   });
 
   test("from array", () => {
-    expect(
-      fromArray.max(modulo4).resolve() satisfies number | void,
-    ).toStrictEqual(3);
+    expect(fromArray.maxBy(modulo4) satisfies number | void).toStrictEqual(3);
   });
 
   test("from empty", () => {
-    expect(
-      fromEmpty.max(modulo4).resolve() satisfies number | void,
-    ).toStrictEqual(undefined);
+    expect(fromEmpty.maxBy(modulo4) satisfies number | void).toStrictEqual(
+      undefined,
+    );
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.max(modulo4).resolve() satisfies Promise<
-        number | void
-      >),
+      await (fromEmptyAsync.maxBy(modulo4) satisfies Promise<number | void>),
     ).toStrictEqual(undefined);
   });
 });

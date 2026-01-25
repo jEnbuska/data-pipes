@@ -1,35 +1,32 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function dropWhileSync<TInput>(
+export function* dropWhileSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   predicate: (next: TInput) => boolean,
-): YieldedSyncMiddleware<TInput> {
-  return function* skipWhileSyncResolver(generator) {
-    for (const next of generator) {
-      if (predicate(next)) continue;
-      yield next;
-      break;
-    }
-    for (const next of generator) {
-      yield next;
-    }
-  };
+): YieldedSyncGenerator<TInput> {
+  for (const next of generator) {
+    if (predicate(next)) continue;
+    yield next;
+    break;
+  }
+  for (const next of generator) {
+    yield next;
+  }
 }
 
-export function dropWhileAsync<TInput>(
+export async function* dropWhileAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   predicate: (next: TInput) => Promise<boolean> | boolean,
-): YieldedAsyncMiddleware<Awaited<TInput>> {
-  const pending = Promise.resolve(true);
-  return async function* skipWhileAsyncResolver(generator) {
-    for await (const next of generator) {
-      if (await predicate(next)) continue;
-      yield next;
-      break;
-    }
-    for await (const next of generator) {
-      yield next;
-    }
-  };
+): YieldedAsyncGenerator<TInput> {
+  for await (const next of generator) {
+    if (await predicate(next)) continue;
+    yield next;
+    break;
+  }
+  for await (const next of generator) {
+    yield next;
+  }
 }

@@ -1,39 +1,36 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function dropLastSync<TInput>(
+export function* dropLastSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
   count: number,
-): YieldedSyncMiddleware<TInput> {
-  return function* skipLastSyncResolver(generator) {
-    const buffer: TInput[] = [];
-    let skipped = 0;
-
-    for (const next of generator) {
-      buffer.push(next);
-      if (skipped < count) {
-        skipped++;
-        continue;
-      }
-      yield buffer.shift()!;
+): YieldedSyncGenerator<TInput> {
+  const buffer: TInput[] = [];
+  let skipped = 0;
+  for (const next of generator) {
+    buffer.push(next);
+    if (skipped < count) {
+      skipped++;
+      continue;
     }
-  };
+    yield buffer.shift()!;
+  }
 }
 
-export function dropLastAsync<TInput>(
+export async function* dropLastAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   count: number,
-): YieldedAsyncMiddleware<Awaited<TInput>> {
-  return async function* skipLastAsyncResolver(generator) {
-    const buffer: TInput[] = [];
-    let skipped = 0;
-    for await (const next of generator) {
-      buffer.push(next);
-      if (skipped < count) {
-        skipped++;
-        continue;
-      }
-      yield buffer.shift()!;
+): YieldedAsyncGenerator<TInput> {
+  const buffer: TInput[] = [];
+  let skipped = 0;
+  for await (const next of generator) {
+    buffer.push(next);
+    if (skipped < count) {
+      skipped++;
+      continue;
     }
-  };
+    yield buffer.shift()!;
+  }
 }

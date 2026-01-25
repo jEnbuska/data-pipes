@@ -1,7 +1,7 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import { createTestSets } from "./utils/createTestSets.ts";
 
-describe("min", () => {
+describe("minBy", () => {
   const numbers = [2, 1, 3, 5, 4];
   const {
     fromResolvedPromises,
@@ -17,55 +17,46 @@ describe("min", () => {
 
   test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.min(modulo4).resolve() satisfies Promise<
+      await (fromResolvedPromises.minBy(modulo4) satisfies Promise<
         number | void
       >),
     ).toBe(4);
   });
 
   test("from single", () => {
-    expect(fromSingle.resolve() satisfies number | undefined).toEqual(
-      numbers[0],
-    );
+    expect(fromSingle satisfies number | undefined).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {
     expect(
-      await (fromAsyncGenerator.min(modulo4).resolve() satisfies Promise<
+      await (fromAsyncGenerator.minBy(modulo4) satisfies Promise<
         number | void
       >),
     ).toBe(4);
   });
 
   test("from promises", async () => {
-    const first = fromPromises
-      .toAwaited()
-      .min(modulo4)
-      .resolve() satisfies Promise<number | void>;
+    const first = fromPromises.awaited().minBy(modulo4) satisfies Promise<
+      number | void
+    >;
     expect(await first).toBe(4);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.min(modulo4).resolve() satisfies number | void).toBe(
-      4,
-    );
+    expect(fromGenerator.minBy(modulo4) satisfies number | void).toBe(4);
   });
 
   test("from array", () => {
-    expect(fromArray.min(modulo4).resolve() satisfies number | void).toBe(4);
+    expect(fromArray.minBy(modulo4) satisfies number | void).toBe(4);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.min(modulo4).resolve() satisfies number | void).toBe(
-      undefined,
-    );
+    expect(fromEmpty.minBy(modulo4) satisfies number | void).toBe(undefined);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.min(modulo4).resolve() satisfies Promise<
-        number | void
-      >),
+      await (fromEmptyAsync.minBy(modulo4) satisfies Promise<number | void>),
     ).toBe(undefined);
   });
 });

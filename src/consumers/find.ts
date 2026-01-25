@@ -1,18 +1,19 @@
-import type { YieldedAsyncProvider, YieldedSyncProvider } from "../types.ts";
+import type { YieldedAsyncGenerator } from "../types.ts";
 
-export function findSync<TInput>(
-  invoke: YieldedSyncProvider<TInput>,
+export function findAsync<TInput, TOutput extends TInput = TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
+  predicate: (value: TInput, index: number) => value is TOutput,
+): Promise<TOutput | undefined>;
+export function findAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
   predicate: (value: TInput, index: number) => unknown,
-): TInput | undefined {
-  return invoke().find(predicate);
-}
-
-export async function findAsync<TInput>(
-  invoke: YieldedAsyncProvider<TInput>,
-  predicate: (value: TInput, index: number) => unknown,
-): Promise<TInput | undefined> {
+): Promise<TInput | undefined>;
+export async function findAsync(
+  generator: YieldedAsyncGenerator,
+  predicate: (value: unknown, index: number) => unknown,
+): Promise<unknown | undefined> {
   const index = 0;
-  for await (const next of invoke()) {
+  for await (const next of generator) {
     if (await predicate(next, index)) return next;
   }
 }

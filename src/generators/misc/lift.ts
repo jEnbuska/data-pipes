@@ -1,22 +1,24 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
+import type {
+  YieldedAsyncGenerator,
+  YieldedSyncGenerator,
 } from "../../types.ts";
 
-export function liftSync<TInput, TOutput>(
-  middleware: YieldedSyncMiddleware<TInput, TOutput>,
-): YieldedSyncMiddleware<TInput, TOutput> {
-  return function* liftSyncResolver(generator) {
-    return middleware(generator);
-  };
+export function* liftSync<TInput, TOutput>(
+  generator: YieldedSyncGenerator<TInput>,
+  middleware: (
+    generator: YieldedSyncGenerator<TInput>,
+  ) => YieldedSyncGenerator<TOutput>,
+): YieldedSyncGenerator<TOutput> {
+  yield* middleware(generator);
 }
 
-export function liftAsync<TInput, TOutput>(
-  middleware: YieldedAsyncMiddleware<TInput, TOutput>,
-): YieldedAsyncMiddleware<TInput, TOutput> {
-  return async function* liftAsyncResolver(generator) {
-    for await (const next of middleware(generator)) {
-      yield next;
-    }
-  };
+export async function* liftAsync<TInput, TOutput>(
+  generator: YieldedAsyncGenerator<TInput>,
+  middleware: (
+    generator: YieldedAsyncGenerator<TInput>,
+  ) => YieldedAsyncGenerator<TOutput>,
+): YieldedAsyncGenerator<TOutput> {
+  for await (const next of middleware(generator)) {
+    yield next;
+  }
 }

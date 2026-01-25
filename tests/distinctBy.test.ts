@@ -1,6 +1,6 @@
-import { describe, test, expect } from "vitest";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("distinctBy", () => {
   const module2Predicate = (it: number) => it % 2;
@@ -8,7 +8,7 @@ describe("distinctBy", () => {
     expect(
       yielded([])
         .distinctBy((it) => it)
-        .resolve(),
+        .toArray(),
     ).toStrictEqual([]);
   });
 
@@ -16,7 +16,7 @@ describe("distinctBy", () => {
     expect(
       yielded([1, 2, 3])
         .distinctBy((it) => it)
-        .resolve(),
+        .toArray(),
     ).toStrictEqual([1, 2, 3]);
   });
 
@@ -24,7 +24,7 @@ describe("distinctBy", () => {
     expect(
       yielded([1, 2, 3, 4])
         .distinctBy((it) => it % 2)
-        .resolve(),
+        .toArray(),
     ).toStrictEqual([1, 2]);
   });
 
@@ -43,7 +43,7 @@ describe("distinctBy", () => {
     expect(
       await (fromResolvedPromises
         .distinctBy(module2Predicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2]);
   });
 
@@ -51,34 +51,34 @@ describe("distinctBy", () => {
     expect(
       await (fromAsyncGenerator
         .distinctBy(module2Predicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2]);
   });
 
   test("from promises", async () => {
     expect(
       (await fromPromises
-        .toAwaited()
+        .awaited()
         .distinctBy(module2Predicate)
-        .resolve()) satisfies number[],
+        .toArray()) satisfies number[],
     ).toStrictEqual([1, 2]);
   });
 
   test("from generator", async () => {
     expect(
-      fromGenerator.distinctBy(module2Predicate).resolve() satisfies number[],
+      fromGenerator.distinctBy(module2Predicate).toArray() satisfies number[],
     ).toStrictEqual([1, 2]);
   });
 
   test("from array", () => {
     expect(
-      fromArray.distinctBy(module2Predicate).resolve() satisfies number[],
+      fromArray.distinctBy(module2Predicate).toArray() satisfies number[],
     ).toStrictEqual([1, 2]);
   });
 
   test("from empty", () => {
     expect(
-      fromEmpty.distinctBy(module2Predicate).resolve() satisfies number[],
+      fromEmpty.distinctBy(module2Predicate).toArray() satisfies number[],
     ).toStrictEqual([]);
   });
 
@@ -86,7 +86,7 @@ describe("distinctBy", () => {
     expect(
       await (fromEmptyAsync
         .distinctBy(module2Predicate)
-        .resolve() satisfies Promise<number[]>),
+        .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
 });

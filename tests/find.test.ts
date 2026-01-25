@@ -1,38 +1,28 @@
-import { describe, test, expect } from "vitest";
-import { createTestSets } from "./utils/createTestSets.ts";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
+import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("find", () => {
   test("find first", () => {
     expect(
       yielded([1, 2, 3])
         .find((it) => it === 1)
-        .resolve(),
+        .toArray(),
     ).toStrictEqual(1);
   });
 
   test("find second", () => {
     expect(
-      yielded([1, 2, 3])
-        .find((it) => it === 2)
-        .resolve() satisfies number | undefined,
+      yielded([1, 2, 3]).find((it) => it === 2) satisfies number | undefined,
     ).toStrictEqual(2);
   });
 
   test("find last", () => {
-    expect(
-      yielded([1, 2, 3])
-        .find((it) => it === 3)
-        .resolve(),
-    ).toStrictEqual(3);
+    expect(yielded([1, 2, 3]).find((it) => it === 3)).toStrictEqual(3);
   });
 
   test("find none", () => {
-    expect(
-      yielded([1, 2, 3])
-        .find((it) => it === 4)
-        .resolve(),
-    ).toStrictEqual(undefined);
+    expect(yielded([1, 2, 3]).find((it) => it === 4)).toStrictEqual(undefined);
   });
 
   const numbers = [1, 2, 3];
@@ -74,31 +64,27 @@ describe("find", () => {
 
   test("from promises", async () => {
     expect(
-      await (fromPromises.toAwaited().find(find2).resolve() satisfies Promise<
+      await (fromPromises.awaited().find(find2).resolve() satisfies Promise<
         void | number
       >),
     ).toBe(2);
   });
 
   test("from generator", async () => {
-    expect(fromGenerator.find(find2).resolve() satisfies number | void).toBe(2);
+    expect(fromGenerator.find(find2) satisfies number | void).toBe(2);
   });
 
   test("from array", () => {
-    expect(fromArray.find(find2).resolve() satisfies number | void).toBe(2);
+    expect(fromArray.find(find2) satisfies number | void).toBe(2);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.find(find2).resolve() satisfies number | void).toBe(
-      undefined,
-    );
+    expect(fromEmpty.find(find2) satisfies number | void).toBe(undefined);
   });
 
   test("from empty async", async () => {
     expect(
-      await (fromEmptyAsync.find(find2).resolve() satisfies Promise<
-        void | number
-      >),
+      await (fromEmptyAsync.find(find2) satisfies Promise<void | number>),
     ).toBe(undefined);
   });
 });

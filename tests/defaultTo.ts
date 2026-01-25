@@ -1,12 +1,11 @@
-import { describe, test, expect } from "vitest";
-
+import { describe, expect, test } from "vitest";
 import { createTestSets } from "./utils/createTestSets.ts";
 
 describe("defaultTo", () => {
   const numbers = [1, 2, 3];
   const { fromSingle, fromSingleAsync } = createTestSets(numbers);
   test("from single", () => {
-    expect(fromSingle.defaultTo(() => 0).resolve() satisfies number).toEqual(
+    expect(fromSingle.defaultTo(() => 0).toArray() satisfies number).toEqual(
       numbers[0],
     );
   });
@@ -15,7 +14,7 @@ describe("defaultTo", () => {
     expect(
       await (fromSingleAsync
         .defaultTo(() => 0)
-        .resolve() satisfies Promise<number>),
+        .toArray() satisfies Promise<number>),
     ).toStrictEqual(0);
   });
 });

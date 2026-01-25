@@ -1,35 +1,22 @@
-import {
-  type YieldedAsyncMiddleware,
-  type YieldedSyncMiddleware,
-} from "../types.ts";
+import type { YieldedAsyncGenerator, YieldedSyncGenerator } from "../types.ts";
 
-export function toReverseSync<TInput>(): YieldedSyncMiddleware<
-  TInput,
-  TInput,
-  TInput[]
-> {
-  return function* reverseSyncProvider(generator) {
-    const acc: TInput[] = [];
-    for (const next of generator) {
-      acc.unshift(next);
-    }
-    yield* acc;
-    return acc;
-  };
+export function toReversedSync<TInput>(
+  generator: YieldedSyncGenerator<TInput>,
+): TInput[] {
+  const acc: TInput[] = [];
+  for (const next of generator) {
+    acc.unshift(next);
+  }
+  return acc;
 }
 
-export function toReverseAsync<TInput>(): YieldedAsyncMiddleware<
-  TInput,
-  TInput,
-  TInput[]
-> {
-  return async function* reverseAsyncResolver(generator) {
-    const acc: TInput[] = [];
+export async function toReversedAsync<TInput>(
+  generator: YieldedAsyncGenerator<TInput>,
+): Promise<TInput[]> {
+  const acc: TInput[] = [];
 
-    for await (const next of generator) {
-      acc.unshift(next);
-    }
-    yield* acc;
-    return acc;
-  };
+  for await (const next of generator) {
+    acc.unshift(next);
+  }
+  return acc;
 }

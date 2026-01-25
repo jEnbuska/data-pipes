@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import yielded from "../src/index.ts";
 
 describe("lift", () => {
@@ -9,7 +9,7 @@ describe("lift", () => {
           yield next * 2;
         }
       })
-      .resolve();
+      .toArray();
     expect(array).toStrictEqual([2, 4, 6]);
   });
 
@@ -20,7 +20,7 @@ describe("lift", () => {
           yield next * 2;
         }
       })
-      .resolve() satisfies number[];
+      .toArray() satisfies number[];
     expect(array).toStrictEqual([2]);
   });
   test("lift filter", () => {
@@ -31,7 +31,7 @@ describe("lift", () => {
           yield next;
         }
       })
-      .resolve();
+      .toArray();
     expect(array).toStrictEqual([1, 2, 4]);
   });
 
