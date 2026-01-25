@@ -1,15 +1,4 @@
-import type {
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
-} from "../types.ts";
-
-export function* mapSync<T, TOut>(
-  generator: YieldedIterator<T>,
-  mapper: (next: T) => TOut,
-): YieldedIterator<TOut> {
-  yield* generator.map(mapper);
-}
+import type { PromiseOrNot, YieldedAsyncGenerator } from "../types.ts";
 
 export async function* mapAsync<T, TOut>(
   generator: YieldedAsyncGenerator<T>,

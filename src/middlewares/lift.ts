@@ -9,9 +9,7 @@ export function* liftSync<T, TOut>(
 
 export async function* liftAsync<T, TOut>(
   generator: YieldedAsyncGenerator<T>,
-  middleware: (
-    generator: YieldedAsyncGenerator<T>,
-  ) => YieldedAsyncGenerator<TOut>,
+  middleware: (generator: YieldedAsyncGenerator<T>) => AsyncGenerator<TOut>,
 ): YieldedAsyncGenerator<TOut> {
   for await (const next of middleware(generator)) {
     yield next;

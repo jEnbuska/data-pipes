@@ -19,18 +19,21 @@ import { takeWhileAsync } from "./middlewares/takeWhile.ts";
 import { tapAsync } from "./middlewares/tap.ts";
 import { AsyncYieldedResolver } from "./resolvers/AsyncYieldedResolver.ts";
 import type {
-  IYielded,
+  IAsyncYielded,
   PromiseOrNot,
   YieldedAsyncGenerator,
-  YieldedMiddlewares,
+  YieldedIterator,
 } from "./types.ts";
 
 export class AsyncYielded<T>
   extends AsyncYieldedResolver<T>
-  implements IYielded<T, true>
+  implements IAsyncYielded<T>
 {
-  private constructor(generator: YieldedAsyncGenerator<T>) {
-    super(generator);
+  public constructor(
+    parent: undefined | YieldedAsyncGenerator | YieldedIterator,
+    generator: YieldedAsyncGenerator<T>,
+  ) {
+    super(parent, generator);
   }
 
   static from<T>(
@@ -45,8 +48,10 @@ export class AsyncYielded<T>
       source = source();
     }
     if (source[Symbol.asyncIterator]) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return new AsyncYielded<unknown>(source[Symbol.asyncIterator]());
+      return new AsyncYielded<unknown>(
+        undefined, // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+        source[Symbol.asyncIterator](),
+      );
     }
     if (source instanceof Promise) {
       return AsyncYielded.from(async function* () {
@@ -55,35 +60,51 @@ export class AsyncYielded<T>
         else yield data;
       });
     }
-    return new AsyncYielded<any>(source as YieldedAsyncGenerator<any>);
+    throw new TypeError(`Invalid Async generator source ${source}`);
   }
 
-  batch(...args: Parameters<YieldedMiddlewares<T, true>["batch"]>) {
-    return new AsyncYielded<T[]>(batchAsync(this.generator, ...args));
+  #next<TNext, TArgs extends any[]>(
+    next: (
+      generator: YieldedAsyncGenerator<T>,
+      ...args: TArgs
+    ) => YieldedAsyncGenerator<TNext>,
+    ...args: TArgs
+  ) {
+    return new AsyncYielded<TNext>(
+      this.generator,
+      next(this.generator, ...args),
+    );
   }
 
-  chunkBy(...args: Parameters<YieldedMiddlewares<T, true>["chunkBy"]>) {
-    return new AsyncYielded(chunkByAsync(this.generator, ...args));
+  batch(...args: Parameters<IAsyncYielded<T>["batch"]>) {
+    return this.#next(batchAsync, ...args);
   }
 
-  distinctBy(...args: Parameters<YieldedMiddlewares<T, true>["distinctBy"]>) {
-    return new AsyncYielded(distinctByAsync(this.generator, ...args));
+  chunkBy(...args: Parameters<IAsyncYielded<T>["chunkBy"]>) {
+    return this.#next(chunkByAsync, ...args);
+  }
+
+  distinctBy(...args: Parameters<IAsyncYielded<T>["distinctBy"]>) {
+    return this.#next(distinctByAsync, ...args);
   }
 
   distinctUntilChanged(
-    ...args: Parameters<YieldedMiddlewares<T, true>["distinctUntilChanged"]>
+    ...args: Parameters<IAsyncYielded<T>["distinctUntilChanged"]>
   ) {
-    return new AsyncYielded(distinctUntilChangedAsync(this.generator, ...args));
+    return this.#next(distinctUntilChangedAsync, ...args);
   }
 
-  filter(...args: Parameters<YieldedMiddlewares<T, true>["filter"]>) {
-    return new AsyncYielded(filterAsync(this.generator, ...args));
+  filter<TOut extends T>(fn: (next: T) => next is TOut): AsyncYielded<TOut>;
+  filter(fn: (next: T) => any): AsyncYielded<T>;
+  filter(...args: unknown[]) {
+    // @ts-expect-error
+    return this.#next(filterAsync, ...args);
   }
 
   flat<Depth extends number = 1>(
     depth?: Depth,
   ): AsyncYielded<FlatArray<T[], Depth>> {
-    return new AsyncYielded(flatAsync(this.generator, depth));
+    return this.#next(flatAsync, depth);
   }
 
   flatMap<TOut>(
@@ -93,59 +114,59 @@ export class AsyncYielded<T>
       TOut | readonly TOut[] | IteratorObject<TOut> | AsyncIteratorObject<TOut>
     >,
   ) {
-    return new AsyncYielded(flatMapAsync(this.generator, callback));
+    return this.#next(flatMapAsync, callback);
   }
 
   lift<TOut = never>(
     middleware: (generator: YieldedAsyncGenerator<T>) => AsyncGenerator<TOut>,
   ) {
-    return new AsyncYielded<TOut>(liftAsync(this.generator, middleware));
+    return this.#next(liftAsync, middleware);
   }
 
   map<TOut>(mapper: (next: T) => PromiseOrNot<TOut>) {
-    return new AsyncYielded<TOut>(mapAsync(this.generator, mapper));
+    return this.#next(mapAsync, mapper);
   }
 
   drop(count: number) {
     if (count < 0) {
       throw new RangeError(`RangeError: ${count} must be positive`);
     }
-    return new AsyncYielded(dropAsync(this.generator, count));
+    return this.#next(dropAsync, count);
   }
 
-  dropLast(...args: Parameters<YieldedMiddlewares<T, true>["dropLast"]>) {
-    return new AsyncYielded(dropLastAsync(this.generator, ...args));
+  dropLast(...args: Parameters<IAsyncYielded<T>["dropLast"]>) {
+    return this.#next(dropLastAsync, ...args);
   }
 
-  dropWhile(...args: Parameters<YieldedMiddlewares<T, true>["dropWhile"]>) {
-    return new AsyncYielded(dropWhileAsync(this.generator, ...args));
+  dropWhile(...args: Parameters<IAsyncYielded<T>["dropWhile"]>) {
+    return this.#next(dropWhileAsync, ...args);
   }
 
-  take(...args: Parameters<YieldedMiddlewares<T, true>["take"]>) {
-    return new AsyncYielded(takeAsync(this.generator, ...args));
+  take(...args: Parameters<IAsyncYielded<T>["take"]>) {
+    return this.#next(takeAsync, ...args);
   }
 
-  takeLast(...args: Parameters<YieldedMiddlewares<T, true>["takeLast"]>) {
-    return new AsyncYielded(takeLastAsync(this.generator, ...args));
+  takeLast(...args: Parameters<IAsyncYielded<T>["takeLast"]>) {
+    return this.#next(takeLastAsync, ...args);
   }
 
-  takeWhile(...args: Parameters<YieldedMiddlewares<T, true>["takeWhile"]>) {
-    return new AsyncYielded(takeWhileAsync(this.generator, ...args));
+  takeWhile(...args: Parameters<IAsyncYielded<T>["takeWhile"]>) {
+    return this.#next(takeWhileAsync, ...args);
   }
 
-  tap(...args: Parameters<YieldedMiddlewares<T, true>["tap"]>) {
-    return new AsyncYielded(tapAsync(this.generator, ...args));
+  tap(...args: Parameters<IAsyncYielded<T>["tap"]>) {
+    return this.#next(tapAsync, ...args);
   }
 
   reversed() {
-    return new AsyncYielded(reversedAsync(this.generator));
+    return this.#next(reversedAsync);
   }
 
-  sorted(...args: Parameters<YieldedMiddlewares<T, true>["sorted"]>) {
-    return new AsyncYielded(sortedAsync(this.generator, ...args));
+  sorted(...args: Parameters<IAsyncYielded<T>["sorted"]>) {
+    return this.#next(sortedAsync, ...args);
   }
 
-  parallel(...args: Parameters<IYielded<T, true>["parallel"]>) {
-    return new AsyncYielded(parallel(this.generator, ...args));
+  parallel(...args: Parameters<IAsyncYielded<T>["parallel"]>) {
+    return this.#next(parallel, ...args);
   }
 }

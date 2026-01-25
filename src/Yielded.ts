@@ -9,7 +9,6 @@ import { dropWhileSync } from "./middlewares/dropWhile.ts";
 import { flatSync } from "./middlewares/flat.ts";
 import { flatMapSync } from "./middlewares/flatMap.ts";
 import { liftSync } from "./middlewares/lift.ts";
-import { mapSync } from "./middlewares/map.ts";
 import { reversedSync } from "./middlewares/reversed.ts";
 import { sortedSync } from "./middlewares/sorted.ts";
 import { takeSync } from "./middlewares/take.ts";
@@ -17,11 +16,14 @@ import { takeLastSync } from "./middlewares/takeLast.ts";
 import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
-import type { IYielded, YieldedIterator, YieldedMiddlewares } from "./types.ts";
+import type { IYielded, YieldedIterator } from "./types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
-  private constructor(generator: YieldedIterator<T>) {
-    super(generator);
+  private constructor(
+    parent: undefined | YieldedIterator,
+    generator: YieldedIterator<T>,
+  ) {
+    super(parent, generator);
   }
 
   static from<T>(
@@ -35,92 +37,104 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     }
     if (source[Symbol.iterator]) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return new Yielded<any>(source[Symbol.iterator]());
+      return new Yielded<any>(undefined, source[Symbol.iterator]());
     }
-    return new Yielded<any>(Iterator.from([source]));
+    return new Yielded<any>(undefined, Iterator.from([source]));
   }
 
-  batch(...args: Parameters<YieldedMiddlewares<T>["batch"]>) {
-    return new Yielded<T[]>(batchSync(this.generator, ...args));
+  #next<TNext, TArgs extends any[]>(
+    next: (
+      generator: YieldedIterator<T>,
+      ...args: TArgs
+    ) => YieldedIterator<TNext>,
+    ...args: TArgs
+  ) {
+    return new Yielded<TNext>(this.generator, next(this.generator, ...args));
   }
 
-  chunkBy(...args: Parameters<YieldedMiddlewares<T>["chunkBy"]>) {
-    return new Yielded(chunkBySync(this.generator, ...args));
+  filter<TOut extends T>(predicate: (next: T) => next is TOut): Yielded<TOut>;
+  filter(predicate: (next: T) => unknown): Yielded<T>;
+  filter(predicate: (next: T) => unknown) {
+    return new Yielded(this.generator, this.generator.filter(predicate));
   }
 
-  distinctBy(...args: Parameters<YieldedMiddlewares<T>["distinctBy"]>) {
-    return new Yielded(distinctBySync(this.generator, ...args));
+  map<TOut>(mapper: (next: T) => TOut) {
+    return new Yielded(this.generator, this.generator.map(mapper));
+  }
+
+  drop(...args: Parameters<IYielded<T>["drop"]>) {
+    return new Yielded(this.generator, this.generator.drop(...args));
+  }
+
+  batch(...args: Parameters<IYielded<T>["batch"]>) {
+    return this.#next(batchSync, ...args);
+  }
+
+  chunkBy(...args: Parameters<IYielded<T>["chunkBy"]>) {
+    return this.#next(chunkBySync, ...args);
+  }
+
+  distinctBy(...args: Parameters<IYielded<T>["distinctBy"]>) {
+    return this.#next(distinctBySync, ...args);
   }
 
   distinctUntilChanged(
-    ...args: Parameters<YieldedMiddlewares<T>["distinctUntilChanged"]>
+    ...args: Parameters<IYielded<T>["distinctUntilChanged"]>
   ) {
-    return new Yielded(distinctUntilChangedSync(this.generator, ...args));
-  }
-
-  filter(...args: Parameters<typeof this.generator.filter>) {
-    return new Yielded(this.generator.filter(...args));
+    return this.#next(distinctUntilChangedSync, ...args);
   }
 
   flat<Depth extends number = 1>(
     depth?: Depth,
   ): Yielded<FlatArray<T[], Depth>> {
-    return new Yielded(flatSync(this.generator, depth));
+    return this.#next(flatSync, depth);
   }
 
   flatMap<TOut>(
     callback: (value: T) => TOut | readonly TOut[] | IteratorObject<TOut>,
   ) {
-    return new Yielded(flatMapSync(this.generator, callback));
+    return this.#next(flatMapSync, callback);
   }
 
   lift<TOut = never>(
     middleware: (generator: YieldedIterator<T>) => Generator<TOut>,
   ) {
-    return new Yielded<TOut>(liftSync(this.generator, middleware));
+    return this.#next(liftSync, middleware);
   }
 
-  map<TOut>(mapper: (next: T) => TOut) {
-    return new Yielded<TOut>(mapSync(this.generator, mapper));
+  dropLast(...args: Parameters<IYielded<T>["dropLast"]>) {
+    return this.#next(dropLastSync, ...args);
   }
 
-  drop(...args: Parameters<YieldedMiddlewares<T>["drop"]>) {
-    return new Yielded(this.generator.drop(...args));
+  dropWhile(...args: Parameters<IYielded<T>["dropWhile"]>) {
+    return this.#next(dropWhileSync, ...args);
   }
 
-  dropLast(...args: Parameters<YieldedMiddlewares<T>["dropLast"]>) {
-    return new Yielded(dropLastSync(this.generator, ...args));
+  take(...args: Parameters<IYielded<T>["take"]>) {
+    return this.#next(takeSync, ...args);
   }
 
-  dropWhile(...args: Parameters<YieldedMiddlewares<T>["dropWhile"]>) {
-    return new Yielded(dropWhileSync(this.generator, ...args));
+  takeLast(...args: Parameters<IYielded<T>["takeLast"]>) {
+    return this.#next(takeLastSync, ...args);
   }
 
-  take(...args: Parameters<YieldedMiddlewares<T>["take"]>) {
-    return new Yielded(takeSync(this.generator, ...args));
+  takeWhile(...args: Parameters<IYielded<T>["takeWhile"]>) {
+    return this.#next(takeWhileSync, ...args);
   }
 
-  takeLast(...args: Parameters<YieldedMiddlewares<T>["takeLast"]>) {
-    return new Yielded(takeLastSync(this.generator, ...args));
-  }
-
-  takeWhile(...args: Parameters<YieldedMiddlewares<T>["takeWhile"]>) {
-    return new Yielded(takeWhileSync(this.generator, ...args));
-  }
-
-  tap(...args: Parameters<YieldedMiddlewares<T>["tap"]>) {
-    return new Yielded(tapSync(this.generator, ...args));
+  tap(...args: Parameters<IYielded<T>["tap"]>) {
+    return this.#next(tapSync, ...args);
   }
 
   awaited(): AsyncYielded<Awaited<T>> {
-    return AsyncYielded.from(awaited(this.generator));
+    return new AsyncYielded(this.generator, awaited(this.generator));
   }
 
   reversed() {
-    return new Yielded(reversedSync(this.generator));
+    return this.#next(reversedSync);
   }
 
-  sorted(...args: Parameters<YieldedMiddlewares<T>["sorted"]>) {
-    return new Yielded(sortedSync(this.generator, ...args));
+  sorted(...args: Parameters<IYielded<T>["sorted"]>) {
+    return this.#next(sortedSync, ...args);
   }
 }

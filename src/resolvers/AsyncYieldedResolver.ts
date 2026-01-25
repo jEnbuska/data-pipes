@@ -12,24 +12,47 @@ import { reduceAsync } from "../consumers/reduce.ts";
 import { someAsync } from "../consumers/some.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
 import type {
-  IYieldedResolver,
   PromiseOrNot,
   YieldedAsyncGenerator,
+  YieldedIterator,
 } from "../types.ts";
+import type { IAsyncYieldedResolver } from "./types.ts";
 
-export class AsyncYieldedResolver<T> implements IYieldedResolver<T, true> {
-  protected readonly generator: YieldedAsyncGenerator<T>;
+export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
+  protected readonly generator: Disposable & YieldedAsyncGenerator<T>;
 
-  protected constructor(generator: YieldedAsyncGenerator<T>) {
-    this.generator = generator;
+  protected constructor(
+    parent: undefined | YieldedAsyncGenerator | YieldedIterator,
+    generator: YieldedAsyncGenerator<T>,
+  ) {
+    this.generator = Object.assign(generator, {
+      [Symbol.dispose]() {
+        void parent?.return?.(undefined);
+      },
+    });
   }
 
-  [Symbol.asyncIterator]() {
-    return this.generator[Symbol.asyncIterator]();
+  async *[Symbol.asyncIterator]() {
+    using generator = this.generator;
+    for await (const next of generator) {
+      yield next;
+    }
   }
 
-  forEach(...args: Parameters<IYieldedResolver<T, true>["forEach"]>) {
-    return forEachAsync(this.generator, ...args);
+  [Symbol.dispose]() {
+    return this.generator[Symbol.dispose]();
+  }
+
+  async #apply<TArgs extends any[], TReturn>(
+    cb: (...args: [YieldedAsyncGenerator<T>, ...TArgs]) => Promise<TReturn>,
+    ...args: TArgs
+  ): Promise<TReturn> {
+    using generator = this.generator;
+    return await cb(generator, ...args);
+  }
+
+  forEach(...args: Parameters<IAsyncYieldedResolver<T>["forEach"]>) {
+    return this.#apply(forEachAsync, ...args);
   }
 
   reduce<TOut>(
@@ -39,40 +62,46 @@ export class AsyncYieldedResolver<T> implements IYieldedResolver<T, true> {
   reduce(
     reducer: (acc: T, next: T, index: number) => T,
   ): Promise<T | undefined>;
-  reduce(...args: Parameters<IYieldedResolver<T, true>["reduce"]>) {
-    return reduceAsync(this.generator, ...args);
+  reduce(...args: unknown[]) {
+    // @ts-expect-error
+    return this.#apply(reduceAsync, ...args);
   }
 
   toArray() {
-    return toArrayAsync(this.generator);
+    return this.#apply(toArrayAsync);
   }
 
-  every(...args: Parameters<IYieldedResolver<T, true>["every"]>) {
-    return everyAsync(this.generator, ...args);
+  every(...args: Parameters<IAsyncYieldedResolver<T>["every"]>) {
+    return this.#apply(everyAsync, ...args);
   }
 
-  find(...args: Parameters<IYieldedResolver<T, true>["find"]>) {
-    return findAsync(this.generator, ...args);
+  find<TOut extends T>(
+    predicate: (next: T) => next is TOut,
+  ): Promise<TOut | undefined>;
+  find(predicate: (next: T) => unknown): Promise<T | undefined>;
+  find(...args: unknown[]) {
+    // @ts-expect-error
+    return this.#apply(findAsync, ...args);
   }
 
-  some(...args: Parameters<IYieldedResolver<T, true>["some"]>) {
-    return someAsync(this.generator, ...args);
+  some(...args: Parameters<IAsyncYieldedResolver<T>["some"]>) {
+    return this.#apply(someAsync, ...args);
   }
 
-  minBy(...args: Parameters<IYieldedResolver<T, true>["minBy"]>) {
-    return minByAsync(this.generator, ...args);
+  minBy(...args: Parameters<IAsyncYieldedResolver<T>["minBy"]>) {
+    return this.#apply(minByAsync, ...args);
   }
 
-  maxBy(...args: Parameters<IYieldedResolver<T, true>["maxBy"]>) {
-    return maxByAsync(this.generator, ...args);
+  maxBy(...args: Parameters<IAsyncYieldedResolver<T>["maxBy"]>) {
+    return this.#apply(maxByAsync, ...args);
   }
 
-  countBy(...args: Parameters<IYieldedResolver<T, true>["countBy"]>) {
-    return countByAsync(this.generator, ...args);
+  countBy(...args: Parameters<IAsyncYieldedResolver<T>["countBy"]>) {
+    return this.#apply(countByAsync, ...args);
   }
 
-  count(...args: Parameters<IYieldedResolver<T, true>["count"]>) {
-    return countAsync(this.generator, ...args);
+  count(...args: Parameters<IAsyncYieldedResolver<T>["count"]>) {
+    return this.#apply(countAsync, ...args);
   }
 
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
@@ -87,14 +116,14 @@ export class AsyncYieldedResolver<T> implements IYieldedResolver<T, true> {
   ): Promise<Partial<Record<TKey, T[]>>>;
   groupBy(...args: unknown[]): any {
     // @ts-expect-error
-    return groupByAsync(this.generator, ...args);
+    return this.#apply(groupByAsync, ...args);
   }
 
   consume() {
-    return consumeAsync(this.generator);
+    return this.#apply(consumeAsync);
   }
 
   first() {
-    return firstAsync(this.generator);
+    return this.#apply(firstAsync);
   }
 }

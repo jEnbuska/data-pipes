@@ -5,17 +5,39 @@ import { firstSync } from "../consumers/first.ts";
 import { groupBySync } from "../consumers/groupBy.ts";
 import { maxBySync } from "../consumers/maxBy.ts";
 import { minBySync } from "../consumers/minBy.ts";
-import type { IYieldedResolver, YieldedIterator } from "../types.ts";
+import type { YieldedIterator } from "../types.ts";
+import type { IYieldedResolver } from "./types.ts";
 
 export class YieldedResolver<T> implements IYieldedResolver<T> {
-  protected readonly generator: YieldedIterator<T>;
-
-  protected constructor(generator: YieldedIterator<T>) {
-    this.generator = generator;
+  protected readonly generator: Disposable & YieldedIterator<T>;
+  protected constructor(
+    parent: undefined | YieldedIterator,
+    generator: YieldedIterator<T>,
+  ) {
+    this.generator = Object.assign(generator, {
+      [Symbol.dispose]() {
+        void parent?.return?.(undefined);
+      },
+    });
   }
 
-  [Symbol.iterator]() {
-    return this.generator[Symbol.iterator]();
+  *[Symbol.iterator]() {
+    using generator = this.generator;
+    for (const next of generator) {
+      yield next;
+    }
+  }
+
+  [Symbol.dispose]() {
+    return this.generator[Symbol.dispose]();
+  }
+
+  #apply<TArgs extends any[], TReturn>(
+    cb: (...args: [YieldedIterator<T>, ...TArgs]) => TReturn,
+    ...args: TArgs
+  ): TReturn {
+    using generator = this.generator;
+    return cb(generator, ...args);
   }
 
   forEach(...args: Parameters<IYieldedResolver<T>["forEach"]>) {
@@ -28,39 +50,46 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
   ): TOut;
   reduce(reducer: (acc: T, next: T, index: number) => T): T | undefined;
   reduce(...args: Parameters<IYieldedResolver<T>["reduce"]>) {
-    return this.generator.reduce(...args);
+    using generator = this.generator;
+    return generator.reduce(...args);
   }
 
   toArray() {
-    return this.generator.toArray();
+    using generator = this.generator;
+    return generator.toArray();
   }
 
-  every(...args: Parameters<IYieldedResolver<T>["every"]>) {
-    return this.generator.every(...args);
-  }
-
+  find<TOut extends T>(predicate: (next: T) => next is TOut): TOut | undefined;
+  find(predicate: (next: T) => unknown): T | undefined;
   find(...args: Parameters<IYieldedResolver<T>["find"]>) {
-    return this.generator.find(...args);
+    using generator = this.generator;
+    return generator.find(...args);
   }
 
   some(...args: Parameters<IYieldedResolver<T>["some"]>) {
-    return this.generator.some(...args);
+    using generator = this.generator;
+    return generator.some(...args);
+  }
+
+  every(...args: Parameters<IYieldedResolver<T>["every"]>) {
+    using generator = this.generator;
+    return generator.every(...args);
   }
 
   minBy(...args: Parameters<IYieldedResolver<T>["minBy"]>) {
-    return minBySync(this.generator, ...args);
+    return this.#apply(minBySync, ...args);
   }
 
   maxBy(...args: Parameters<IYieldedResolver<T>["maxBy"]>) {
-    return maxBySync(this.generator, ...args);
+    return this.#apply(maxBySync, ...args);
   }
 
   countBy(...args: Parameters<IYieldedResolver<T>["countBy"]>) {
-    return countBySync(this.generator, ...args);
+    return this.#apply(countBySync, ...args);
   }
 
   count(...args: Parameters<IYieldedResolver<T>["count"]>) {
-    return countSync(this.generator, ...args);
+    return this.#apply(countSync, ...args);
   }
 
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
@@ -73,14 +102,14 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
   ): Partial<Record<TKey, T[]>>;
   groupBy(...args: unknown[]): any {
     // @ts-expect-error
-    return groupBySync(this.generator, ...args);
+    return this.#apply(groupBySync, ...args);
   }
 
   consume() {
-    return consumeSync(this.generator);
+    return this.#apply(consumeSync);
   }
 
   first() {
-    return firstSync(this.generator);
+    return this.#apply(firstSync);
   }
 }
