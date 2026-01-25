@@ -13,3 +13,7 @@ export type PromiseOrNot<T> = Promise<T> | T;
 export type YieldedGenerator<T, TAsync extends boolean> = TAsync extends true
   ? YieldedAsyncGenerator<T>
   : YieldedIterator<T>;
+
+export type CallbackReturn<T, TAsync extends boolean> = TAsync extends true
+  ? Promise<T> | T
+  : T;

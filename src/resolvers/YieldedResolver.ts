@@ -5,6 +5,8 @@ import { firstSync } from "../consumers/first.ts";
 import { groupBySync } from "../consumers/groupBy.ts";
 import { maxBySync } from "../consumers/maxBy.ts";
 import { minBySync } from "../consumers/minBy.ts";
+import { toReversedSync } from "../consumers/toReverse.ts";
+import { toSortedSync } from "../consumers/toSorted.ts";
 import type { YieldedIterator } from "../shared.types.ts";
 import type { IYieldedResolver } from "./types.ts";
 
@@ -74,6 +76,14 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
   every(...args: Parameters<IYieldedResolver<T>["every"]>) {
     using generator = this.generator;
     return generator.every(...args);
+  }
+
+  toSorted(...args: Parameters<IYieldedResolver<T>["toSorted"]>) {
+    return this.#apply(toSortedSync, ...args);
+  }
+
+  toReversed() {
+    return this.#apply(toReversedSync);
   }
 
   minBy(...args: Parameters<IYieldedResolver<T>["minBy"]>) {

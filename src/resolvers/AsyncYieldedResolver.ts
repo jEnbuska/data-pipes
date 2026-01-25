@@ -11,12 +11,14 @@ import { minByAsync } from "../consumers/minBy.ts";
 import { reduceAsync } from "../consumers/reduce.ts";
 import { someAsync } from "../consumers/some.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
+import { toReversedAsync } from "../consumers/toReverse.ts";
+import { toSortedAsync } from "../consumers/toSorted.ts";
 import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
-import type { IAsyncYieldedResolver } from "./types.ts";
+import type { IAsyncYieldedResolver, IYieldedResolver } from "./types.ts";
 
 export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & YieldedAsyncGenerator<T>;
@@ -86,6 +88,14 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
 
   some(...args: Parameters<IAsyncYieldedResolver<T>["some"]>) {
     return this.#apply(someAsync, ...args);
+  }
+
+  toSorted(...args: Parameters<IYieldedResolver<T>["toSorted"]>) {
+    return this.#apply(toSortedAsync, ...args);
+  }
+
+  toReversed() {
+    return this.#apply(toReversedAsync);
   }
 
   minBy(...args: Parameters<IAsyncYieldedResolver<T>["minBy"]>) {

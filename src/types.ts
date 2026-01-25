@@ -1,4 +1,4 @@
-import type { YieldedGenerator } from "./shared.types.ts";
+import type { CallbackReturn, YieldedGenerator } from "./shared.types.ts";
 
 export interface IAsyncYielded<T> extends IYieldedOperations<T, true> {
   /**
@@ -24,13 +24,9 @@ export interface IYielded<T> extends IYieldedOperations<T, false> {
   awaited(): IAsyncYielded<Awaited<T>>;
 }
 
-type AnyYielded<T, TAsync extends boolean> = TAsync extends true
+type NextYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;
-
-type CallbackReturn<T, TAsync extends boolean> = TAsync extends true
-  ? Promise<T> | T
-  : T;
 
 export interface IYieldedOperations<T, TAsync extends boolean> {
   /**
@@ -41,7 +37,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   chunkBy<TIdentifier>(
     fn: (next: T) => CallbackReturn<TIdentifier, TAsync>,
-  ): AnyYielded<T[], TAsync>;
+  ): NextYielded<T[], TAsync>;
   /**
    * Batch values into batches before feeding them as a batch to next operation
    * @example
@@ -55,14 +51,14 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   batch(
     predicate: (acc: T[]) => CallbackReturn<boolean, TAsync>,
-  ): AnyYielded<T[], TAsync>;
+  ): NextYielded<T[], TAsync>;
   /**
    * @example
    * Yielded.from([1,2,3,4,5])
    *   .drop(2)
    *   .toArray // ([3,4,5]) number[]
    */
-  drop(count: number): AnyYielded<T, TAsync>;
+  drop(count: number): NextYielded<T, TAsync>;
   /**
    * drops the last `count` items produced by the generator and yields the rest to the next operation.
    * Note. The dropLast operator stars emitting previous values to next operation, when it has the dropped amount
@@ -84,7 +80,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *  //     B2          E1
    *  //         C2
    */
-  dropLast(count: number): AnyYielded<T, TAsync>;
+  dropLast(count: number): NextYielded<T, TAsync>;
   /**
    * drops items produced by the generator while the predicate returns true and yields the rest to the next operation.
    * @example
@@ -94,7 +90,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   dropWhile(
     fn: (next: T) => CallbackReturn<boolean, TAsync>,
-  ): AnyYielded<T, TAsync>;
+  ): NextYielded<T, TAsync>;
   /**
    * yields the first `count` items produced by the generator to the next and ignores the rest.
    * @example
@@ -102,7 +98,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *  .take(2)
    *  .toArray() satisfies number[] // [1,2]
    */
-  take(count: number): AnyYielded<T, TAsync>;
+  take(count: number): NextYielded<T, TAsync>;
   /**
    * takes the last `count` items produced by the generator and yields them to the next operation.
    * @example
@@ -110,7 +106,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *  .takeLast(2)
    *  .toArray() satisfies number[] // [4,5]
    */
-  takeLast(count: number): AnyYielded<T, TAsync>;
+  takeLast(count: number): NextYielded<T, TAsync>;
   /**
    * takes items produced by the generator while the predicate returns true and yields them to the next operation.
    * @example
@@ -120,7 +116,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   takeWhile(
     fn: (next: T) => CallbackReturn<boolean, TAsync>,
-  ): AnyYielded<T, TAsync>;
+  ): NextYielded<T, TAsync>;
 
   /**
    * Sorts the items produced by the generator and then yields them to the next operation one by one in the sorted order.
@@ -133,7 +129,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   sorted(
     compareFn: (a: T, b: T) => CallbackReturn<number, TAsync>,
-  ): AnyYielded<T, TAsync>;
+  ): NextYielded<T, TAsync>;
 
   /**
    * filters out items produced by the generator that produce the same value as the previous item when passed to the selector.
@@ -145,7 +141,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   distinctBy<TValue>(
     selector: (next: T) => CallbackReturn<TValue, TAsync>,
-  ): AnyYielded<T, TAsync>;
+  ): NextYielded<T, TAsync>;
   /**
    * filters out items produced by the generator that are equal to the previous item by the compare function.
    * If no compare function is provided, the strict equality operator is used.
@@ -162,7 +158,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   distinctUntilChanged(
     comparator?: (previous: T, current: T) => CallbackReturn<boolean, TAsync>,
-  ): AnyYielded<T, TAsync>;
+  ): NextYielded<T, TAsync>;
 
   /**
    * Filters items produced by the generator using the provided predicate
@@ -175,7 +171,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   filter<TOut extends T>(
     fn: (next: T) => next is TOut,
-  ): AnyYielded<TOut, TAsync>;
+  ): NextYielded<TOut, TAsync>;
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields the items that pass the predicate to the next operation.
@@ -185,7 +181,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *   .filter(n => n % 2)
    *   .toArray() satisfies number[] // [1,3] ;
    */
-  filter(fn: (next: T) => any): AnyYielded<T, TAsync>;
+  filter(fn: (next: T) => any): NextYielded<T, TAsync>;
 
   /**
    * yields the items in reverse order after the parent generator is consumed
@@ -194,7 +190,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *  .reversed()
    *  .toArray() satisfies number[] // [3,2,1]
    */
-  reversed(): AnyYielded<T, TAsync>;
+  reversed(): NextYielded<T, TAsync>;
   /**
    * Maps next item produced by the generator using the provided transform function and yields it
    * to the next operation.
@@ -211,7 +207,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   map<TOut>(
     mapper: (next: T) => CallbackReturn<TOut, TAsync>,
-  ): AnyYielded<TOut, TAsync>;
+  ): NextYielded<TOut, TAsync>;
 
   /**
    * Calls the provided consumer function for each item produced by the generator and yields it
@@ -221,7 +217,7 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    *  .tab(n => console.log(n))
    *  .toArray() satisfies number[] // ([1, 2, 3])
    */
-  tap(callback: (next: T) => unknown): AnyYielded<T, TAsync>;
+  tap(callback: (next: T) => unknown): NextYielded<T, TAsync>;
   /**
    * Returns a new array with all sub-array elements concatenated into it recursively up to the
    * specified depth.
@@ -238,10 +234,10 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
    */
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): AnyYielded<FlatArray<T[], Depth>, TAsync>;
+  ): NextYielded<FlatArray<T[], Depth>, TAsync>;
   flatMap<TOut>(
     callback: (value: T) => CallbackReturn<TOut | TOut[], TAsync>,
-  ): AnyYielded<TOut, TAsync>;
+  ): NextYielded<TOut, TAsync>;
   /**
    * Accepts a generator function that accepts the  previous generator
    *
@@ -282,5 +278,5 @@ export interface IYieldedOperations<T, TAsync extends boolean> {
     middleware: (
       generator: YieldedGenerator<T, TAsync>,
     ) => YieldedGenerator<TOut, TAsync>,
-  ): AnyYielded<TOut, TAsync>;
+  ): NextYielded<TOut, TAsync>;
 }
