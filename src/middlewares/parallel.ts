@@ -1,13 +1,14 @@
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
-
-export interface IYieldedParallel<T> {}
+import type { IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export async function* parallel<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<T> {
+): IYieldedAsyncGenerator<T> {
   if (count < 1) {
     throw new Error(`parallel count must be 1 or larger, but got ${count}`);
+  }
+  if (count === 1) {
+    yield* generator;
   }
   const promises = new Map<
     number,
@@ -19,11 +20,13 @@ export async function* parallel<T>(
     const key = nextKey++;
     promises.set(
       key,
-      Promise.resolve(next).then(({ value, done: isDone }) => ({
-        key,
-        value,
-        done: isDone || wasDone,
-      })),
+      Promise.resolve(next).then(({ value, done: isDone }) => {
+        return {
+          key,
+          value,
+          done: isDone || wasDone,
+        };
+      }),
     );
   }
   /* Trigger 'count' amount for tasks to be run parallel */

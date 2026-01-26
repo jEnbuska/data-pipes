@@ -1,7 +1,7 @@
 import type {
-  NextYielded,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  INextYielded,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedTake<T, TAsync extends boolean> {
@@ -34,13 +34,13 @@ export interface IYieldedTake<T, TAsync extends boolean> {
    *   .toArray() satisfies number[] // []
    * ```
    */
-  take(count: number): NextYielded<T, TAsync>;
+  take(count: number): INextYielded<T, TAsync>;
 }
 
 export function* takeSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   count: number,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   if (count <= 0) return;
   for (const next of generator) {
     yield next;
@@ -49,9 +49,9 @@ export function* takeSync<T>(
 }
 
 export async function* takeAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<T> {
+): IYieldedAsyncGenerator<T> {
   if (count <= 0) return;
   for await (const next of generator) {
     yield next;

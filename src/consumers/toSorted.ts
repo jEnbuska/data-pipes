@@ -1,9 +1,9 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  CallbackReturn,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedToSorted<T, TAsync extends boolean> {
@@ -24,7 +24,7 @@ export interface IYieldedToSorted<T, TAsync extends boolean> {
    * - returns `0` to keep their relative order
    * */
   toSorted(
-    compare: (previous: T, next: T) => CallbackReturn<number, TAsync>,
+    compare: (previous: T, next: T) => ICallbackReturn<number, TAsync>,
   ): ReturnValue<T[], TAsync>;
 }
 
@@ -43,7 +43,7 @@ function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
 }
 
 export function toSortedSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   compareFn: (a: T, b: T) => number,
 ): T[] {
   const acc: T[] = [];
@@ -54,8 +54,8 @@ export function toSortedSync<T>(
   return acc;
 }
 export async function toSortedAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => PromiseOrNot<number>,
+  generator: IYieldedAsyncGenerator<T>,
+  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
 ): Promise<T[]> {
   const acc: T[] = [];
   let pending: Promise<unknown> = Promise.resolve();
@@ -70,7 +70,7 @@ export async function toSortedAsync<T>(
 }
 function createIndexFinderAsync<T>(
   arr: T[],
-  comparator: (a: T, b: T) => PromiseOrNot<number>,
+  comparator: (a: T, b: T) => IPromiseOrNot<number>,
 ) {
   return async function findIndexAsync(
     next: T,

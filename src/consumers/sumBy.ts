@@ -1,8 +1,8 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedSumBy<T, TAsync extends boolean> {
@@ -25,15 +25,15 @@ export interface IYieldedSumBy<T, TAsync extends boolean> {
 }
 
 export function sumBySync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   mapper: (next: T) => number,
 ): number {
   return generator.reduce((acc, next) => mapper(next) + acc, 0);
 }
 
 export async function sumByAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  mapper: (next: T) => PromiseOrNot<number>,
+  generator: IYieldedAsyncGenerator<T>,
+  mapper: (next: T) => IPromiseOrNot<number>,
 ): Promise<number> {
   let acc = 0;
   function increment(value: number) {

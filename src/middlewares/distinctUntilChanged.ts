@@ -1,9 +1,9 @@
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedDistinctUntilChanged<T, TAsync extends boolean> {
@@ -32,14 +32,14 @@ export interface IYieldedDistinctUntilChanged<T, TAsync extends boolean> {
    * ```
    */
   distinctUntilChanged(
-    comparator?: (previous: T, current: T) => CallbackReturn<boolean, TAsync>,
-  ): NextYielded<T, TAsync>;
+    comparator?: (previous: T, current: T) => ICallbackReturn<boolean, TAsync>,
+  ): INextYielded<T, TAsync>;
 }
 
 export function* distinctUntilChangedSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   compare: (previous: T, current: T) => boolean = defaultCompare,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   const first = generator.next();
   if (first.done) return;
   let previous = first.value;
@@ -53,9 +53,9 @@ export function* distinctUntilChangedSync<T>(
 }
 
 export async function* distinctUntilChangedAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  compare: (previous: T, current: T) => PromiseOrNot<boolean> = defaultCompare,
-): YieldedAsyncGenerator<T> {
+  generator: IYieldedAsyncGenerator<T>,
+  compare: (previous: T, current: T) => IPromiseOrNot<boolean> = defaultCompare,
+): IYieldedAsyncGenerator<T> {
   const first = await generator.next();
   if (first.done) return;
   let previous = first.value;

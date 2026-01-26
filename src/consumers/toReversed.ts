@@ -1,7 +1,7 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedToReversed<T, TAsync extends boolean> {
@@ -24,7 +24,7 @@ export interface IYieldedToReversed<T, TAsync extends boolean> {
   toReversed(): ReturnValue<T[], TAsync>;
 }
 
-export function toReversedSync<T>(generator: YieldedIterator<T>): T[] {
+export function toReversedSync<T>(generator: IYieldedIterator<T>): T[] {
   const acc: T[] = [];
   for (const next of generator) {
     acc.unshift(next);
@@ -33,7 +33,7 @@ export function toReversedSync<T>(generator: YieldedIterator<T>): T[] {
 }
 
 export async function toReversedAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
 ): Promise<T[]> {
   const acc: T[] = [];
   for await (const next of generator) {

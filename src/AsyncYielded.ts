@@ -19,9 +19,9 @@ import { takeWhileAsync } from "./middlewares/takeWhile.ts";
 import { tapAsync } from "./middlewares/tap.ts";
 import { AsyncYieldedResolver } from "./resolvers/AsyncYieldedResolver.ts";
 import type {
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "./shared.types.ts";
 import type { IAsyncYielded } from "./yielded.types.ts";
 
@@ -32,8 +32,8 @@ export class AsyncYielded<T>
   public constructor(
     parent:
       | undefined
-      | (Disposable & (YieldedAsyncGenerator | YieldedIterator)),
-    generator: YieldedAsyncGenerator<T>,
+      | (Disposable & (IYieldedAsyncGenerator | IYieldedIterator)),
+    generator: IYieldedAsyncGenerator<T>,
   ) {
     super(parent, generator);
   }
@@ -64,9 +64,9 @@ export class AsyncYielded<T>
 
   #next<TNext, TArgs extends any[]>(
     next: (
-      generator: YieldedAsyncGenerator<T>,
+      generator: IYieldedAsyncGenerator<T>,
       ...args: TArgs
-    ) => YieldedAsyncGenerator<TNext>,
+    ) => IYieldedAsyncGenerator<TNext>,
     ...args: TArgs
   ) {
     return new AsyncYielded<TNext>(
@@ -110,18 +110,18 @@ export class AsyncYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => PromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
+    ) => IPromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
   ) {
     return this.#next(flatMapAsync, callback);
   }
 
   lift<TOut = never>(
-    middleware: (generator: YieldedAsyncGenerator<T>) => AsyncGenerator<TOut>,
+    middleware: (generator: IYieldedAsyncGenerator<T>) => AsyncGenerator<TOut>,
   ) {
     return this.#next(liftAsync, middleware);
   }
 
-  map<TOut>(mapper: (next: T) => PromiseOrNot<TOut>) {
+  map<TOut>(mapper: (next: T) => IPromiseOrNot<TOut>) {
     return this.#next(mapAsync, mapper);
   }
 

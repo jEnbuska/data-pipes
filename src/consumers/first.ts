@@ -1,7 +1,7 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedFirst<T, TAsync extends boolean> {
@@ -14,13 +14,13 @@ export interface IYieldedFirst<T, TAsync extends boolean> {
   first(): ReturnValue<T | undefined, TAsync>;
 }
 
-export function firstSync<T>(generator: YieldedIterator<T>) {
+export function firstSync<T>(generator: IYieldedIterator<T>) {
   const next = generator.next();
   if (next.done) return undefined;
   return next.value;
 }
 
-export async function firstAsync<T>(generator: YieldedAsyncGenerator<T>) {
+export async function firstAsync<T>(generator: IYieldedAsyncGenerator<T>) {
   const next = await generator.next();
   if (next.done) return undefined;
   return next.value;

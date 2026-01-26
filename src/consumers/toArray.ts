@@ -1,5 +1,5 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export interface IYieldedToArray<T, TAsync extends boolean> {
   /**
@@ -12,7 +12,7 @@ export interface IYieldedToArray<T, TAsync extends boolean> {
 }
 
 export async function toArrayAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
 ): Promise<T[]> {
   const acc: T[] = [];
   for await (const next of generator) acc.push(next);

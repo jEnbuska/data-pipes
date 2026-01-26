@@ -1,5 +1,5 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export interface IYieldedForEach<T, TAsync extends boolean> {
   /**
@@ -26,7 +26,7 @@ export interface IYieldedForEach<T, TAsync extends boolean> {
 }
 
 export async function forEachAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   callback: (next: T, index: number) => unknown,
 ): Promise<void> {
   let index = 0;

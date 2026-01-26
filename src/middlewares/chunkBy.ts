@@ -1,9 +1,9 @@
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedChunkBy<T, TAsync extends boolean> {
@@ -30,14 +30,14 @@ export interface IYieldedChunkBy<T, TAsync extends boolean> {
    *   .toArray() satisfies string[][] // [['apple', 'apricot'], ['banana', 'blueberry']]
    */
   chunkBy<TIdentifier>(
-    fn: (next: T) => CallbackReturn<TIdentifier, TAsync>,
-  ): NextYielded<T[], TAsync>;
+    fn: (next: T) => ICallbackReturn<TIdentifier, TAsync>,
+  ): INextYielded<T[], TAsync>;
 }
 
 export function* chunkBySync<T, TIdentifier = any>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   keySelector: (next: T) => TIdentifier,
-): YieldedIterator<T[]> {
+): IYieldedIterator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
   for (const next of generator) {
@@ -53,9 +53,9 @@ export function* chunkBySync<T, TIdentifier = any>(
 }
 
 export async function* chunkByAsync<T, TIdentifier = any>(
-  generator: YieldedAsyncGenerator<T>,
-  keySelector: (next: T) => PromiseOrNot<TIdentifier>,
-): YieldedAsyncGenerator<T[]> {
+  generator: IYieldedAsyncGenerator<T>,
+  keySelector: (next: T) => IPromiseOrNot<TIdentifier>,
+): IYieldedAsyncGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
 

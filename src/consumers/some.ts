@@ -1,5 +1,5 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export interface IYieldedSome<T, TAsync extends boolean> {
   /**
@@ -31,7 +31,7 @@ export interface IYieldedSome<T, TAsync extends boolean> {
   ): ReturnValue<boolean, TAsync>;
 }
 export async function someAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   predicate: (value: T, index: number) => unknown,
 ): Promise<boolean> {
   let index = 0;

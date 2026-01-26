@@ -1,9 +1,9 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  CallbackReturn,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedGroupBy<T, TAsync extends boolean> {
@@ -37,20 +37,20 @@ export interface IYieldedGroupBy<T, TAsync extends boolean> {
    *    ```
    */
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
-    keySelector: (next: T) => CallbackReturn<TKey, TAsync>,
+    keySelector: (next: T) => ICallbackReturn<TKey, TAsync>,
     groups: TGroups[],
   ): ReturnValue<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>,
     TAsync
   >;
   groupBy<TKey extends PropertyKey>(
-    keySelector: (next: T) => CallbackReturn<TKey, TAsync>,
+    keySelector: (next: T) => ICallbackReturn<TKey, TAsync>,
     groups?: undefined,
   ): ReturnValue<Partial<Record<TKey, T[]>>, TAsync>;
 }
 
 export function groupBySync<T, TKey extends PropertyKey>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   keySelector: (next: T) => TKey,
   groups?: undefined,
 ): Partial<Record<TKey, T[]>>;
@@ -59,12 +59,12 @@ export function groupBySync<
   TKey extends PropertyKey,
   TGroups extends PropertyKey,
 >(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   keySelector: (next: T) => TKey,
   groups: TGroups[],
 ): Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>;
 export function groupBySync(
-  generator: YieldedIterator,
+  generator: IYieldedIterator,
   keySelector: (next: unknown) => PropertyKey,
   groups: undefined | PropertyKey[],
 ): Partial<Record<PropertyKey, unknown[]>> {
@@ -81,8 +81,8 @@ export function groupBySync(
 }
 
 export async function groupByAsync(
-  generator: YieldedAsyncGenerator,
-  keySelector: (next: unknown) => PromiseOrNot<PropertyKey>,
+  generator: IYieldedAsyncGenerator,
+  keySelector: (next: unknown) => IPromiseOrNot<PropertyKey>,
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);

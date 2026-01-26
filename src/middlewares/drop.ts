@@ -1,4 +1,4 @@
-import type { NextYielded, YieldedAsyncGenerator } from "../shared.types.ts";
+import type { INextYielded, IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export interface IYieldedDrop<T, TAsync extends boolean> {
   /**
@@ -24,13 +24,13 @@ export interface IYieldedDrop<T, TAsync extends boolean> {
    *   .toArray() satisfies number[] // []
    * ```
    */
-  drop(count: number): NextYielded<T, TAsync>;
+  drop(count: number): INextYielded<T, TAsync>;
 }
 
 export async function* dropAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<T> {
+): IYieldedAsyncGenerator<T> {
   for await (const next of generator) {
     if (count) {
       count++;

@@ -193,4 +193,29 @@ describe("flat", () => {
       await (fromEmptyAsync.flat(5).toArray() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
+
+  describe("from documentation", () => {
+    test("flat default dept", () => {
+      expect(
+        Yielded.from([[1], [2], [3]])
+          .flat()
+          .toArray() satisfies number[],
+      ).toStrictEqual([1, 2, 3]);
+    });
+
+    test("flat dept 2", () => {
+      expect(
+        Yielded.from([[1], [[2]], [[[3]]]])
+          .flat(2)
+          .toArray() satisfies Array<number | number[]>,
+      ).toStrictEqual([1, 2, [3]]);
+    });
+    test("flat default dept mixed values", () => {
+      expect(
+        Yielded.from([1, [2, [3, 4]], 5])
+          .flat()
+          .toArray() satisfies Array<number | number[]>,
+      ).toStrictEqual([1, 2, [3, 4], 5]);
+    });
+  });
 });

@@ -1,9 +1,9 @@
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedTakeWhile<T, TAsync extends boolean> {
@@ -28,14 +28,14 @@ export interface IYieldedTakeWhile<T, TAsync extends boolean> {
    * ```
    */
   takeWhile(
-    fn: (next: T) => CallbackReturn<boolean, TAsync>,
-  ): NextYielded<T, TAsync>;
+    fn: (next: T) => ICallbackReturn<boolean, TAsync>,
+  ): INextYielded<T, TAsync>;
 }
 
 export function* takeWhileSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   predicate: (next: T) => boolean,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   for (const next of generator) {
     if (!predicate(next)) return;
     yield next;
@@ -43,9 +43,9 @@ export function* takeWhileSync<T>(
 }
 
 export async function* takeWhileAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  predicate: (next: T) => PromiseOrNot<boolean>,
-): YieldedAsyncGenerator<T> {
+  generator: IYieldedAsyncGenerator<T>,
+  predicate: (next: T) => IPromiseOrNot<boolean>,
+): IYieldedAsyncGenerator<T> {
   for await (const next of generator) {
     if (!(await predicate(next))) return;
     yield next;

@@ -1,5 +1,5 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { IYieldedAsyncGenerator } from "../shared.types.ts";
 
 export interface IYieldedEvery<T, TAsync extends boolean> {
   /**
@@ -18,7 +18,6 @@ export interface IYieldedEvery<T, TAsync extends boolean> {
    * Yielded.from([1,2,3,4])
    *  .every(n => n > 1) satisfies boolean // false
    * ```
-   * @example
    * ```ts
    * Yielded.from([])
    *  .every(Boolean) satisfies boolean // true
@@ -34,7 +33,7 @@ export interface IYieldedEvery<T, TAsync extends boolean> {
 }
 
 export async function everyAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   predicate: (value: T, index: number) => unknown,
 ): Promise<boolean> {
   let index = 0;

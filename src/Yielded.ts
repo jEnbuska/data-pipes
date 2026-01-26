@@ -1,5 +1,4 @@
 import { AsyncYielded } from "./AsyncYielded.ts";
-import { awaited } from "./middlewares/awaited.ts";
 import { batchSync } from "./middlewares/batch.ts";
 import { chunkBySync } from "./middlewares/chunkBy.ts";
 import { distinctBySync } from "./middlewares/distinctBy.ts";
@@ -17,13 +16,13 @@ import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
 import type { IAsyncYieldedResolver } from "./resolvers/resolver.types.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
-import type { YieldedGenerator, YieldedIterator } from "./shared.types.ts";
+import type { IYieldedGenerator, IYieldedIterator } from "./shared.types.ts";
 import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
-    parent: undefined | (YieldedIterator & Disposable),
-    generator: YieldedIterator<T>,
+    parent: undefined | (IYieldedIterator & Disposable),
+    generator: IYieldedIterator<T>,
   ) {
     super(parent, generator);
   }
@@ -68,7 +67,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       return new Yielded<any>(
         undefined,
-        source[Symbol.iterator]() as YieldedIterator<any>,
+        source[Symbol.iterator]() as IYieldedIterator<any>,
       ) as IYielded<any>;
     }
     if (source?.[Symbol.asyncIterator]) {
@@ -87,9 +86,9 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
 
   #next<TNext, TArgs extends any[]>(
     next: (
-      generator: YieldedIterator<T>,
+      generator: IYieldedIterator<T>,
       ...args: TArgs
-    ) => YieldedIterator<TNext>,
+    ) => IYieldedIterator<TNext>,
     ...args: TArgs
   ): IYielded<TNext> {
     return new Yielded<TNext>(this.generator, next(this.generator, ...args));
@@ -137,15 +136,15 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     flatMapper: (
       next: T,
       index: number,
-    ) => readonly TOut[] | Iterable<TOut> | TOut,
+    ) => readonly TOut[] | Iterator<TOut> | Iterable<TOut> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }
 
   lift<TOut = never>(
     middleware: (
-      generator: YieldedGenerator<T, false>,
-    ) => YieldedGenerator<TOut, false>,
+      generator: IYieldedGenerator<T, false>,
+    ) => IYieldedGenerator<TOut, false>,
   ): IYielded<TOut> {
     return this.#next(liftSync, middleware);
   }
@@ -175,7 +174,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   }
 
   awaited(): IAsyncYieldedResolver<Awaited<T>> & IAsyncYielded<Awaited<T>> {
-    return new AsyncYielded(this.generator, awaited(this.generator));
+    return new AsyncYielded(this.generator, this.generator);
   }
 
   reversed() {

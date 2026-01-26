@@ -1,10 +1,10 @@
 import { toSortedAsync, toSortedSync } from "../consumers/toSorted.ts";
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedSorted<T, TAsync extends boolean> {
@@ -23,8 +23,6 @@ export interface IYieldedSorted<T, TAsync extends boolean> {
    *   .sorted((a, b) => a - b)
    *   .toArray() satisfies number[] // [1, 2, 3, 4, 5]
    * ```
-   *
-   * @example
    * ```ts
    * Yielded.from(['banana', 'apple', 'cherry'])
    *   .sorted((a, b) => a.localeCompare(b))
@@ -32,20 +30,20 @@ export interface IYieldedSorted<T, TAsync extends boolean> {
    * ```
    */
   sorted(
-    compareFn: (a: T, b: T) => CallbackReturn<number, TAsync>,
-  ): NextYielded<T, TAsync>;
+    compareFn: (a: T, b: T) => ICallbackReturn<number, TAsync>,
+  ): INextYielded<T, TAsync>;
 }
 
 export function* sortedSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   compareFn: (a: T, b: T) => number,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   yield* toSortedSync(generator, compareFn);
 }
 
 export async function* sortedAsync<T = never>(
-  generator: YieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => PromiseOrNot<number>,
-): YieldedAsyncGenerator<T> {
+  generator: IYieldedAsyncGenerator<T>,
+  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+): IYieldedAsyncGenerator<T> {
   yield* await toSortedAsync(generator, compareFn);
 }

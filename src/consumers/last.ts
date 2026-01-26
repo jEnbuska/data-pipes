@@ -1,7 +1,7 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedLast<T, TAsync extends boolean> {
@@ -25,13 +25,13 @@ export interface IYieldedLast<T, TAsync extends boolean> {
   last(): ReturnValue<T | undefined, TAsync>;
 }
 
-export function lastSync<T>(generator: YieldedIterator<T>) {
+export function lastSync<T>(generator: IYieldedIterator<T>) {
   let last: undefined | T;
   for (const next of generator) last = next;
   return last;
 }
 
-export async function lastAsync<T>(generator: YieldedAsyncGenerator<T>) {
+export async function lastAsync<T>(generator: IYieldedAsyncGenerator<T>) {
   let last: undefined | T;
   for await (const next of generator) last = next;
   return last;

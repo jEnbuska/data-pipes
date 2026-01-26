@@ -1,24 +1,24 @@
 import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
 
-export type YieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
+export type IYieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
   TOut,
   undefined | void,
   void
 >;
-export type YieldedIterator<TOut = unknown> = IteratorObject<
+export type IYieldedIterator<TOut = unknown> = IteratorObject<
   TOut,
   undefined | void,
   void
 >;
 
-export type PromiseOrNot<T> = Promise<T> | T;
-export type YieldedGenerator<T, TAsync extends boolean> = TAsync extends true
-  ? YieldedAsyncGenerator<T>
-  : YieldedIterator<T>;
+export type IPromiseOrNot<T> = Promise<T> | T;
+export type IYieldedGenerator<T, TAsync extends boolean> = TAsync extends true
+  ? IYieldedAsyncGenerator<T>
+  : IYieldedIterator<T>;
 
-export type CallbackReturn<T, TAsync extends boolean> = TAsync extends true
+export type ICallbackReturn<T, TAsync extends boolean> = TAsync extends true
   ? Promise<T> | T
   : T;
-export type NextYielded<T, TAsync extends boolean> = TAsync extends true
+export type INextYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;

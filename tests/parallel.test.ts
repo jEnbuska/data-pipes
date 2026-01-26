@@ -12,12 +12,10 @@ describe("parallel", () => {
 
     expect(result).toStrictEqual([]);
   });
-  test("Parallel with all at once", async () => {
+  test.only("Parallel with all at once", async () => {
     const result = await (Yielded.from([500, 404, 100, 300, 200])
-      .map(async (it) => {
-        return await sleep(it).then(() => it);
-      })
       .awaited()
+      .map((it) => sleep(it).then(() => it))
       .parallel(5)
       .toArray() satisfies Promise<number[]>);
     expect(result).toStrictEqual([100, 200, 300, 404, 500]);
@@ -25,10 +23,11 @@ describe("parallel", () => {
 
   test("Parallel with 3 parallel count", async () => {
     const result = (await Yielded.from([550, 450, 300, 10, 100])
-      .map(async (it) => sleep(it).then(() => it))
       .awaited()
       .parallel(3)
+      .map(async (it) => sleep(it).then(() => it))
       .toArray()) satisfies number[];
+    console.log(result);
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
 });

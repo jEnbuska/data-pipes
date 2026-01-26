@@ -13,29 +13,32 @@ import { someAsync } from "../consumers/some.ts";
 import { sumByAsync } from "../consumers/sumBy.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
 import { toReversedAsync } from "../consumers/toReversed.ts";
+import { toSetAsync } from "../consumers/toSet.ts";
 import { toSortedAsync } from "../consumers/toSorted.ts";
 import type {
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 import type {
   IAsyncYieldedResolver,
   IYieldedResolver,
 } from "./resolver.types.ts";
+import { YieldedAsyncGenerator } from "./YieldedAsyncGenerator.ts";
 
 export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
-  protected readonly generator: Disposable & YieldedAsyncGenerator<T>;
+  protected readonly generator: Disposable & IYieldedAsyncGenerator<T>;
 
   protected constructor(
     parent:
       | undefined
-      | ((YieldedAsyncGenerator | YieldedIterator) & Disposable),
-    generator: YieldedAsyncGenerator<T>,
+      | ((IYieldedAsyncGenerator | IYieldedIterator) & Disposable),
+    generator: IYieldedAsyncGenerator<T>,
   ) {
-    this.generator = Object.assign(generator, {
+    this.generator = Object.assign(new YieldedAsyncGenerator(generator, 5), {
       [Symbol.dispose]() {
-        void generator.return(undefined);
+        if (generator === parent) return;
+        void generator.return?.(undefined);
         void parent?.[Symbol.dispose]();
       },
     });
@@ -49,7 +52,7 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   }
 
   async #apply<TArgs extends any[], TReturn>(
-    cb: (...args: [YieldedAsyncGenerator<T>, ...TArgs]) => Promise<TReturn>,
+    cb: (...args: [IYieldedAsyncGenerator<T>, ...TArgs]) => Promise<TReturn>,
     ...args: TArgs
   ): Promise<TReturn> {
     using generator = this.generator;
@@ -61,8 +64,8 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   }
 
   reduce<TOut>(
-    reducer: (acc: TOut, next: T, index: number) => PromiseOrNot<TOut>,
-    initialValue: PromiseOrNot<TOut>,
+    reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
+    initialValue: IPromiseOrNot<TOut>,
   ): Promise<TOut>;
   reduce(
     reducer: (acc: T, next: T, index: number) => T,
@@ -74,6 +77,10 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
 
   toArray() {
     return this.#apply(toArrayAsync);
+  }
+
+  toSet() {
+    return this.#apply(toSetAsync);
   }
 
   every(...args: Parameters<IAsyncYieldedResolver<T>["every"]>) {

@@ -1,8 +1,8 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  CallbackReturn,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
+  ICallbackReturn,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedReduce<T, TAsync extends boolean> {
@@ -45,25 +45,25 @@ export interface IYieldedReduce<T, TAsync extends boolean> {
       acc: TOut,
       next: T,
       index: number,
-    ) => CallbackReturn<TOut, TAsync>,
+    ) => ICallbackReturn<TOut, TAsync>,
     initialValue: TAsync extends true ? Promise<TOut> | TOut : TOut,
   ): ReturnValue<TOut, TAsync>;
   reduce(
-    reducer: (acc: T, next: T, index: number) => CallbackReturn<T, TAsync>,
+    reducer: (acc: T, next: T, index: number) => ICallbackReturn<T, TAsync>,
   ): ReturnValue<T | undefined, TAsync>;
 }
 
 export async function reduceAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  reducer: (acc: T, next: T, index: number) => PromiseOrNot<T>,
+  generator: IYieldedAsyncGenerator<T>,
+  reducer: (acc: T, next: T, index: number) => IPromiseOrNot<T>,
 ): Promise<T>;
 export async function reduceAsync<T, TOut>(
-  generator: YieldedAsyncGenerator<T>,
-  reducer: (acc: TOut, next: T, index: number) => PromiseOrNot<TOut>,
-  initialValue: PromiseOrNot<TOut>,
+  generator: IYieldedAsyncGenerator<T>,
+  reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
+  initialValue: IPromiseOrNot<TOut>,
 ): Promise<TOut>;
 export async function reduceAsync(
-  generator: YieldedAsyncGenerator,
+  generator: IYieldedAsyncGenerator,
   reducer: (acc: unknown, next: unknown, index: number) => unknown,
   ...rest: [unknown] | []
 ): Promise<unknown> {

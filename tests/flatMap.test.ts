@@ -89,4 +89,23 @@ describe("flatMap", () => {
       >),
     ).toStrictEqual([]);
   });
+
+  test("from Set", () => {
+    const result = Yielded.from([1, 2, 3])
+      .flatMap((n) => (n % 2 ? new Set([n, n * 10]) : n))
+      .toArray() satisfies number[]; // [1, 10, 2, 3, 30]
+
+    expect(result).toStrictEqual([1, 10, 2, 3, 30]);
+  });
+
+  test("from iterable", () => {
+    const result = Yielded.from([1, 2, 3])
+      .flatMap(function* (n) {
+        if (n % 2) return yield* new Set([n, n * 10]);
+        yield n;
+      })
+      .toArray() satisfies number[]; // [1, 10, 2, 3, 30]
+
+    expect(result).toStrictEqual([1, 10, 2, 3, 30]);
+  });
 });

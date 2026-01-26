@@ -1,5 +1,8 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { CallbackReturn, YieldedAsyncGenerator } from "../shared.types.ts";
+import type {
+  ICallbackReturn,
+  IYieldedAsyncGenerator,
+} from "../shared.types.ts";
 
 export interface IYieldedFind<T, TAsync extends boolean> {
   /**
@@ -25,20 +28,20 @@ export interface IYieldedFind<T, TAsync extends boolean> {
     predicate: (next: T) => next is TOut,
   ): ReturnValue<TOut | undefined, TAsync>;
   find(
-    predicate: (next: T) => CallbackReturn<unknown, TAsync>,
+    predicate: (next: T) => ICallbackReturn<unknown, TAsync>,
   ): ReturnValue<T | undefined, TAsync>;
 }
 
 export function findAsync<T, TOut extends T = T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   predicate: (value: T, index: number) => value is TOut,
 ): Promise<TOut | undefined>;
 export function findAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   predicate: (value: T, index: number) => unknown,
 ): Promise<T | undefined>;
 export async function findAsync(
-  generator: YieldedAsyncGenerator,
+  generator: IYieldedAsyncGenerator,
   predicate: (value: unknown, index: number) => unknown,
 ): Promise<unknown | undefined> {
   const index = 0;

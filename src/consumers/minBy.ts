@@ -1,9 +1,9 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  CallbackReturn,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedMinBy<T, TAsync extends boolean> {
@@ -30,11 +30,11 @@ export interface IYieldedMinBy<T, TAsync extends boolean> {
    *  ```
    */
   minBy(
-    selector: (next: T) => CallbackReturn<number, TAsync>,
+    selector: (next: T) => ICallbackReturn<number, TAsync>,
   ): ReturnValue<T | undefined, TAsync>;
 }
 export function minBySync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   callback: (next: T) => number,
 ): T | undefined {
   const next = generator.next();
@@ -52,8 +52,8 @@ export function minBySync<T>(
 }
 
 export async function minByAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  callback: (next: T) => PromiseOrNot<number>,
+  generator: IYieldedAsyncGenerator<T>,
+  callback: (next: T) => IPromiseOrNot<number>,
 ): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;

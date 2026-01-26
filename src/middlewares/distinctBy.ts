@@ -1,9 +1,9 @@
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedDistinctBy<T, TAsync extends boolean> {
@@ -27,14 +27,14 @@ export interface IYieldedDistinctBy<T, TAsync extends boolean> {
    * ```
    */
   distinctBy<TValue>(
-    selector: (next: T) => CallbackReturn<TValue, TAsync>,
-  ): NextYielded<T, TAsync>;
+    selector: (next: T) => ICallbackReturn<TValue, TAsync>,
+  ): INextYielded<T, TAsync>;
 }
 
 export function* distinctBySync<T, TSelect>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   selector: (next: T) => TSelect,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   const set = new Set<TSelect>();
   for (const next of generator) {
     const key = selector(next);
@@ -47,9 +47,9 @@ export function* distinctBySync<T, TSelect>(
 }
 
 export async function* distinctByAsync<T, TSelect>(
-  generator: YieldedAsyncGenerator<T>,
-  selector: (next: T) => PromiseOrNot<TSelect>,
-): YieldedAsyncGenerator<T> {
+  generator: IYieldedAsyncGenerator<T>,
+  selector: (next: T) => IPromiseOrNot<TSelect>,
+): IYieldedAsyncGenerator<T> {
   const set = new Set<TSelect>();
   for await (const next of generator) {
     const key = await selector(next);

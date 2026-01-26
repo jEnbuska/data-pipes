@@ -1,7 +1,7 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedCount<TAsync extends boolean> {
@@ -25,12 +25,12 @@ export interface IYieldedCount<TAsync extends boolean> {
 function counter(_acc: unknown, _next: unknown, index: number) {
   return index + 1;
 }
-export function countSync<T>(generator: YieldedIterator<T>): number {
+export function countSync<T>(generator: IYieldedIterator<T>): number {
   return generator.reduce(counter, 0);
 }
 
 export async function countAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
 ): Promise<number> {
   let acc = 0;
   for await (const _ of generator) {

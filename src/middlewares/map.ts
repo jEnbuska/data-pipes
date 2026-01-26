@@ -1,12 +1,60 @@
-import type { PromiseOrNot, YieldedAsyncGenerator } from "../shared.types.ts";
+import type {
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+} from "../shared.types.ts";
 
-export interface IYieldedMap<T, TAsync extends boolean> {}
+export interface IYieldedMap<T, TAsync extends boolean> {
+  /**
+   * Maps each item produced by the generator using the provided transform
+   * function and yields the transformed item to the next operation.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([1, 2, 3])
+   *   .map(n => n * 2)
+   *   .toArray() satisfies number[] // [2, 4, 6]
+   * ```
+   */
+  map<TOut>(
+    mapper: (next: T) => ICallbackReturn<TOut, TAsync>,
+  ): INextYielded<TOut, TAsync>;
+}
 
 export async function* mapAsync<T, TOut>(
-  generator: YieldedAsyncGenerator<T>,
-  mapper: (next: T) => PromiseOrNot<TOut>,
-): YieldedAsyncGenerator<TOut> {
+  generator: IYieldedAsyncGenerator<T>,
+  mapper: (next: T) => IPromiseOrNot<TOut>,
+): IYieldedAsyncGenerator<TOut> {
   for await (const next of generator) {
     yield mapper(next);
   }
 }
+
+/**
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *
+ *   */

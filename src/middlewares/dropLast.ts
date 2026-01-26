@@ -1,7 +1,7 @@
 import type {
-  NextYielded,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  INextYielded,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedDropLast<T, TAsync extends boolean> {
@@ -34,13 +34,13 @@ export interface IYieldedDropLast<T, TAsync extends boolean> {
    * //         C2
    * ```
    */
-  dropLast(count: number): NextYielded<T, TAsync>;
+  dropLast(count: number): INextYielded<T, TAsync>;
 }
 
 export function* dropLastSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   count: number,
-): YieldedIterator<T> {
+): IYieldedIterator<T> {
   const buffer: T[] = [];
   let skipped = 0;
   for (const next of generator) {
@@ -54,9 +54,9 @@ export function* dropLastSync<T>(
 }
 
 export async function* dropLastAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T>,
   count: number,
-): YieldedAsyncGenerator<T> {
+): IYieldedAsyncGenerator<T> {
   const buffer: T[] = [];
   let skipped = 0;
   for await (const next of generator) {

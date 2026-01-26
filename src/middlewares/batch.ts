@@ -1,9 +1,9 @@
 import type {
-  CallbackReturn,
-  NextYielded,
-  PromiseOrNot,
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  ICallbackReturn,
+  INextYielded,
+  IPromiseOrNot,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedBatch<T, TAsync extends boolean> {
@@ -26,8 +26,6 @@ export interface IYieldedBatch<T, TAsync extends boolean> {
    *   .batch(acc => acc.length < 3)
    *   .toArray() satisfies number[][] // [[1, 2, 3], [4, 5]]
    * ```
-   *
-   * @example
    * ```ts
    * Yielded.from([] as number[])
    *   .batch(acc => acc.length < 3)
@@ -35,14 +33,14 @@ export interface IYieldedBatch<T, TAsync extends boolean> {
    * ```
    */
   batch(
-    predicate: (acc: T[]) => CallbackReturn<boolean, TAsync>,
-  ): NextYielded<T[], TAsync>;
+    predicate: (acc: T[]) => ICallbackReturn<boolean, TAsync>,
+  ): INextYielded<T[], TAsync>;
 }
 
 export function* batchSync<T>(
-  generator: YieldedIterator<T>,
+  generator: IYieldedIterator<T>,
   predicate: (acc: T[]) => boolean,
-): YieldedIterator<T[]> {
+): IYieldedIterator<T[]> {
   let acc: T[] = [];
   for (const next of generator) {
     acc.push(next);
@@ -54,9 +52,9 @@ export function* batchSync<T>(
 }
 
 export async function* batchAsync<T>(
-  generator: YieldedAsyncGenerator<T>,
-  predicate: (batch: T[]) => PromiseOrNot<boolean>,
-): YieldedAsyncGenerator<T[]> {
+  generator: IYieldedAsyncGenerator<T>,
+  predicate: (batch: T[]) => IPromiseOrNot<boolean>,
+): IYieldedAsyncGenerator<T[]> {
   let acc: T[] = [];
   for await (const next of generator) {
     acc.push(next);

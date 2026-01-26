@@ -1,7 +1,7 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
-  YieldedAsyncGenerator,
-  YieldedIterator,
+  IYieldedAsyncGenerator,
+  IYieldedIterator,
 } from "../shared.types.ts";
 
 export interface IYieldedConsume<TAsync extends boolean> {
@@ -14,19 +14,19 @@ export interface IYieldedConsume<TAsync extends boolean> {
    * @example
    * ```ts
    * Yielded.from([1, 2, 3])
-   *   .forEach(n => console.log(n))
+   *   .tap(n => console.log(n)) // logs 1, 2, 3
    *   .consume() satisfies void;
    *  */
   consume(): ReturnValue<void, TAsync>;
 }
 
-export function consumeSync(generator: YieldedIterator) {
+export function consumeSync(generator: IYieldedIterator) {
   for (const _ of generator) {
     /* Do nothing */
   }
 }
 
-export async function consumeAsync(generator: YieldedAsyncGenerator) {
+export async function consumeAsync(generator: IYieldedAsyncGenerator) {
   for await (const _ of generator) {
     /* Do nothing */
   }
