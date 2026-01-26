@@ -1,8 +1,32 @@
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
+  CallbackReturn,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
+
+export interface IYieldedToSorted<T, TAsync extends boolean> {
+  /**
+   * Returns the items produced by the generator in sorted order as a new array.
+   *
+   * Items are inserted into the sorted result incrementally as they are
+   * produced by the generator. Sorting happens **one item at a time** using
+   * the provided comparison function, rather than collecting all items first
+   * and sorting afterwards.
+   *
+   * The generator is still fully consumed before the final array is returned.
+   *
+   * The `compare` function follows the same contract as
+   * `Array.prototype.sort`:
+   * - returns a negative number if `previous` should come before `next`
+   * - returns a positive number if `previous` should come after `next`
+   * - returns `0` to keep their relative order
+   * */
+  toSorted(
+    compare: (previous: T, next: T) => CallbackReturn<number, TAsync>,
+  ): ReturnValue<T[], TAsync>;
+}
 
 function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
   return function findIndex(next: T, low = 0, high = arr.length - 1) {

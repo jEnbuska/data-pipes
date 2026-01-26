@@ -24,6 +24,7 @@
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",
+    "@typescript-eslint/prefer-function-type": "off",
     "linebreak-style": ["error", "unix"],
     "@typescript-eslint/prefer-readonly": "off",
     "@typescript-eslint/method-signature-style": "off",

@@ -1,8 +1,39 @@
 import type {
+  CallbackReturn,
+  NextYielded,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
+
+export interface IYieldedDropWhile<T, TAsync extends boolean> {
+  /**
+   * Drops items produced by the generator **as long as the predicate returns `true`**,
+   * then yields the remaining items to the next operation in the pipeline.
+   *
+   * Once the predicate returns `false` for the first time, all subsequent
+   * items are yielded without further predicate checks.
+   *
+   * Supports both synchronous and asynchronous generators. When `TAsync`
+   * is `true`, the predicate may return a `Promise<boolean>`, and items
+   * will be correctly handled asynchronously.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([1, 2, 3, 4])
+   *   .dropWhile(n => n < 3)
+   *   .toArray() satisfies number[] // [3, 4]
+   * ```
+   * ```ts
+   * Yielded.from([1, 2, 3, 4])
+   *   .dropWhile(n => n < 0)
+   *   .toArray() satisfies number[] // [1, 2, 3, 4]
+   * ```
+   */
+  dropWhile(
+    fn: (next: T) => CallbackReturn<boolean, TAsync>,
+  ): NextYielded<T, TAsync>;
+}
 
 export function* dropWhileSync<T>(
   generator: YieldedIterator<T>,

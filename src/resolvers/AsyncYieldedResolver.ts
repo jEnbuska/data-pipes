@@ -1,17 +1,18 @@
 import { consumeAsync } from "../consumers/consume.ts";
 import { countAsync } from "../consumers/count.ts";
-import { countByAsync } from "../consumers/countBy.ts";
 import { everyAsync } from "../consumers/every.ts";
 import { findAsync } from "../consumers/find.ts";
 import { firstAsync } from "../consumers/first.ts";
 import { forEachAsync } from "../consumers/forEach.ts";
 import { groupByAsync } from "../consumers/groupBy.ts";
+import { lastAsync } from "../consumers/last.ts";
 import { maxByAsync } from "../consumers/maxBy.ts";
 import { minByAsync } from "../consumers/minBy.ts";
 import { reduceAsync } from "../consumers/reduce.ts";
 import { someAsync } from "../consumers/some.ts";
+import { sumByAsync } from "../consumers/sumBy.ts";
 import { toArrayAsync } from "../consumers/toArray.ts";
-import { toReversedAsync } from "../consumers/toReverse.ts";
+import { toReversedAsync } from "../consumers/toReversed.ts";
 import { toSortedAsync } from "../consumers/toSorted.ts";
 import type {
   PromiseOrNot,
@@ -45,10 +46,6 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
     for await (const next of generator) {
       yield next;
     }
-  }
-
-  [Symbol.dispose]() {
-    return this.generator[Symbol.dispose]();
   }
 
   async #apply<TArgs extends any[], TReturn>(
@@ -112,8 +109,8 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
     return this.#apply(maxByAsync, ...args);
   }
 
-  countBy(...args: Parameters<IAsyncYieldedResolver<T>["countBy"]>) {
-    return this.#apply(countByAsync, ...args);
+  sumBy(...args: Parameters<IAsyncYieldedResolver<T>["sumBy"]>) {
+    return this.#apply(sumByAsync, ...args);
   }
 
   count(...args: Parameters<IAsyncYieldedResolver<T>["count"]>) {
@@ -126,10 +123,12 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   ): Promise<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>
   >;
+
   groupBy<TKey extends PropertyKey>(
     keySelector: (next: T) => Promise<TKey> | TKey,
     groups?: undefined,
   ): Promise<Partial<Record<TKey, T[]>>>;
+
   groupBy(...args: unknown[]): any {
     // @ts-expect-error
     return this.#apply(groupByAsync, ...args);
@@ -141,5 +140,9 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
 
   first() {
     return this.#apply(firstAsync);
+  }
+
+  last() {
+    return this.#apply(lastAsync);
   }
 }

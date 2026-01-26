@@ -1,5 +1,7 @@
 import type { YieldedAsyncGenerator } from "../shared.types.ts";
 
+export interface IYieldedParallel<T> {}
+
 export async function* parallel<T>(
   generator: YieldedAsyncGenerator<T>,
   count: number,

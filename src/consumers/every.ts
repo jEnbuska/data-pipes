@@ -1,4 +1,37 @@
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type { YieldedAsyncGenerator } from "../shared.types.ts";
+
+export interface IYieldedEvery<T, TAsync extends boolean> {
+  /**
+   * Determines whether the provided predicate returns a truthy value
+   * for **all** items produced by the generator.
+   *
+   * Iterates through the generator and invokes `predicate` for each item
+   * until it returns a falsy value (or a resolved falsy value for async
+   * generators). Iteration stops immediately once a failure is encountered.
+   *
+   * Returns `true` if the generator produces no items (vacuous truth),
+   * or if the predicate evaluates to a truthy value for every item.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([1,2,3,4])
+   *  .every(n => n > 1) satisfies boolean // false
+   * ```
+   * @example
+   * ```ts
+   * Yielded.from([])
+   *  .every(Boolean) satisfies boolean // true
+   *  ```
+   *  ```ts
+   * Yielded.from([1,2,3,4])
+   *  .every(n => n > 0) satisfies boolean // true
+   * ```
+   */
+  every(
+    predicate: (next: T, index: number) => unknown,
+  ): ReturnValue<boolean, TAsync>;
+}
 
 export async function everyAsync<T>(
   generator: YieldedAsyncGenerator<T>,

@@ -90,4 +90,17 @@ describe("distinctUntilChanged", () => {
         .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([]);
   });
+
+  test("fruits test", () => {
+    const result = Yielded.from([
+      "apple",
+      "apricot",
+      "banana",
+      "blueberry",
+      "cherry",
+    ])
+      .distinctUntilChanged((previous, current) => previous[0] === current[0])
+      .toArray() satisfies string[];
+    expect(result).toStrictEqual(["apple", "banana", "cherry"]);
+  });
 });

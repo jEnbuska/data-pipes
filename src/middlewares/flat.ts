@@ -3,6 +3,8 @@ import type {
   YieldedIterator,
 } from "../shared.types.ts";
 
+export interface IYieldedFlat<T, TAsync extends boolean> {}
+
 export function* flatSync<T, const Depth extends number = 1>(
   generator: YieldedIterator<T>,
   depth?: Depth,

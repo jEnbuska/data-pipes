@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { AsyncYielded, Yielded } from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 
 describe("lift", () => {
   test("lift mapper", () => {
@@ -46,12 +46,12 @@ describe("lift", () => {
         }
         yield acc.join(".");
       })
-      .toArray() satisfies string[];
-    expect(text).toStrictEqual(["a.b.c"]);
+      .first() satisfies string | undefined;
+    expect(text).toBe("a.b.c");
   });
 
   test("lift async", async () => {
-    const text = (await AsyncYielded.from(async function* () {
+    const text = (await Yielded.from(async function* () {
       yield "a";
       yield "b";
       yield "c";

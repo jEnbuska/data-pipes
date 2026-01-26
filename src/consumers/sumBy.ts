@@ -1,17 +1,37 @@
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
 
-export function countBySync<T>(
+export interface IYieldedSumBy<T, TAsync extends boolean> {
+  /**
+   * Applies the provided selector to each item produced by the generator
+   * and returns the sum of the resulting numeric values.
+   *
+   * Iterates through all items and accumulates the total by adding the
+   * number returned by `fn` for each item. If the generator produces no
+   * items, `0` is returned.
+   * @example
+   * Yielded.from([1,2,3,4,5])
+   * .sumBy(n => n) satisfies number | undefined // 15
+   *
+   * @example
+   * Yielded.from([] as number[])
+   * .sumBy(n => n) satisfies number | undefined // 0
+   */
+  sumBy(fn: (next: T) => number): ReturnValue<number, TAsync>;
+}
+
+export function sumBySync<T>(
   generator: YieldedIterator<T>,
   mapper: (next: T) => number,
 ): number {
   return generator.reduce((acc, next) => mapper(next) + acc, 0);
 }
 
-export async function countByAsync<T>(
+export async function sumByAsync<T>(
   generator: YieldedAsyncGenerator<T>,
   mapper: (next: T) => PromiseOrNot<number>,
 ): Promise<number> {

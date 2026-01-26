@@ -3,6 +3,8 @@ import type {
   YieldedIterator,
 } from "../shared.types.ts";
 
+export interface IYieldedReverse<T, TAsync extends boolean> {}
+
 export function* reversedSync<T>(
   generator: YieldedIterator<T>,
 ): YieldedIterator<T> {

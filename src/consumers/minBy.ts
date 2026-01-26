@@ -1,9 +1,38 @@
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
+  CallbackReturn,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
 
+export interface IYieldedMinBy<T, TAsync extends boolean> {
+  /**
+   * Returns the item produced by the generator for which the selector
+   * returns the **lowest numeric value**.
+   *
+   * Iterates through all items, applying the `selector` to each one and
+   * keeping the item with the minimum returned number. If the generator
+   * produces no items, `undefined` is returned.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([2,1,3,4])
+   *  .minBy(n => n) satisfies number | undefined // 1
+   * ```
+   * ```ts
+   * Yielded.from([] as number[])
+   *  .minBy(n => n) satisfies number | undefined // undefined
+   *  ```
+   *  ```ts
+   * Yielded.from(people)
+   *  .minBy(p => p.age) satisfies Person | undefined // Returns the youngest person
+   *  ```
+   */
+  minBy(
+    selector: (next: T) => CallbackReturn<number, TAsync>,
+  ): ReturnValue<T | undefined, TAsync>;
+}
 export function minBySync<T>(
   generator: YieldedIterator<T>,
   callback: (next: T) => number,

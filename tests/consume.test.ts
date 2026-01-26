@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { AsyncYielded, Yielded } from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 
 describe("consume", () => {
   const numbers = [1, 2, 3];
@@ -24,7 +24,7 @@ describe("consume", () => {
 
   test("chainable async to consume", async () => {
     const consumed: number[] = [];
-    await AsyncYielded.from(async function* () {
+    await Yielded.from(async function* () {
       for (const value of numbers) {
         yield value;
       }

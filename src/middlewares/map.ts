@@ -1,5 +1,7 @@
 import type { PromiseOrNot, YieldedAsyncGenerator } from "../shared.types.ts";
 
+export interface IYieldedMap<T, TAsync extends boolean> {}
+
 export async function* mapAsync<T, TOut>(
   generator: YieldedAsyncGenerator<T>,
   mapper: (next: T) => PromiseOrNot<TOut>,

@@ -15,9 +15,10 @@ import { takeSync } from "./middlewares/take.ts";
 import { takeLastSync } from "./middlewares/takeLast.ts";
 import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
+import type { IAsyncYieldedResolver } from "./resolvers/resolver.types.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
-import type { YieldedIterator } from "./shared.types.ts";
-import type { IYielded } from "./yielded.types.ts";
+import type { YieldedGenerator, YieldedIterator } from "./shared.types.ts";
+import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
@@ -27,20 +28,61 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     super(parent, generator);
   }
 
+  /** Creates Yielded from a callback that returns an Iterable
+   * @example (with generator function)
+   * Yielded.from(function *(){
+   *   yield 1;
+   *   yield 2;
+   *   yield 3;
+   * })
+   * */
   static from<T>(
     generatorFunction: () => Iterable<T, unknown, unknown>,
-  ): Yielded<T>;
-  static from<T>(iterable: Iterable<T, unknown, unknown>): Yielded<T>;
-  static from<T>(data: T): Yielded<T>;
+  ): IYielded<T>;
+  static from<T>(
+    asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
+  ): IAsyncYielded<T>;
+  static from<T>(
+    asyncFunction: Promise<T[]> | Promise<T> | (() => Promise<T[] | T>),
+  ): IAsyncYielded<T>;
+
+  /** Creates Yielded from an Iterable
+   * @example from array
+   * Yielded.from([1,2,3])
+   *
+   * @example from generator
+   * Yielded.from(generatorFunction())
+   * */
+  static from<T>(iterable: Iterable<T, unknown, unknown>): IYielded<T>;
+
+  /** Creates Yielded from something else than and Iterable or callback returning Iterable
+   * @example from something else
+   * Yielded.from(data)
+   * */
+  static from<T>(data: T): IYielded<T>;
   static from(source: any) {
     if (typeof source === "function") {
       source = source();
     }
-    if (source[Symbol.iterator]) {
+    if (source?.[Symbol.iterator]) {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      return new Yielded<any>(undefined, source[Symbol.iterator]());
+      return new Yielded<any>(
+        undefined,
+        source[Symbol.iterator]() as YieldedIterator<any>,
+      ) as IYielded<any>;
     }
-    return new Yielded<any>(undefined, Iterator.from([source]));
+    if (source?.[Symbol.asyncIterator]) {
+      return AsyncYielded.from(
+        source as AsyncGenerator<any, unknown, unknown>,
+      ) as IAsyncYielded<any>;
+    }
+    if (source && source instanceof Promise) {
+      return AsyncYielded.from(source) as IAsyncYielded<any>;
+    }
+    return new Yielded<any>(
+      undefined,
+      Iterator.from([source]),
+    ) as IYielded<any>;
   }
 
   #next<TNext, TArgs extends any[]>(
@@ -49,21 +91,21 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
       ...args: TArgs
     ) => YieldedIterator<TNext>,
     ...args: TArgs
-  ) {
+  ): IYielded<TNext> {
     return new Yielded<TNext>(this.generator, next(this.generator, ...args));
   }
 
-  filter<TOut extends T>(predicate: (next: T) => next is TOut): Yielded<TOut>;
-  filter(predicate: (next: T) => unknown): Yielded<T>;
+  filter<TOut extends T>(predicate: (next: T) => next is TOut): IYielded<TOut>;
+  filter(predicate: (next: T) => unknown): IYielded<T>;
   filter(predicate: (next: T) => unknown) {
     return new Yielded(this.generator, this.generator.filter(predicate));
   }
 
-  map<TOut>(mapper: (next: T) => TOut) {
+  map<TOut>(mapper: (next: T) => TOut): IYielded<TOut> {
     return new Yielded(this.generator, this.generator.map(mapper));
   }
 
-  drop(...args: Parameters<IYielded<T>["drop"]>) {
+  drop(...args: Parameters<IYielded<T>["drop"]>): IYielded<T> {
     return new Yielded(this.generator, this.generator.drop(...args));
   }
 
@@ -87,19 +129,24 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
 
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): Yielded<FlatArray<T[], Depth>> {
+  ): IYielded<FlatArray<T[], Depth>> {
     return this.#next(flatSync, depth);
   }
 
   flatMap<TOut>(
-    flatMapper: (next: T, index: number) => TOut | readonly TOut[],
+    flatMapper: (
+      next: T,
+      index: number,
+    ) => readonly TOut[] | Iterable<TOut> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }
 
   lift<TOut = never>(
-    middleware: (generator: YieldedIterator<T>) => Generator<TOut>,
-  ) {
+    middleware: (
+      generator: YieldedGenerator<T, false>,
+    ) => YieldedGenerator<TOut, false>,
+  ): IYielded<TOut> {
     return this.#next(liftSync, middleware);
   }
 
@@ -127,7 +174,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return this.#next(tapSync, ...args);
   }
 
-  awaited(): AsyncYielded<Awaited<T>> {
+  awaited(): IAsyncYieldedResolver<Awaited<T>> & IAsyncYielded<Awaited<T>> {
     return new AsyncYielded(this.generator, awaited(this.generator));
   }
 

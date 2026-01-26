@@ -25,6 +25,14 @@ describe("find", () => {
     );
   });
 
+  test("find with type-guard", () => {
+    expect(
+      Yielded.from([1, 2, 3]).find((it): it is 1 => it === 1) satisfies
+        | 1
+        | undefined,
+    ).toStrictEqual(1);
+  });
+
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,

@@ -1,8 +1,36 @@
 import type {
+  CallbackReturn,
+  NextYielded,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
+
+export interface IYieldedTakeWhile<T, TAsync extends boolean> {
+  /**
+   * Yields items produced by the generator **while the predicate returns `true`**
+   * to the next operation in the pipeline.
+   *
+   * Once the predicate returns `false` for the first time, the generator
+   * **stops producing further items** and all upstream work halts. Any items
+   * already yielded continue downstream.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([1, 2, 3, 4])
+   *   .takeWhile(n => n < 3)
+   *   .toArray() satisfies number[] // [1, 2]
+   * ```
+   * ```ts
+   * Yielded.from([1, 2, 3, 4])
+   *   .takeWhile(n => n < 0)
+   *   .toArray() satisfies number[] // []
+   * ```
+   */
+  takeWhile(
+    fn: (next: T) => CallbackReturn<boolean, TAsync>,
+  ): NextYielded<T, TAsync>;
+}
 
 export function* takeWhileSync<T>(
   generator: YieldedIterator<T>,

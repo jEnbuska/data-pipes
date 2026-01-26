@@ -1,8 +1,38 @@
 import type {
+  CallbackReturn,
+  NextYielded,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
+
+export interface IYieldedChunkBy<T, TAsync extends boolean> {
+  /**
+   * Splits the items produced by the generator into chunks based on the
+   * key returned by the provided selector function.
+   *
+   * Items producing the same key (as returned by `fn`) are grouped together
+   * into the same chunk. The order of items within each chunk is preserved
+   * according to their original order in the generator.
+   *
+   * After all items are collected, the chunks (groups) are **yielded as
+   * lists** to the next operation in the pipeline.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([1, 2, 3, 4, 5])
+   *   .chunkBy(n => n % 2)
+   *   .toArray() satisfies number[][] // [[1, 3, 5], [2, 4]]
+   * ```
+   * ```ts
+   * Yielded.from(['apple', 'banana', 'apricot', 'blueberry'])
+   *   .chunkBy(fruit => fruit[0])
+   *   .toArray() satisfies string[][] // [['apple', 'apricot'], ['banana', 'blueberry']]
+   */
+  chunkBy<TIdentifier>(
+    fn: (next: T) => CallbackReturn<TIdentifier, TAsync>,
+  ): NextYielded<T[], TAsync>;
+}
 
 export function* chunkBySync<T, TIdentifier = any>(
   generator: YieldedIterator<T>,

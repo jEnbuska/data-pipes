@@ -1,4 +1,33 @@
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
+import type { CallbackReturn, YieldedAsyncGenerator } from "../shared.types.ts";
+
+export interface IYieldedFind<T, TAsync extends boolean> {
+  /**
+   * Returns the first item in the generator that satisfies the provided predicate.
+   *
+   * Iterates through the generator until `predicate` returns a truthy value
+   * (or a resolved truthy value for async generators). If a matching item is
+   * found, it is returned; otherwise, `undefined` is returned.
+   *
+   * There are two overloads:
+   * 1. **Type-guard predicate** – narrows the returned type to `TOut` or `undefined`.
+   * 2. **Regular predicate** – returns the original type `T` or `undefined`.
+   * @example```ts
+   * // Regular
+   * Yielded.from([1,2,3,4]).find(n => n > 2) satisfies number | undefined // 3
+   * ```
+   * ```ts
+   * // Type-guard
+   * Yielded.from([1,2,3]).find((n): n is 1 => n === 1) satisfies 1 | undefined // 1;
+   * ```
+   */
+  find<TOut extends T>(
+    predicate: (next: T) => next is TOut,
+  ): ReturnValue<TOut | undefined, TAsync>;
+  find(
+    predicate: (next: T) => CallbackReturn<unknown, TAsync>,
+  ): ReturnValue<T | undefined, TAsync>;
+}
 
 export function findAsync<T, TOut extends T = T>(
   generator: YieldedAsyncGenerator<T>,

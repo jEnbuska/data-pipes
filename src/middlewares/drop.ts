@@ -1,4 +1,31 @@
-import type { YieldedAsyncGenerator } from "../shared.types.ts";
+import type { NextYielded, YieldedAsyncGenerator } from "../shared.types.ts";
+
+export interface IYieldedDrop<T, TAsync extends boolean> {
+  /**
+   * Skips the first `count` items produced by the generator, then yields
+   * the remaining items to the next operation in the pipeline.
+   *
+   * Items are not passed downstream until the specified number of items
+   * has been dropped. If `count` is greater than the number of items
+   * produced, no items will be yielded.
+   *
+   * Supports both synchronous and asynchronous generators. When `TAsync`
+   * is `true`, items will be yielded asynchronously.
+   *d
+   * @example
+   * ```ts
+   * Yielded.from([1, 2, 3, 4, 5])
+   *   .drop(2)
+   *   .toArray() satisfies number[] // [3, 4, 5]
+   * ```
+   * ```ts
+   * Yielded.from([1, 2])
+   *   .drop(5)
+   *   .toArray() satisfies number[] // []
+   * ```
+   */
+  drop(count: number): NextYielded<T, TAsync>;
+}
 
 export async function* dropAsync<T>(
   generator: YieldedAsyncGenerator<T>,

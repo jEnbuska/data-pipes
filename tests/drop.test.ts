@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { AsyncYielded, Yielded } from "../src/index.ts";
+import { Yielded } from "../src/index.ts";
 
 describe("drop", () => {
   test("chainable drop 1", () => {
@@ -22,7 +22,7 @@ describe("drop", () => {
 
   test("drop negative async", () => {
     expect(() =>
-      AsyncYielded.from(Promise.resolve([1, 2, 3]))
+      Yielded.from(Promise.resolve([1, 2, 3]))
         .drop(-1)
         .toArray(),
     ).toThrow(RangeError);

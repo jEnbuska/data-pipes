@@ -1,5 +1,7 @@
 import type { YieldedAsyncGenerator } from "../shared.types.ts";
 
+export interface IYieldedFilter<T, TAsync extends boolean> {}
+
 export function filterAsync<T, TOut extends T = T>(
   generator: YieldedAsyncGenerator<T>,
   predicate: (next: T) => next is TOut,

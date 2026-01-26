@@ -3,6 +3,8 @@ import type {
   YieldedIterator,
 } from "../shared.types.ts";
 
+export interface IYieldedTap<T, TAsync extends boolean> {}
+
 export function* tapSync<T>(
   generator: YieldedIterator<T>,
   consumer: (next: T) => unknown,

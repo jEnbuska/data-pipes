@@ -1,8 +1,38 @@
+import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
+  CallbackReturn,
   PromiseOrNot,
   YieldedAsyncGenerator,
   YieldedIterator,
 } from "../shared.types.ts";
+
+export interface IYieldedMaxBy<T, TAsync extends boolean> {
+  /**
+   * Returns the item produced by the generator for which the selector
+   * returns the **highest numeric value**.
+   *
+   * Iterates through all items, applying the `selector` to each one and
+   * keeping the item with the maximum returned number. If the generator
+   * produces no items, `undefined` is returned.
+   *
+   * @example
+   * ```ts
+   * Yielded.from([2,1,3,4])
+   *  .maxBy(n => n) satisfies number | undefined // 4
+   * ```
+   * ```ts
+   * Yielded.from([] as number[])
+   *  .maxBy(n => n) satisfies number | undefined // undefined
+   *  ```
+   *  ```ts
+   * Yielded.from(people)
+   *  .maxBy(p => p.age) satisfies Person | undefined // Returns the oldest person
+   *  ```
+   */
+  maxBy(
+    selector: (next: T) => CallbackReturn<number, TAsync>,
+  ): ReturnValue<T | undefined, TAsync>;
+}
 
 export function maxBySync<T>(
   generator: YieldedIterator<T>,

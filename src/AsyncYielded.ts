@@ -39,9 +39,6 @@ export class AsyncYielded<T>
   }
 
   static from<T>(
-    asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
-  ): AsyncYielded<T>;
-  static from<T>(
     asyncGenerator: AsyncGenerator<T, unknown, unknown>,
   ): AsyncYielded<T>;
   static from<T>(promise: Promise<T[]> | Promise<T>): AsyncYielded<T>;
@@ -56,11 +53,11 @@ export class AsyncYielded<T>
       );
     }
     if (source instanceof Promise) {
-      return AsyncYielded.from(async function* () {
-        const data = await source;
-        if (data[Symbol.iterator]) yield* data;
-        else yield data;
-      });
+      return AsyncYielded.from(
+        (async function* () {
+          yield* await source;
+        })(),
+      );
     }
     throw new TypeError(`Invalid Async generator source ${source}`);
   }

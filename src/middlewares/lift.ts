@@ -3,11 +3,13 @@ import type {
   YieldedIterator,
 } from "../shared.types.ts";
 
-export function* liftSync<T, TOut>(
+export interface IYieldedLift<T, TAsync extends boolean> {}
+
+export function liftSync<T, TOut>(
   generator: YieldedIterator<T>,
   middleware: (generator: YieldedIterator<T>) => YieldedIterator<TOut>,
 ): YieldedIterator<TOut> {
-  yield* middleware(generator);
+  return middleware(generator);
 }
 
 export async function* liftAsync<T, TOut>(
