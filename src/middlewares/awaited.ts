@@ -10,7 +10,7 @@ export interface IYieldedAwaited<T> {
    * generator. All items yielded by the upstream generator are awaited before
    * being passed to the next operation.
    *
-   * This ensures that downstream operations always receive resolved values,
+   * This ensures that downstream operations always receive resolved values in the same order,
    * allowing you to safely work with Promises in a chain of generator operations.
    *
    * @example

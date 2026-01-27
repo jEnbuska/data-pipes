@@ -4,6 +4,7 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedToSorted<T, TAsync extends boolean> {
@@ -46,28 +47,52 @@ export function toSortedSync<T>(
   generator: IYieldedIterator<T>,
   compareFn: (a: T, b: T) => number,
 ): T[] {
-  const acc: T[] = [];
-  const findIndex = createIndexFinder(acc, compareFn);
+  const arr: T[] = [];
+  const findIndex = createIndexFinder(arr, compareFn);
   for (const next of generator) {
-    acc.splice(findIndex(next), 0, next);
+    arr.splice(findIndex(next), 0, next);
   }
-  return acc;
+  return arr;
 }
+
 export async function toSortedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
   compareFn: (a: T, b: T) => IPromiseOrNot<number>,
 ): Promise<T[]> {
-  const acc: T[] = [];
+  const arr: T[] = [];
+  const findIndex = createIndexFinderAsync(arr, compareFn);
   let pending: Promise<unknown> = Promise.resolve();
-  const findIndex = createIndexFinderAsync(acc, compareFn);
   for await (const next of generator) {
     pending = pending.then(() =>
-      findIndex(next).then((index) => acc.splice(index, 0, next)),
+      findIndex(next).then((index) => arr.splice(index, 0, next)),
     );
   }
   await pending;
-  return acc;
+  return arr;
 }
+
+export async function toSortedParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+): Promise<T[]> {
+  const arr: T[] = [];
+  const { promise, resolve } = Promise.withResolvers<T[]>();
+  const findIndex = createIndexFinderAsync(arr, compareFn);
+  let pending = Promise.resolve();
+  async function add(value: Promise<T>) {
+    await pending;
+    const index = await value.then(findIndex);
+    arr.splice(index, 0, await value);
+  }
+
+  void generator.next().then(async function onNext(next) {
+    if (next.done) return resolve(arr);
+    pending = add(next.value);
+    void generator.next().then(onNext);
+  });
+  return promise;
+}
+
 function createIndexFinderAsync<T>(
   arr: T[],
   comparator: (a: T, b: T) => IPromiseOrNot<number>,

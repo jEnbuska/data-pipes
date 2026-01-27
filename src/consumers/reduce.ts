@@ -3,6 +3,7 @@ import type {
   ICallbackReturn,
   IPromiseOrNot,
   IYieldedAsyncGenerator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedReduce<T, TAsync extends boolean> {
@@ -80,4 +81,44 @@ export async function reduceAsync(
     acc = acc.then((acc) => reducer(acc, next, index++));
   }
   return acc;
+}
+
+export async function reduceParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  reducer: (acc: T, next: T, index: number) => IPromiseOrNot<T>,
+): Promise<T>;
+export async function reduceParallel<T, TOut>(
+  generator: IYieldedParallelGenerator<T>,
+  reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
+  initialValue: IPromiseOrNot<TOut>,
+): Promise<TOut>;
+export async function reduceParallel(
+  generator: IYieldedParallelGenerator,
+  reducer: (acc: unknown, next: unknown, index: number) => unknown,
+  ...rest: [unknown] | []
+): Promise<unknown> {
+  const { promise, resolve } = Promise.withResolvers<unknown>();
+
+  let acc = Promise.resolve<unknown>(undefined);
+  let hasAcc = Boolean(rest.length);
+  if (hasAcc) acc = Promise.resolve(rest[0]);
+
+  let index = 0;
+  let pending = Promise.resolve<unknown>(undefined);
+  async function reduceNext(this: Promise<unknown>) {
+    if (hasAcc) return reducer(await acc, await this, index++);
+    acc = Promise.resolve(this);
+    hasAcc = true;
+  }
+  async function onDone() {
+    await pending;
+    resolve(acc);
+  }
+
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    pending = pending.then(reduceNext.bind(next.value));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

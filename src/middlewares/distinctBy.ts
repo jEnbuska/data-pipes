@@ -4,6 +4,7 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedDistinctBy<T, TAsync extends boolean> {
@@ -58,3 +59,8 @@ export async function* distinctByAsync<T, TSelect>(
     yield next;
   }
 }
+
+export function distinctByParallel<T, TSelect>(
+  generator: IYieldedParallelGenerator<T>,
+  selector: (next: T) => IPromiseOrNot<TSelect>,
+): /* IYieldedParallelGenerator<T> */ any {}

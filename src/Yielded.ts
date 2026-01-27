@@ -1,4 +1,5 @@
 import { AsyncYielded } from "./AsyncYielded.ts";
+import { awaited } from "./middlewares/awaited.ts";
 import { batchSync } from "./middlewares/batch.ts";
 import { chunkBySync } from "./middlewares/chunkBy.ts";
 import { distinctBySync } from "./middlewares/distinctBy.ts";
@@ -14,7 +15,6 @@ import { takeSync } from "./middlewares/take.ts";
 import { takeLastSync } from "./middlewares/takeLast.ts";
 import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
-import type { IAsyncYieldedResolver } from "./resolvers/resolver.types.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "./shared.types.ts";
 import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
@@ -173,8 +173,8 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return this.#next(tapSync, ...args);
   }
 
-  awaited(): IAsyncYieldedResolver<Awaited<T>> & IAsyncYielded<Awaited<T>> {
-    return new AsyncYielded(this.generator, this.generator);
+  awaited(): IAsyncYielded<Awaited<T>> {
+    return new AsyncYielded(this.generator, awaited(this.generator));
   }
 
   reversed() {

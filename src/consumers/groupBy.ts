@@ -4,7 +4,9 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedGroupBy<T, TAsync extends boolean> {
   /**
@@ -71,10 +73,7 @@ export function groupBySync(
   const record = createInitialGroups(groups);
   for (const next of generator) {
     const key = keySelector(next);
-    if (!(key in record)) {
-      // @ts-expect-error
-      record[key] = [];
-    } // @ts-expect-error
+    if (!(key in record)) record[key] = [];
     record[key].push(next);
   }
   return record;
@@ -86,24 +85,45 @@ export async function groupByAsync(
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);
-  const pending = new Set<Promise<unknown>>();
   for await (const next of generator) {
-    const promise = Promise.resolve(keySelector(next)).then((key) => {
-      if (!(key in record)) {
-        // @ts-expect-error
-        record[key] = [];
-      } // @ts-expect-error
-      record[key].push(next);
-    });
-    pending.add(promise);
-    void promise.then(() => {
-      pending.delete(promise);
-    });
+    const key = await keySelector(next);
+    if (!(key in record)) record[key] = [];
+    record[key].push(next);
   }
-  await Promise.all(pending.values());
   return record;
 }
 
-function createInitialGroups(groups: undefined | PropertyKey[] = []) {
+export async function groupByParallel(
+  generator: IYieldedParallelGenerator,
+  keySelector: (next: unknown) => IPromiseOrNot<PropertyKey>,
+  groups: PropertyKey[] = [],
+): Promise<unknown> {
+  const record = createInitialGroups(groups);
+  const { promise, resolve } = Promise.withResolvers<unknown | undefined>();
+  const { addPromise, awaitAll } = createExtendPromise();
+
+  async function appendToGroup(next: unknown) {
+    const key = await keySelector(next);
+    if (!(key in record)) {
+      record[key] = [];
+    }
+    record[key].push(next);
+  }
+
+  async function onDone() {
+    await awaitAll();
+    resolve(record);
+  }
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void addPromise(next.value.then(appendToGroup));
+    void generator.next().then(onNext);
+  });
+  return promise;
+}
+
+function createInitialGroups(
+  groups: undefined | PropertyKey[] = [],
+): Partial<Record<PropertyKey, any>> {
   return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }

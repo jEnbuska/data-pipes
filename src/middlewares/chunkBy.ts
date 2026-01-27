@@ -4,9 +4,10 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
-export interface IYieldedChunkBy<T, TAsync extends boolean> {
+export interface IYieldedChunkBy<T, TParallel extends boolean> {
   /**
    * Splits the items produced by the generator into chunks based on the
    * key returned by the provided selector function.
@@ -30,8 +31,8 @@ export interface IYieldedChunkBy<T, TAsync extends boolean> {
    *   .toArray() satisfies string[][] // [['apple', 'apricot'], ['banana', 'blueberry']]
    */
   chunkBy<TIdentifier>(
-    fn: (next: T) => ICallbackReturn<TIdentifier, TAsync>,
-  ): INextYielded<T[], TAsync>;
+    fn: (next: T) => ICallbackReturn<TIdentifier, TParallel>,
+  ): INextYielded<T[], TParallel>;
 }
 
 export function* chunkBySync<T, TIdentifier = any>(
@@ -58,23 +59,20 @@ export async function* chunkByAsync<T, TIdentifier = any>(
 ): IYieldedAsyncGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
-
-  const pending = new Set<Promise<unknown> | unknown>([]);
   for await (const next of generator) {
     // Start waiting for the next one even though resolving the key might take a while
-    const promise = Promise.resolve(keySelector(next)).then((key) => {
-      if (!indexMap.has(key)) {
-        indexMap.set(key, acc.length);
-        acc.push([]);
-      }
-      const index = indexMap.get(key)!;
-      acc[index].push(next);
-    });
-    pending.add(promise);
-    void promise.then(() => {
-      pending.delete(promise);
-    });
+    const key = await keySelector(next);
+    if (!indexMap.has(key)) {
+      indexMap.set(key, acc.length);
+      acc.push([]);
+    }
+    const index = indexMap.get(key)!;
+    acc[index].push(next);
   }
-  await Promise.all(pending.values());
   yield* acc;
 }
+
+export function chunkByParallel<T, TIdentifier = any>(
+  generator: IYieldedParallelGenerator<T>,
+  keySelector: (next: T) => IPromiseOrNot<TIdentifier>,
+): /* IYieldedParallelGenerator<T[]> */ any {}

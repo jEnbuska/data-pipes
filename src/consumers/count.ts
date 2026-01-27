@@ -2,6 +2,7 @@ import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedCount<TAsync extends boolean> {
@@ -25,16 +26,28 @@ export interface IYieldedCount<TAsync extends boolean> {
 function counter(_acc: unknown, _next: unknown, index: number) {
   return index + 1;
 }
-export function countSync<T>(generator: IYieldedIterator<T>): number {
+export function countSync(generator: IYieldedIterator<any>): number {
   return generator.reduce(counter, 0);
 }
 
-export async function countAsync<T>(
-  generator: IYieldedAsyncGenerator<T>,
+export async function countAsync(
+  generator: IYieldedAsyncGenerator,
 ): Promise<number> {
   let acc = 0;
   for await (const _ of generator) {
     acc++;
   }
   return acc;
+}
+
+export async function countParallel(generator: IYieldedParallelGenerator) {
+  const { promise, resolve } = Promise.withResolvers<number>();
+  let count = 0;
+
+  void generator.next().then(function onNext(next) {
+    if (!next.done) return resolve(count);
+    count++;
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

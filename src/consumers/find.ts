@@ -2,6 +2,7 @@ import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedFind<T, TAsync extends boolean> {
@@ -49,4 +50,36 @@ export async function findAsync(
     // Do not perform predicates, since we might want to stop at any point
     if (await predicate(next, index)) return next;
   }
+}
+
+export function findParallel<T, TOut extends T = T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (value: T, index: number) => value is TOut,
+): Promise<TOut | undefined>;
+export function findParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (value: T, index: number) => unknown,
+): Promise<T | undefined>;
+export async function findParallel(
+  generator: IYieldedParallelGenerator,
+  predicate: (value: unknown, index: number) => unknown,
+): Promise<unknown | undefined> {
+  const { promise, resolve } = Promise.withResolvers<unknown>();
+
+  let found = false;
+  let index = 0;
+  async function applyPredicate(value: unknown) {
+    if (found) return;
+    const result = await predicate(value, ++index);
+    if (!result) return;
+    resolve(value);
+    found = true;
+  }
+  void generator.next().then(function onNext(next) {
+    if (found) return;
+    if (next.done) return resolve(false);
+    void next.value.then(applyPredicate);
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

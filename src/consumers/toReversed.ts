@@ -2,7 +2,9 @@ import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedToReversed<T, TAsync extends boolean> {
   /**
@@ -25,19 +27,38 @@ export interface IYieldedToReversed<T, TAsync extends boolean> {
 }
 
 export function toReversedSync<T>(generator: IYieldedIterator<T>): T[] {
-  const acc: T[] = [];
+  const arr: T[] = [];
   for (const next of generator) {
-    acc.unshift(next);
+    arr.unshift(next);
   }
-  return acc;
+  return arr;
 }
 
 export async function toReversedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
 ): Promise<T[]> {
-  const acc: T[] = [];
+  const arr: T[] = [];
   for await (const next of generator) {
-    acc.unshift(next);
+    arr.unshift(next);
   }
-  return acc;
+  return arr;
+}
+
+export async function toReversedParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+): Promise<T[]> {
+  const arr: T[] = [];
+  const { promise, resolve } = Promise.withResolvers<T[]>();
+  const { addPromise, awaitAll } = createExtendPromise();
+  async function onDone() {
+    await awaitAll();
+    resolve(arr);
+  }
+  const unshift = arr.unshift.bind(arr);
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void addPromise(next.value.then(unshift));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

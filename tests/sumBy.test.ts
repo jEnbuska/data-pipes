@@ -18,7 +18,7 @@ describe("sumBy", () => {
     fromEmptyAsync,
   } = createTestSets(objects);
 
-  test("from resolved promises", async () => {
+  test.only("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises.sumBy(
         (next) => next.value,

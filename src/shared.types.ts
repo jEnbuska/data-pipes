@@ -5,6 +5,13 @@ export type IYieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
   undefined | void,
   void
 >;
+
+export type IYieldedParallelGenerator<TOut = unknown> = AsyncGenerator<
+  Promise<TOut>,
+  undefined | void,
+  void
+>;
+
 export type IYieldedIterator<TOut = unknown> = IteratorObject<
   TOut,
   undefined | void,

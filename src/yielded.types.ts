@@ -66,7 +66,7 @@ export interface IYielded<T>
    *  .map(n => n * 2)
    *  .toArray() // Promise<[1,2,3]>
    */
-  awaited(): IAsyncYielded<Awaited<T>> & IAsyncYieldedResolver<Awaited<T>>;
+  awaited(): IAsyncYielded<Awaited<T>>;
 }
 
 export interface IYieldedOperations<T, TAsync extends boolean>

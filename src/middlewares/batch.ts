@@ -4,6 +4,7 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedBatch<T, TAsync extends boolean> {
@@ -64,3 +65,8 @@ export async function* batchAsync<T>(
   }
   if (acc.length) yield acc;
 }
+
+export function batchParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (batch: T[]) => IPromiseOrNot<boolean>,
+): /* IYieldedParallelGenerator<T[]> */ any {}

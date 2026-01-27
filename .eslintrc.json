@@ -59,6 +59,7 @@
         "disallowTypeAnnotations": false // optional: allows you to still use types in annotations without prefix
       }
     ],
-    "no-duplicate-imports": "warn"
+    "no-duplicate-imports": "warn",
+    "@typescript-eslint/no-this-alias": "off"
   }
 }

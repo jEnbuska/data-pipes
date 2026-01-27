@@ -3,7 +3,9 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedSumBy<T, TAsync extends boolean> {
   /**
@@ -36,16 +38,30 @@ export async function sumByAsync<T>(
   mapper: (next: T) => IPromiseOrNot<number>,
 ): Promise<number> {
   let acc = 0;
+  for await (const next of generator) {
+    acc += await mapper(next);
+  }
+  return acc;
+}
+
+export async function sumByParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  mapper: (next: T) => IPromiseOrNot<number>,
+): Promise<number> {
+  let acc = 0;
   function increment(value: number) {
     acc += value;
   }
-  const pending = new Set<Promise<unknown>>();
-  for await (const next of generator) {
-    // If mapper takes some time, but it does not matter at what order the return value gets incremented
-    const promise = Promise.resolve(mapper(next)).then(increment);
-    pending.add(promise);
-    void promise.then(() => pending.delete(promise));
+  const { promise, resolve } = Promise.withResolvers<number>();
+  const { awaitAll, addPromise } = createExtendPromise();
+  async function onDone() {
+    await awaitAll();
+    resolve(acc);
   }
-  await Promise.all(pending.values());
-  return acc;
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void addPromise(next.value.then(mapper).then(increment));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

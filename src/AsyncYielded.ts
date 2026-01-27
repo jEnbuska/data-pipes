@@ -165,6 +165,6 @@ export class AsyncYielded<T>
   }
 
   parallel(...args: Parameters<IAsyncYielded<T>["parallel"]>) {
-    return this.#next(parallel, ...args);
+    return this.#next(parallel, ...args) as any;
   }
 }

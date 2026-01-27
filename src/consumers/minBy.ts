@@ -4,7 +4,9 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedMinBy<T, TAsync extends boolean> {
   /**
@@ -33,6 +35,7 @@ export interface IYieldedMinBy<T, TAsync extends boolean> {
     selector: (next: T) => ICallbackReturn<number, TAsync>,
   ): ReturnValue<T | undefined, TAsync>;
 }
+
 export function minBySync<T>(
   generator: IYieldedIterator<T>,
   callback: (next: T) => number,
@@ -58,22 +61,39 @@ export async function minByAsync<T>(
   const next = await generator.next();
   if (next.done) return;
   let acc = next.value;
-  let min = callback(acc);
-  const pending = new Set<Promise<unknown> | unknown>([min]);
+  let min = await callback(acc);
   for await (const next of generator) {
-    // If callback might, possibly take some time to be resolved.
-    // We can anyway find the min in any order possible
-    const promise = Promise.resolve(callback(next)).then(async (numb) => {
-      if (numb < (await min)) {
-        acc = next;
-        min = numb;
-      }
-    });
-    pending.add(promise);
-    void promise.then(() => {
-      pending.delete(promise);
-    });
+    const numb = await callback(next);
+    if (numb < min) {
+      acc = next;
+      min = numb;
+    }
   }
-  await Promise.all(pending.values());
   return acc;
+}
+
+export async function minByParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  callback: (next: T, index: number) => IPromiseOrNot<number>,
+): Promise<T | undefined> {
+  const { promise, resolve } = Promise.withResolvers<T | undefined>();
+  let acc: { item: T; value: number } | undefined;
+  const { awaitAll, addPromise } = createExtendPromise();
+  async function onDone() {
+    await awaitAll();
+    resolve(acc?.item);
+  }
+  let index = 0;
+  async function handleNext(next: T) {
+    const value = await callback(next, index++);
+    if (!acc || value < acc.value) {
+      acc = { value, item: next };
+    }
+  }
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void addPromise(next.value.then(handleNext));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

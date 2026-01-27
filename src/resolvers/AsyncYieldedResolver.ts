@@ -24,7 +24,6 @@ import type {
   IAsyncYieldedResolver,
   IYieldedResolver,
 } from "./resolver.types.ts";
-import { YieldedAsyncGenerator } from "./YieldedAsyncGenerator.ts";
 
 export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedAsyncGenerator<T>;
@@ -35,7 +34,7 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
       | ((IYieldedAsyncGenerator | IYieldedIterator) & Disposable),
     generator: IYieldedAsyncGenerator<T>,
   ) {
-    this.generator = Object.assign(new YieldedAsyncGenerator(generator, 5), {
+    this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
         if (generator === parent) return;
         void generator.return?.(undefined);

@@ -2,6 +2,7 @@ import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedLast<T, TAsync extends boolean> {
@@ -31,8 +32,23 @@ export function lastSync<T>(generator: IYieldedIterator<T>) {
   return last;
 }
 
-export async function lastAsync<T>(generator: IYieldedAsyncGenerator<T>) {
+export async function lastAsync<T>(
+  generator: IYieldedAsyncGenerator<T>,
+): Promise<T | undefined> {
   let last: undefined | T;
   for await (const next of generator) last = next;
   return last;
+}
+
+export async function lastParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+): Promise<T | undefined> {
+  const { promise, resolve } = Promise.withResolvers<T | undefined>();
+  let last: undefined | Promise<T>;
+  void generator.next().then(function onNext(next) {
+    if (next.done) return resolve(last);
+    last = next.value;
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

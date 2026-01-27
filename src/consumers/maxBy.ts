@@ -4,7 +4,9 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedMaxBy<T, TAsync extends boolean> {
   /**
@@ -59,22 +61,39 @@ export async function maxByAsync<T>(
   const next = await generator.next();
   if (next.done) return;
   let acc = next.value;
-  let max = callback(acc);
-  const pending = new Set<Promise<unknown> | unknown>([max]);
+  let max = await callback(acc);
   for await (const next of generator) {
-    // If callback might, possibly take some time to be resolved.
-    // We can anyway find the max in any order possible
-    const promise = Promise.resolve(callback(next)).then(async (numb) => {
-      if (numb > (await max)) {
-        acc = next;
-        max = numb;
-      }
-    });
-    pending.add(promise);
-    void promise.then(() => {
-      pending.delete(promise);
-    });
+    const numb = await callback(next);
+    if (numb > max) {
+      acc = next;
+      max = numb;
+    }
   }
-  await Promise.all(pending.values());
   return acc;
+}
+
+export async function maxByParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  callback: (next: T, index: number) => IPromiseOrNot<number>,
+): Promise<T | undefined> {
+  const { promise, resolve } = Promise.withResolvers<T | undefined>();
+  let acc: { item: T; value: number } | undefined;
+  const { awaitAll, addPromise } = createExtendPromise();
+  async function onDone() {
+    await awaitAll();
+    resolve(acc?.item);
+  }
+  let index = 0;
+  async function handleNext(next: T) {
+    const value = await callback(next, index++);
+    if (!acc || value > acc.value) {
+      acc = { value, item: next };
+    }
+  }
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void addPromise(next.value.then(handleNext));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

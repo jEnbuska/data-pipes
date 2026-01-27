@@ -1,5 +1,9 @@
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
-import type { IYieldedAsyncGenerator } from "../shared.types.ts";
+import type {
+  IYieldedAsyncGenerator,
+  IYieldedParallelGenerator,
+} from "../shared.types.ts";
+import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedSome<T, TAsync extends boolean> {
   /**
@@ -40,4 +44,34 @@ export async function someAsync<T>(
     if (await predicate(next, index++)) return true;
   }
   return false;
+}
+
+export async function someParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (value: T, index: number) => unknown,
+): Promise<boolean> {
+  const { promise, resolve } = Promise.withResolvers<boolean>();
+
+  let some = false;
+  let index = 0;
+  async function applyPredicate(value: T) {
+    if (some) return;
+    const result = await predicate(value, ++index);
+    if (!result) return;
+    some = true;
+    resolve(true);
+  }
+
+  const { addPromise, awaitAll } = createExtendPromise();
+  async function onDone() {
+    await awaitAll();
+    return some;
+  }
+  void generator.next().then(function onNext(next) {
+    if (some) return;
+    if (next.done) return onDone();
+    void addPromise(next.value.then(applyPredicate));
+    void generator.next().then(onNext);
+  });
+  return promise;
 }

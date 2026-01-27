@@ -3,6 +3,7 @@ import type {
   INextYielded,
   IPromiseOrNot,
   IYieldedAsyncGenerator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedMap<T, TAsync extends boolean> {
@@ -31,30 +32,43 @@ export async function* mapAsync<T, TOut>(
   }
 }
 
-/**
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *
- *   */
+export function mapParallel<T, TOut>(
+  generator: IYieldedParallelGenerator<T>,
+  mapper: (next: T) => IPromiseOrNot<TOut>,
+): IYieldedParallelGenerator<TOut> {
+  let done = false;
+  function mapNext(
+    result: IteratorResult<Promise<T>, void>,
+  ): IteratorResult<Promise<TOut>, void> {
+    if (result.done) return { done: true, value: undefined };
+    return {
+      done: false,
+      value: Promise.resolve(result.value).then(mapper),
+    };
+  }
+
+  return {
+    async [Symbol.asyncDispose]() {
+      done = true;
+    },
+    async next(
+      ..._: [] | [void]
+    ): Promise<IteratorResult<Promise<TOut>, void>> {
+      if (done) return { done: true, value: undefined };
+      return generator.next().then(mapNext);
+    },
+    async return(): Promise<IteratorResult<Promise<TOut>, void>> {
+      done = true;
+      return { done: true, value: undefined };
+    },
+
+    async throw(): Promise<IteratorResult<Promise<TOut>, void>> {
+      done = true;
+      return { done: true, value: undefined };
+    },
+
+    [Symbol.asyncIterator]() {
+      return this;
+    },
+  };
+}

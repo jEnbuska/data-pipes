@@ -15,19 +15,19 @@ describe("parallel", () => {
   test.only("Parallel with all at once", async () => {
     const result = await (Yielded.from([500, 404, 100, 300, 200])
       .awaited()
-      .map((it) => sleep(it).then(() => it))
       .parallel(5)
+      .map((it) => sleep(it).then(() => it))
       .toArray() satisfies Promise<number[]>);
     expect(result).toStrictEqual([100, 200, 300, 404, 500]);
   });
 
-  test("Parallel with 3 parallel count", async () => {
+  test.only("Parallel with 3 parallel count", async () => {
     const result = (await Yielded.from([550, 450, 300, 10, 100])
       .awaited()
       .parallel(3)
       .map(async (it) => sleep(it).then(() => it))
+
       .toArray()) satisfies number[];
-    console.log(result);
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
 });
