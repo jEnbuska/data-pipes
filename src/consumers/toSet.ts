@@ -1,9 +1,9 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedToSet<T, TAsync extends boolean> {
   toSet(): ReturnValue<Set<T>, TAsync>;
@@ -22,17 +22,17 @@ export async function toSetParallel<T>(
 ): Promise<Set<T>> {
   const set = new Set<T>();
   const { promise, resolve } = Promise.withResolvers<Set<T>>();
-  const add = set.add.bind(set);
-  const { addPromise, awaitAll } = createExtendPromise();
+  const setAdd = set.add.bind(set);
+  using handler = new ParallelHandler<unknown>();
   async function onDone() {
-    await awaitAll();
+    await handler.waitUntilAllResolved();
     resolve(set);
   }
 
   void generator.next().then(function onNext(next) {
     if (next.done) return onDone();
-    void addPromise(next.value.then(add));
+    void handler.register(next.value.then(setAdd));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

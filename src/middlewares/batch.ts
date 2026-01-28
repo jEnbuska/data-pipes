@@ -5,6 +5,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedBatch<T, TAsync extends boolean> {
@@ -69,4 +70,17 @@ export async function* batchAsync<T>(
 export function batchParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   predicate: (batch: T[]) => IPromiseOrNot<boolean>,
-): /* IYieldedParallelGenerator<T[]> */ any {}
+): IYieldedParallelGeneratorOnNext<T[]> {
+  const acc: T[] = [];
+  return async (wrap) => {
+    let next = await generator.next();
+    while (!next.done) {
+      const value = await next.value;
+      acc.push(value);
+      if (!(await predicate(acc))) break;
+      next = await generator.next();
+    }
+    if (!acc.length) return;
+    return wrap(Promise.resolve(acc));
+  };
+}

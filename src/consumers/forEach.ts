@@ -1,8 +1,10 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { withIndex1 } from "../utils.ts";
 
 export interface IYieldedForEach<T, TAsync extends boolean> {
   /**
@@ -30,25 +32,27 @@ export interface IYieldedForEach<T, TAsync extends boolean> {
 
 export async function forEachAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  callback: (next: T, index: number) => unknown,
+  forEachCallback: (next: T, index: number) => unknown,
 ): Promise<void> {
-  let index = 0;
-  for await (const next of generator) callback(next, index++);
+  const callback = withIndex1(forEachCallback);
+  for await (const next of generator) callback(next);
 }
 
 export async function forEachParallel<T>(
   generator: IYieldedParallelGenerator<T>,
-  callback: (next: T, index: number) => unknown,
+  forEachCallback: (next: T, index: number) => unknown,
 ): Promise<void> {
-  let index = 0;
   const { promise, resolve } = Promise.withResolvers<void>();
-  function call(value: T) {
-    callback(value, index++);
+  using handler = new ParallelHandler<unknown>();
+  const callback = withIndex1(forEachCallback);
+  async function onDone() {
+    await handler.waitUntilAllResolved();
+    resolve();
   }
   void generator.next().then(function onNext(next) {
-    if (next.done) return resolve();
-    void next.value.then(call);
+    if (next.done) return onDone();
+    void handler.register(next.value.then(callback));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

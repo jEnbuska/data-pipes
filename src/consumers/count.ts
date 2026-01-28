@@ -49,5 +49,5 @@ export async function countParallel(generator: IYieldedParallelGenerator) {
     count++;
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

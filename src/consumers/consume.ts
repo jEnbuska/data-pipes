@@ -1,7 +1,9 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedConsume<TAsync extends boolean> {
@@ -30,4 +32,19 @@ export async function consumeAsync(generator: IYieldedAsyncGenerator) {
   for await (const _ of generator) {
     /* Do nothing */
   }
+}
+
+export async function consumeParallel(generator: IYieldedParallelGenerator) {
+  using handler = new ParallelHandler<unknown>();
+  const { promise, resolve } = Promise.withResolvers<void>();
+  async function onDone() {
+    await handler.waitUntilAllResolved();
+    resolve();
+  }
+  void generator.next().then(function onNext(next) {
+    if (next.done) return onDone();
+    void handler.register(next.value);
+    void generator.next().then(onNext);
+  });
+  return await promise;
 }

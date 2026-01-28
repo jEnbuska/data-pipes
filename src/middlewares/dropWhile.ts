@@ -4,6 +4,8 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedDropWhile<T, TAsync extends boolean> {
@@ -61,4 +63,22 @@ export async function* dropWhileAsync<T>(
   for await (const next of generator) {
     yield next;
   }
+}
+
+export function dropWhileParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (next: T) => IPromiseOrNot<boolean>,
+): IYieldedParallelGeneratorOnNext<T> {
+  let drop = true;
+  return async (wrap) => {
+    let next = await generator.next();
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (!next.done && drop) {
+      if (!predicate(await next.value)) break;
+      next = await generator.next();
+    }
+    drop = false;
+    if (next.done) return;
+    return wrap(next.value);
+  };
 }

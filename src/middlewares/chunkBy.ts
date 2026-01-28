@@ -5,6 +5,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedChunkBy<T, TParallel extends boolean> {
@@ -75,4 +76,21 @@ export async function* chunkByAsync<T, TIdentifier = any>(
 export function chunkByParallel<T, TIdentifier = any>(
   generator: IYieldedParallelGenerator<T>,
   keySelector: (next: T) => IPromiseOrNot<TIdentifier>,
-): /* IYieldedParallelGenerator<T[]> */ any {}
+): IYieldedParallelGeneratorOnNext<T[]> {
+  const acc: T[][] = [];
+  const indexMap = new Map<TIdentifier, number>();
+  return async (wrap) => {
+    const next = await generator.next();
+    while (!next.done) {
+      const key = await keySelector(await next.value);
+      if (!indexMap.has(key)) {
+        indexMap.set(key, acc.length);
+        acc.push([]);
+      }
+      const index = indexMap.get(key)!;
+      acc[index].push(await next.value);
+    }
+    if (!acc.length) return;
+    return wrap(Promise.resolve(acc[0]));
+  };
+}

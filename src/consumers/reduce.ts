@@ -1,3 +1,4 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
@@ -5,6 +6,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { withIndex2 } from "../utils.ts";
 
 export interface IYieldedReduce<T, TAsync extends boolean> {
   /**
@@ -99,26 +101,24 @@ export async function reduceParallel(
 ): Promise<unknown> {
   const { promise, resolve } = Promise.withResolvers<unknown>();
 
-  let acc = Promise.resolve<unknown>(undefined);
-  let hasAcc = Boolean(rest.length);
-  if (hasAcc) acc = Promise.resolve(rest[0]);
+  let acc: undefined | Promise<unknown>;
+  if (rest.length) acc = Promise.resolve(rest[0]);
+  using handler = new ParallelHandler<unknown>();
 
-  let index = 0;
-  let pending = Promise.resolve<unknown>(undefined);
-  async function reduceNext(this: Promise<unknown>) {
-    if (hasAcc) return reducer(await acc, await this, index++);
-    acc = Promise.resolve(this);
-    hasAcc = true;
-  }
+  const callback = withIndex2(reducer);
+  const close = handler.onAddedResolved(async (value) => {
+    if (acc) acc = Promise.resolve(callback(await acc, value));
+    acc = Promise.resolve(value);
+  });
   async function onDone() {
-    await pending;
-    resolve(acc);
+    await handler.waitUntilAllResolved();
+    close();
+    return resolve(acc);
   }
-
   void generator.next().then(function onNext(next) {
     if (next.done) return onDone();
-    pending = pending.then(reduceNext.bind(next.value));
+    void handler.register(next.value);
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

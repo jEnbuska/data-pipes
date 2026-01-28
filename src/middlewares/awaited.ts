@@ -1,6 +1,7 @@
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 import type { IAsyncYielded } from "../yielded.types.ts";
 
@@ -38,5 +39,15 @@ export async function* awaited<T>(
 ): IYieldedAsyncGenerator<Awaited<T>> {
   for (const next of generator) {
     yield next;
+  }
+}
+
+export async function* awaitedParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+): IYieldedAsyncGenerator<Awaited<T>> {
+  let next = await generator.next();
+  while (!next.done) {
+    yield next.value;
+    next = await generator.next();
   }
 }

@@ -2,6 +2,8 @@ import type {
   INextYielded,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedTap<T, TAsync extends boolean> {
@@ -47,4 +49,16 @@ export async function* tapAsync<T>(
     consumer(next);
     yield next;
   }
+}
+
+export function tapParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  consumer: (next: T) => unknown,
+): IYieldedParallelGeneratorOnNext<T> {
+  return async () => {
+    const next = await generator.next();
+    if (next.done) return;
+    void next.value.then(consumer);
+    return next;
+  };
 }

@@ -2,6 +2,7 @@ import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedFirst<T, TAsync extends boolean> {
@@ -21,6 +22,14 @@ export function firstSync<T>(generator: IYieldedIterator<T>) {
 }
 
 export async function firstAsync<T>(generator: IYieldedAsyncGenerator<T>) {
+  const next = await generator.next();
+  if (next.done) return undefined;
+  return next.value;
+}
+
+export async function firstParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+) {
   const next = await generator.next();
   if (next.done) return undefined;
   return next.value;

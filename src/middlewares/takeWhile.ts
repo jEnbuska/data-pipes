@@ -4,6 +4,8 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedTakeWhile<T, TAsync extends boolean> {
@@ -50,4 +52,19 @@ export async function* takeWhileAsync<T>(
     if (!(await predicate(next))) return;
     yield next;
   }
+}
+
+export function takeWhileParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  predicate: (next: T) => IPromiseOrNot<boolean>,
+): IYieldedParallelGeneratorOnNext<T> {
+  let take = true;
+  return async (wrap) => {
+    if (!take) return;
+    const next = await generator.next();
+    if (next.done) return;
+    const value = await next.value;
+    if (predicate(value)) return wrap(next.value);
+    take = false;
+  };
 }

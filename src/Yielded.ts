@@ -1,4 +1,3 @@
-import { AsyncYielded } from "./AsyncYielded.ts";
 import { awaited } from "./middlewares/awaited.ts";
 import { batchSync } from "./middlewares/batch.ts";
 import { chunkBySync } from "./middlewares/chunkBy.ts";
@@ -15,6 +14,7 @@ import { takeSync } from "./middlewares/take.ts";
 import { takeLastSync } from "./middlewares/takeLast.ts";
 import { takeWhileSync } from "./middlewares/takeWhile.ts";
 import { tapSync } from "./middlewares/tap.ts";
+import { AsyncYielded } from "./resolvers/AsyncYielded.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "./shared.types.ts";
 import type { IAsyncYielded, IYielded } from "./yielded.types.ts";

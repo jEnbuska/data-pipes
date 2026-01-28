@@ -3,6 +3,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
 } from "../shared.types.ts";
 
 export interface IYieldedLift<T, TAsync extends boolean> {
@@ -73,4 +74,14 @@ export async function* liftAsync<T, TOut>(
   for await (const next of middleware(generator)) {
     yield next;
   }
+}
+
+export function liftParallel<T, TOut>(
+  generator: IYieldedParallelGenerator<T> & Disposable,
+  middleware: (
+    generator: IYieldedParallelGenerator<T>,
+  ) => IYieldedParallelGenerator<TOut>,
+): IYieldedParallelGenerator<TOut> {
+  // minimal/empty: delegate to middleware and return its generator
+  return middleware(generator);
 }

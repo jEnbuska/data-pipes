@@ -1,9 +1,10 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
+import { withIndex1 } from "../utils.ts";
 
 export interface IYieldedEvery<T, TAsync extends boolean> {
   /**
@@ -54,24 +55,27 @@ export async function everyParallel<T>(
 ): Promise<boolean> {
   const { promise, resolve } = Promise.withResolvers<boolean>();
   let every = true;
-  let index = 0;
+  const callback = withIndex1(predicate);
   async function applyPredicate(value: T) {
     if (!every) return;
-    const result = await predicate(value, ++index);
+    const result = await callback(value);
     if (result) return;
-    every = true;
-    resolve(false);
+    every = false;
+    void generator.return();
+    return onDone();
   }
-  const { addPromise, awaitAll } = createExtendPromise();
+  using handler = new ParallelHandler();
   async function onDone() {
-    await awaitAll();
-    return every;
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (every && !handler.isEmpty()) {
+      await handler.raceRegistered();
+    }
+    resolve(every);
   }
   void generator.next().then(function onNext(next) {
-    if (!every) return;
-    if (next.done) return resolve(true);
-    void addPromise(next.value.then(applyPredicate));
+    if (next.done || !every) return onDone();
+    void handler.register(next.value.then(applyPredicate));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

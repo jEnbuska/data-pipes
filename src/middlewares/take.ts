@@ -2,6 +2,8 @@ import type {
   INextYielded,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedTake<T, TAsync extends boolean> {
@@ -57,4 +59,17 @@ export async function* takeAsync<T>(
     yield next;
     if (!--count) return;
   }
+}
+
+export function takeParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  count: number,
+): IYieldedParallelGeneratorOnNext<T> {
+  return async (wrap) => {
+    if (count <= 0) return;
+    count--;
+    const next = await generator.next();
+    if (next.done) return;
+    return wrap(next.value);
+  };
 }

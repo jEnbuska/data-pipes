@@ -1,9 +1,10 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
+import { withIndex1 } from "../utils.ts";
 
 export interface IYieldedSome<T, TAsync extends boolean> {
   /**
@@ -51,27 +52,28 @@ export async function someParallel<T>(
   predicate: (value: T, index: number) => unknown,
 ): Promise<boolean> {
   const { promise, resolve } = Promise.withResolvers<boolean>();
-
   let some = false;
-  let index = 0;
+  const callback = withIndex1(predicate);
   async function applyPredicate(value: T) {
     if (some) return;
-    const result = await predicate(value, ++index);
-    if (!result) return;
+    const result = await callback(value);
+    if (result) return;
     some = true;
-    resolve(true);
+    void generator.return();
+    return onDone();
   }
-
-  const { addPromise, awaitAll } = createExtendPromise();
+  using handler = new ParallelHandler<unknown>();
   async function onDone() {
-    await awaitAll();
-    return some;
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (!some && !handler.isEmpty()) {
+      await handler.raceRegistered();
+    }
+    resolve(some);
   }
   void generator.next().then(function onNext(next) {
-    if (some) return;
-    if (next.done) return onDone();
-    void addPromise(next.value.then(applyPredicate));
+    if (next.done || some) return onDone();
+    void handler.register(next.value.then(applyPredicate));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

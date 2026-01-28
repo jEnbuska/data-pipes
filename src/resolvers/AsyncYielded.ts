@@ -1,29 +1,31 @@
-import { batchAsync } from "./middlewares/batch.ts";
-import { chunkByAsync } from "./middlewares/chunkBy.ts";
-import { distinctByAsync } from "./middlewares/distinctBy.ts";
-import { distinctUntilChangedAsync } from "./middlewares/distinctUntilChanged.ts";
-import { dropAsync } from "./middlewares/drop.ts";
-import { dropLastAsync } from "./middlewares/dropLast.ts";
-import { dropWhileAsync } from "./middlewares/dropWhile.ts";
-import { filterAsync } from "./middlewares/filter.ts";
-import { flatAsync } from "./middlewares/flat.ts";
-import { flatMapAsync } from "./middlewares/flatMap.ts";
-import { liftAsync } from "./middlewares/lift.ts";
-import { mapAsync } from "./middlewares/map.ts";
-import { parallel } from "./middlewares/parallel.ts";
-import { reversedAsync } from "./middlewares/reversed.ts";
-import { sortedAsync } from "./middlewares/sorted.ts";
-import { takeAsync } from "./middlewares/take.ts";
-import { takeLastAsync } from "./middlewares/takeLast.ts";
-import { takeWhileAsync } from "./middlewares/takeWhile.ts";
-import { tapAsync } from "./middlewares/tap.ts";
-import { AsyncYieldedResolver } from "./resolvers/AsyncYieldedResolver.ts";
+import { batchAsync } from "../middlewares/batch.ts";
+import { chunkByAsync } from "../middlewares/chunkBy.ts";
+import { distinctByAsync } from "../middlewares/distinctBy.ts";
+import { distinctUntilChangedAsync } from "../middlewares/distinctUntilChanged.ts";
+import { dropAsync } from "../middlewares/drop.ts";
+import { dropLastAsync } from "../middlewares/dropLast.ts";
+import { dropWhileAsync } from "../middlewares/dropWhile.ts";
+import { filterAsync } from "../middlewares/filter.ts";
+import { flatAsync } from "../middlewares/flat.ts";
+import { flatMapAsync } from "../middlewares/flatMap.ts";
+import { liftAsync } from "../middlewares/lift.ts";
+import { mapAsync } from "../middlewares/map.ts";
+import { parallelAsync } from "../middlewares/parallelAsync.ts";
+import { reversedAsync } from "../middlewares/reversed.ts";
+import { sortedAsync } from "../middlewares/sorted.ts";
+import { takeAsync } from "../middlewares/take.ts";
+import { takeLastAsync } from "../middlewares/takeLast.ts";
+import { takeWhileAsync } from "../middlewares/takeWhile.ts";
+import { tapAsync } from "../middlewares/tap.ts";
 import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
-} from "./shared.types.ts";
-import type { IAsyncYielded } from "./yielded.types.ts";
+  IYieldedParallelGenerator,
+} from "../shared.types.ts";
+import type { IAsyncYielded } from "../yielded.types.ts";
+import { AsyncYieldedResolver } from "./AsyncYieldedResolver.ts";
+import { ParallelYielded } from "./ParallelYielded.ts";
 
 export class AsyncYielded<T>
   extends AsyncYieldedResolver<T>
@@ -32,7 +34,12 @@ export class AsyncYielded<T>
   public constructor(
     parent:
       | undefined
-      | (Disposable & (IYieldedAsyncGenerator | IYieldedIterator)),
+      | (Disposable &
+          (
+            | IYieldedAsyncGenerator
+            | IYieldedIterator
+            | IYieldedParallelGenerator
+          )),
     generator: IYieldedAsyncGenerator<T>,
   ) {
     super(parent, generator);
@@ -164,7 +171,12 @@ export class AsyncYielded<T>
     return this.#next(sortedAsync, ...args);
   }
 
-  parallel(...args: Parameters<IAsyncYielded<T>["parallel"]>) {
-    return this.#next(parallel, ...args) as any;
+  parallel(
+    ...args: Parameters<IAsyncYielded<T>["parallel"]>
+  ): IAsyncYielded<T> {
+    return new ParallelYielded<T>(
+      this.generator,
+      parallelAsync(this.generator, ...args),
+    );
   }
 }

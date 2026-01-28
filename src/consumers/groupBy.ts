@@ -1,3 +1,4 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
@@ -6,7 +7,6 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedGroupBy<T, TAsync extends boolean> {
   /**
@@ -100,7 +100,7 @@ export async function groupByParallel(
 ): Promise<unknown> {
   const record = createInitialGroups(groups);
   const { promise, resolve } = Promise.withResolvers<unknown | undefined>();
-  const { addPromise, awaitAll } = createExtendPromise();
+  using handler = new ParallelHandler();
 
   async function appendToGroup(next: unknown) {
     const key = await keySelector(next);
@@ -111,15 +111,15 @@ export async function groupByParallel(
   }
 
   async function onDone() {
-    await awaitAll();
+    await handler.waitUntilAllResolved();
     resolve(record);
   }
   void generator.next().then(function onNext(next) {
     if (next.done) return onDone();
-    void addPromise(next.value.then(appendToGroup));
+    void handler.register(next.value.then(appendToGroup));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }
 
 function createInitialGroups(

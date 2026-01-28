@@ -1,3 +1,4 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IPromiseOrNot,
@@ -5,7 +6,6 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedSumBy<T, TAsync extends boolean> {
   /**
@@ -53,15 +53,15 @@ export async function sumByParallel<T>(
     acc += value;
   }
   const { promise, resolve } = Promise.withResolvers<number>();
-  const { awaitAll, addPromise } = createExtendPromise();
+  using handler = new ParallelHandler<void>();
   async function onDone() {
-    await awaitAll();
+    await handler.waitUntilAllResolved();
     resolve(acc);
   }
   void generator.next().then(function onNext(next) {
     if (next.done) return onDone();
-    void addPromise(next.value.then(mapper).then(increment));
+    void handler.register(next.value.then(mapper).then(increment));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

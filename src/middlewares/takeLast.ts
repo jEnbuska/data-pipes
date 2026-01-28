@@ -2,6 +2,8 @@ import type {
   INextYielded,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedTakeLast<T, TAsync extends boolean> {
@@ -52,4 +54,21 @@ export async function* takeLastAsync<T>(
     if (acc.length > count) acc.shift();
   }
   yield* acc;
+}
+
+export function takeLastParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  count: number,
+): IYieldedParallelGeneratorOnNext<T> {
+  const acc: Array<Promise<T>> = [];
+  return async (wrap) => {
+    const next = await generator.next();
+    while (!next.done) {
+      acc.push(next.value);
+      if (acc.length > count) void acc.shift();
+    }
+    if (next.done) return;
+    if (!acc.length) return;
+    return wrap(acc.shift()!);
+  };
 }

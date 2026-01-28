@@ -1,4 +1,9 @@
-import type { INextYielded, IYieldedAsyncGenerator } from "../shared.types.ts";
+import type {
+  INextYielded,
+  IYieldedAsyncGenerator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
+} from "../shared.types.ts";
 
 export interface IYieldedDrop<T, TAsync extends boolean> {
   /**
@@ -33,9 +38,19 @@ export async function* dropAsync<T>(
 ): IYieldedAsyncGenerator<T> {
   for await (const next of generator) {
     if (count) {
-      count++;
+      count--;
       continue;
     }
     yield next;
   }
+}
+
+export function dropParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  count: number,
+): IYieldedParallelGeneratorOnNext<T> {
+  return async () => {
+    while (count-- > 0) void generator.next();
+    return generator.next();
+  };
 }

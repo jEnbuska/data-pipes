@@ -1,10 +1,17 @@
-import { toSortedAsync, toSortedSync } from "../consumers/toSorted.ts";
+import {
+  createIndexFinderAsync,
+  toSortedAsync,
+  toSortedSync,
+} from "../consumers/toSorted.ts";
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type {
   ICallbackReturn,
   INextYielded,
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedSorted<T, TAsync extends boolean> {
@@ -46,4 +53,28 @@ export async function* sortedAsync<T = never>(
   compareFn: (a: T, b: T) => IPromiseOrNot<number>,
 ): IYieldedAsyncGenerator<T> {
   yield* await toSortedAsync(generator, compareFn);
+}
+
+export function sortedParallel<T = never>(
+  generator: IYieldedParallelGenerator<T>,
+  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+): IYieldedParallelGeneratorOnNext<T> {
+  const arr: T[] = [];
+  using handler = new ParallelHandler<T>();
+  const findIndex = createIndexFinderAsync(arr, compareFn);
+  handler.onAddedResolved(async (next) => {
+    const index = await findIndex(next);
+    arr.splice(index, 0, next);
+  });
+  return async (wrap) => {
+    let next = await generator.next();
+    while (!next.done) {
+      void handler.register(next.value);
+      next = await generator.next();
+    }
+
+    await handler.waitUntilAllResolved();
+    if (!arr.length) return;
+    return wrap(Promise.resolve(arr.shift()!));
+  };
 }

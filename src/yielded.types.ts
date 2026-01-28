@@ -6,7 +6,7 @@ import type { IYieldedDistinctUntilChanged } from "./middlewares/distinctUntilCh
 import type { IYieldedDrop } from "./middlewares/drop.ts";
 import type { IYieldedDropLast } from "./middlewares/dropLast.ts";
 import type { IYieldedDropWhile } from "./middlewares/dropWhile.ts";
-import type IYieldedFilter from "./middlewares/filter.ts";
+import type { IYieldedFilter } from "./middlewares/filter.ts";
 import type { IYieldedFlat } from "./middlewares/flat.ts";
 import type { IYieldedFlatMap } from "./middlewares/flatMap.ts";
 import type { IYieldedLift } from "./middlewares/lift.ts";

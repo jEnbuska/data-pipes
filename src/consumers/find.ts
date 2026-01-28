@@ -4,6 +4,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { withIndex1 } from "../utils.ts";
 
 export interface IYieldedFind<T, TAsync extends boolean> {
   /**
@@ -65,13 +66,13 @@ export async function findParallel(
   predicate: (value: unknown, index: number) => unknown,
 ): Promise<unknown | undefined> {
   const { promise, resolve } = Promise.withResolvers<unknown>();
-
   let found = false;
-  let index = 0;
+  const callback = withIndex1(predicate);
   async function applyPredicate(value: unknown) {
     if (found) return;
-    const result = await predicate(value, ++index);
+    const result = await callback(value);
     if (!result) return;
+    void generator.return();
     resolve(value);
     found = true;
   }
@@ -81,5 +82,5 @@ export async function findParallel(
     void next.value.then(applyPredicate);
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

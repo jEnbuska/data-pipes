@@ -4,7 +4,10 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
+import { withIndex1 } from "../utils.ts";
 
 export interface IYieldedFlatMap<T, TAsync extends boolean> {
   /**
@@ -14,7 +17,7 @@ export interface IYieldedFlatMap<T, TAsync extends boolean> {
    * The mapper may return:
    * - a single item (`TOut`)
    * - an array of items (`readonly TOut[]`)
-   * - any iterable of items (`Iterable<TOut>`)
+   * - any iterable of items (`Iterable<TOut>)`)
    *
    * This allows combining the accepted outputs of both `Array.flatMap` and
    * `Iterable.flatMap` into a single operator.
@@ -50,9 +53,9 @@ export function* flatMapSync<T, TOut>(
     index: number,
   ) => readonly TOut[] | Iterator<TOut> | Iterable<TOut> | TOut,
 ): IYieldedIterator<TOut> {
-  let index = 0;
+  const callback = withIndex1(flatMapper);
   for (const next of generator) {
-    const out: any = flatMapper(next, index++);
+    const out: any = callback(next);
     if (out?.[Symbol.iterator]) {
       yield* out as TOut[];
     } else {
@@ -68,13 +71,41 @@ export async function* flatMapAsync<T, TOut>(
     index: number,
   ) => IPromiseOrNot<readonly TOut[] | Iterator<TOut> | Iterable<TOut> | TOut>,
 ): IYieldedAsyncGenerator<TOut> {
-  let index = 0;
+  const callback = withIndex1(flatMapper);
   for await (const next of generator) {
-    const out: any = await flatMapper(next, index++);
+    const out: any = await callback(next);
     if (out?.[Symbol.iterator]) {
       yield* out as TOut[];
     } else {
       yield out as TOut;
     }
   }
+}
+
+export function flatMapParallel<T, TOut>(
+  generator: IYieldedParallelGenerator<T>,
+  flatMapper: (
+    next: T,
+    index: number,
+  ) => IPromiseOrNot<readonly TOut[] | Iterator<TOut> | Iterable<TOut> | TOut>,
+): IYieldedParallelGeneratorOnNext<TOut> {
+  const callback = withIndex1(flatMapper);
+  const buffer: TOut[] = [];
+
+  return async (wrap) => {
+    if (buffer.length) return wrap(Promise.resolve(buffer.shift()!));
+    let next = await generator.next();
+    if (next.done) return;
+
+    while (!next.done) {
+      const value: any = await callback(await next.value);
+      if (!value?.[Symbol.iterator]) {
+        return wrap(Promise.resolve(value as TOut));
+      }
+      void buffer.concat([...value]);
+      if (buffer.length) return wrap(Promise.resolve(buffer.shift()!));
+      next = await generator.next();
+    }
+    return wrap(Promise.resolve(buffer.shift()!));
+  };
 }

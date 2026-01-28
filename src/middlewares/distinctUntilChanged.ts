@@ -4,6 +4,8 @@ import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedDistinctUntilChanged<T, TAsync extends boolean> {
@@ -66,6 +68,51 @@ export async function* distinctUntilChangedAsync<T>(
       yield next;
     }
   }
+}
+
+export function distinctUntilChangedParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+  compare: (previous: T, current: T) => IPromiseOrNot<boolean> = defaultCompare,
+): IYieldedParallelGeneratorOnNext<T> {
+  let first = true;
+  let previous: Promise<T>;
+  let pending: IPromiseOrNot<any> | undefined;
+  function getPrevious() {
+    pending = previous;
+    return previous;
+  }
+  async function getIsDistinct(previous: T, next: T) {
+    const compared = compare(previous, next);
+    pending = compared;
+    return compared;
+  }
+  async function onCompare(next: T) {
+    // eslint-disable-next-line no-unmodified-loop-condition
+    while (pending) {
+      await pending;
+    }
+    try {
+      const previous = await getPrevious();
+      const result = await getIsDistinct(previous, next);
+      pending = undefined;
+      return result;
+    } finally {
+      pending = undefined;
+    }
+  }
+  return async () => {
+    const next = await generator.next();
+    if (next.done) return;
+    if (first) {
+      first = false;
+      previous = next.value;
+      return next;
+    }
+    const match = await next.value.then(onCompare);
+    if (match) return;
+    previous = next.value;
+    return next;
+  };
 }
 
 function defaultCompare<T>(a: T, b: T) {

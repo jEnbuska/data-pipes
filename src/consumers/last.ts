@@ -50,5 +50,5 @@ export async function lastParallel<T>(
     last = next.value;
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }

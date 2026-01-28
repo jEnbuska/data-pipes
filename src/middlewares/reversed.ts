@@ -2,6 +2,8 @@ import type {
   INextYielded,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  IYieldedParallelGeneratorOnNext,
 } from "../shared.types.ts";
 
 export interface IYieldedReverse<T, TAsync extends boolean> {
@@ -44,4 +46,20 @@ export async function* reversedAsync<T>(
     acc.unshift(next);
   }
   yield* acc;
+}
+
+export function reversedParallel<T>(
+  generator: IYieldedParallelGenerator<T>,
+): IYieldedParallelGeneratorOnNext<T> {
+  const buffer: Array<Promise<T>> = [];
+  return async (wrap) => {
+    let next = await generator.next();
+    while (!next.done) {
+      buffer.push(next.value);
+      next = await generator.next();
+    }
+    if (buffer.length) {
+      return wrap(buffer.pop()!);
+    }
+  };
 }

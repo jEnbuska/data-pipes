@@ -1,3 +1,4 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
@@ -78,22 +79,28 @@ export async function toSortedParallel<T>(
   const arr: T[] = [];
   const { promise, resolve } = Promise.withResolvers<T[]>();
   const findIndex = createIndexFinderAsync(arr, compareFn);
-  let pending = Promise.resolve();
-  async function add(value: Promise<T>) {
-    await pending;
-    const index = await value.then(findIndex);
-    arr.splice(index, 0, await value);
+  using handler = new ParallelHandler<T>();
+
+  const close = handler.onAddedResolved(async (value) => {
+    const index = await findIndex(value);
+    arr.splice(index, 0, value);
+  });
+
+  async function onDone() {
+    await handler.waitUntilAllResolved();
+    close();
+    resolve(arr);
   }
 
   void generator.next().then(async function onNext(next) {
-    if (next.done) return resolve(arr);
-    pending = add(next.value);
+    if (next.done) return onDone();
+    void handler.register(next.value);
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }
 
-function createIndexFinderAsync<T>(
+export function createIndexFinderAsync<T>(
   arr: T[],
   comparator: (a: T, b: T) => IPromiseOrNot<number>,
 ) {

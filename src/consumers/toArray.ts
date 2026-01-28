@@ -1,9 +1,9 @@
+import { ParallelHandler } from "../resolvers/ParallelHandler.ts";
 import type { ReturnValue } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { createExtendPromise } from "./parallel.utils.ts";
 
 export interface IYieldedToArray<T, TAsync extends boolean> {
   /**
@@ -29,15 +29,15 @@ export async function toArrayParallel<T>(
   const arr: T[] = [];
   const { promise, resolve } = Promise.withResolvers<T[]>();
   const push = arr.push.bind(arr);
-  const { addPromise, awaitAll } = createExtendPromise();
+  using handler = new ParallelHandler<number>();
   async function onDone() {
-    await awaitAll();
+    await handler.waitUntilAllResolved();
     resolve(arr);
   }
   void generator.next().then(function onNext(next) {
     if (next.done) return onDone();
-    void addPromise(next.value.then(push));
+    void handler.register(next.value.then(push));
     void generator.next().then(onNext);
   });
-  return promise;
+  return await promise;
 }
