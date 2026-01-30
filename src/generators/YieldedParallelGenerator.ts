@@ -73,12 +73,10 @@ export class YieldedParallelGenerator<
     this.#isDisposed = true;
     void this.#generator.throw(error);
     this.#depleted = true;
-    throw error;
   };
 
   #dispose() {
     if (this.#isDisposed) return DONE;
-    console.log("YieldedParallelGenerator", "Disposing");
     this.#isDisposed = true;
     void this.#generator.return();
     this.#depleted = true;
@@ -101,6 +99,7 @@ export class YieldedParallelGenerator<
       return result;
     } catch (e) {
       this.#reject(e);
+      throw e;
     }
   }
 
@@ -123,10 +122,9 @@ export class YieldedParallelGenerator<
       void this.#buffering.splice(this.#buffering.indexOf(promise), 1);
     } catch (e) {
       this.#reject(e);
+      throw e;
     }
   }
-
-  provided = 0;
 
   async #addToBuffer(promise: IPromiseOrNot<NextResult<TNext>>) {
     this.#throttle--;
@@ -163,7 +161,6 @@ export class YieldedParallelGenerator<
       if (this.#depleted) break;
       if (this.#buffer.length) {
         const value = this.#buffer.shift()!;
-        console.log("YieldedParallelGenerator", "Providing", ++this.provided);
         return { value, done: false };
       }
 
@@ -183,15 +180,11 @@ export class YieldedParallelGenerator<
       this.#handleDone = undefined;
     }
     await this.#waitUntilBufferedResolved();
-    console.log("YieldedParallelGenerator", "Draining buffer");
     if (this.#isDisposed) {
-      console.log("YieldedParallelGenerator", "Disposed while draining buffer");
       return DONE;
     }
     if (this.#buffer.length) {
-      console.log("YieldedParallelGenerator", "Returning value from buffer");
       const value = this.#buffer.shift()!;
-      console.log("YieldedParallelGenerator", "Providing", ++this.provided);
       return { value, done: false };
     }
     return this.#dispose();

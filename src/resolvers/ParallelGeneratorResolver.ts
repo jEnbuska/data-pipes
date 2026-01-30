@@ -72,7 +72,6 @@ export class ParallelGeneratorResolver<T, TReturn> {
   };
 
   async #untilIdle() {
-    console.log("ParallelGeneratorResolver", "Waiting until buffered resolved");
     while (!this.#returned) {
       if (this.#buffering.length) await Promise.race(this.#buffering);
       else if (this.#pulling.length) await Promise.race(this.#pulling);

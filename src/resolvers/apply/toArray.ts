@@ -32,11 +32,9 @@ export function toArrayParallel<T>(
     generator,
     parallel,
     onNext({ value }) {
-      console.log("toArrayParallel", "ARR NEXT", value);
       arr.push(value);
     },
     onDoneAndIdle(resolve) {
-      console.log("toArrayParallel", "ON DONE AND IDLE", arr);
       resolve(arr);
     },
   });
