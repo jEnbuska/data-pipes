@@ -1,25 +1,25 @@
-import { consumeAsync } from "../consumers/consume.ts";
-import { countAsync } from "../consumers/count.ts";
-import { everyAsync } from "../consumers/every.ts";
-import { findAsync } from "../consumers/find.ts";
-import { firstAsync } from "../consumers/first.ts";
-import { forEachAsync } from "../consumers/forEach.ts";
-import { groupByAsync } from "../consumers/groupBy.ts";
-import { lastAsync } from "../consumers/last.ts";
-import { maxByAsync } from "../consumers/maxBy.ts";
-import { minByAsync } from "../consumers/minBy.ts";
-import { reduceAsync } from "../consumers/reduce.ts";
-import { someAsync } from "../consumers/some.ts";
-import { sumByAsync } from "../consumers/sumBy.ts";
-import { toArrayAsync } from "../consumers/toArray.ts";
-import { toReversedAsync } from "../consumers/toReversed.ts";
-import { toSetAsync } from "../consumers/toSet.ts";
-import { toSortedAsync } from "../consumers/toSorted.ts";
 import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
 } from "../shared.types.ts";
+import { consumeAsync } from "./apply/consume.ts";
+import { countAsync } from "./apply/count.ts";
+import { everyAsync } from "./apply/every.ts";
+import { findAsync } from "./apply/find.ts";
+import { firstAsync } from "./apply/first.ts";
+import { forEachAsync } from "./apply/forEach.ts";
+import { groupByAsync } from "./apply/groupBy.ts";
+import { lastAsync } from "./apply/last.ts";
+import { maxByAsync } from "./apply/maxBy.ts";
+import { minByAsync } from "./apply/minBy.ts";
+import { reduceAsync } from "./apply/reduce.ts";
+import { someAsync } from "./apply/some.ts";
+import { sumByAsync } from "./apply/sumBy.ts";
+import { toArrayAsync } from "./apply/toArray.ts";
+import { toReversedAsync } from "./apply/toReversed.ts";
+import { toSetAsync } from "./apply/toSet.ts";
+import { toSortedAsync } from "./apply/toSorted.ts";
 import type {
   IAsyncYieldedResolver,
   IYieldedResolver,

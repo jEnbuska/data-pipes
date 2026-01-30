@@ -29,7 +29,3 @@ export type ICallbackReturn<T, TAsync extends boolean> = TAsync extends true
 export type INextYielded<T, TAsync extends boolean> = TAsync extends true
   ? IAsyncYielded<T>
   : IYielded<T>;
-
-export type IYieldedParallelGeneratorOnNext<R> = (
-  wrap: (value: Promise<R>) => { done: false; value: Promise<R> },
-) => Promise<undefined | IteratorResult<Promise<R>, void>>;

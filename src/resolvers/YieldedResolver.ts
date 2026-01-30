@@ -1,14 +1,14 @@
-import { consumeSync } from "../consumers/consume.ts";
-import { countSync } from "../consumers/count.ts";
-import { firstSync } from "../consumers/first.ts";
-import { groupBySync } from "../consumers/groupBy.ts";
-import { lastSync } from "../consumers/last.ts";
-import { maxBySync } from "../consumers/maxBy.ts";
-import { minBySync } from "../consumers/minBy.ts";
-import { sumBySync } from "../consumers/sumBy.ts";
-import { toReversedSync } from "../consumers/toReversed.ts";
-import { toSortedSync } from "../consumers/toSorted.ts";
 import type { IYieldedIterator } from "../shared.types.ts";
+import { consumeSync } from "./apply/consume.ts";
+import { countSync } from "./apply/count.ts";
+import { firstSync } from "./apply/first.ts";
+import { groupBySync } from "./apply/groupBy.ts";
+import { lastSync } from "./apply/last.ts";
+import { maxBySync } from "./apply/maxBy.ts";
+import { minBySync } from "./apply/minBy.ts";
+import { sumBySync } from "./apply/sumBy.ts";
+import { toReversedSync } from "./apply/toReversed.ts";
+import { toSortedSync } from "./apply/toSorted.ts";
 import type { IYieldedResolver } from "./resolver.types.ts";
 
 export class YieldedResolver<T> implements IYieldedResolver<T> {

@@ -1,22 +1,22 @@
-import type { IYieldedToSet } from "./consumers/toSet.ts";
-import type { IYieldedBatch } from "./middlewares/batch.ts";
-import type { IYieldedChunkBy } from "./middlewares/chunkBy.ts";
-import type { IYieldedDistinctBy } from "./middlewares/distinctBy.ts";
-import type { IYieldedDistinctUntilChanged } from "./middlewares/distinctUntilChanged.ts";
-import type { IYieldedDrop } from "./middlewares/drop.ts";
-import type { IYieldedDropLast } from "./middlewares/dropLast.ts";
-import type { IYieldedDropWhile } from "./middlewares/dropWhile.ts";
-import type { IYieldedFilter } from "./middlewares/filter.ts";
-import type { IYieldedFlat } from "./middlewares/flat.ts";
-import type { IYieldedFlatMap } from "./middlewares/flatMap.ts";
-import type { IYieldedLift } from "./middlewares/lift.ts";
-import type { IYieldedMap } from "./middlewares/map.ts";
-import type { IYieldedReverse } from "./middlewares/reversed.ts";
-import type { IYieldedSorted } from "./middlewares/sorted.ts";
-import type { IYieldedTake } from "./middlewares/take.ts";
-import type { IYieldedTakeLast } from "./middlewares/takeLast.ts";
-import type { IYieldedTakeWhile } from "./middlewares/takeWhile.ts";
-import type { IYieldedTap } from "./middlewares/tap.ts";
+import type { IYieldedBatch } from "./generators/next/batch.ts";
+import type { IYieldedChunkBy } from "./generators/next/chunkBy.ts";
+import type { IYieldedDistinctBy } from "./generators/next/distinctBy.ts";
+import type { IYieldedDistinctUntilChanged } from "./generators/next/distinctUntilChanged.ts";
+import type { IYieldedDrop } from "./generators/next/drop.ts";
+import type { IYieldedDropLast } from "./generators/next/dropLast.ts";
+import type { IYieldedDropWhile } from "./generators/next/dropWhile.ts";
+import type { IYieldedFilter } from "./generators/next/filter.ts";
+import type { IYieldedFlat } from "./generators/next/flat.ts";
+import type { IYieldedFlatMap } from "./generators/next/flatMap.ts";
+import type { IYieldedLift } from "./generators/next/lift.ts";
+import type { IYieldedMap } from "./generators/next/map.ts";
+import type { IYieldedReverse } from "./generators/next/reversed.ts";
+import type { IYieldedSorted } from "./generators/next/sorted.ts";
+import type { IYieldedTake } from "./generators/next/take.ts";
+import type { IYieldedTakeLast } from "./generators/next/takeLast.ts";
+import type { IYieldedTakeWhile } from "./generators/next/takeWhile.ts";
+import type { IYieldedTap } from "./generators/next/tap.ts";
+import type { IYieldedToSet } from "./resolvers/apply/toSet.ts";
 import type {
   IAsyncYieldedResolver,
   IYieldedResolver,

@@ -1,20 +1,20 @@
-import { awaited } from "./middlewares/awaited.ts";
-import { batchSync } from "./middlewares/batch.ts";
-import { chunkBySync } from "./middlewares/chunkBy.ts";
-import { distinctBySync } from "./middlewares/distinctBy.ts";
-import { distinctUntilChangedSync } from "./middlewares/distinctUntilChanged.ts";
-import { dropLastSync } from "./middlewares/dropLast.ts";
-import { dropWhileSync } from "./middlewares/dropWhile.ts";
-import { flatSync } from "./middlewares/flat.ts";
-import { flatMapSync } from "./middlewares/flatMap.ts";
-import { liftSync } from "./middlewares/lift.ts";
-import { reversedSync } from "./middlewares/reversed.ts";
-import { sortedSync } from "./middlewares/sorted.ts";
-import { takeSync } from "./middlewares/take.ts";
-import { takeLastSync } from "./middlewares/takeLast.ts";
-import { takeWhileSync } from "./middlewares/takeWhile.ts";
-import { tapSync } from "./middlewares/tap.ts";
-import { AsyncYielded } from "./resolvers/AsyncYielded.ts";
+import { AsyncYielded } from "./generators/AsyncYielded.ts";
+import { awaited } from "./generators/next/awaited.ts";
+import { batchSync } from "./generators/next/batch.ts";
+import { chunkBySync } from "./generators/next/chunkBy.ts";
+import { distinctBySync } from "./generators/next/distinctBy.ts";
+import { distinctUntilChangedSync } from "./generators/next/distinctUntilChanged.ts";
+import { dropLastSync } from "./generators/next/dropLast.ts";
+import { dropWhileSync } from "./generators/next/dropWhile.ts";
+import { flatSync } from "./generators/next/flat.ts";
+import { flatMapSync } from "./generators/next/flatMap.ts";
+import { liftSync } from "./generators/next/lift.ts";
+import { reversedSync } from "./generators/next/reversed.ts";
+import { sortedSync } from "./generators/next/sorted.ts";
+import { takeSync } from "./generators/next/take.ts";
+import { takeLastSync } from "./generators/next/takeLast.ts";
+import { takeWhileSync } from "./generators/next/takeWhile.ts";
+import { tapSync } from "./generators/next/tap.ts";
 import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "./shared.types.ts";
 import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
@@ -136,7 +136,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     flatMapper: (
       next: T,
       index: number,
-    ) => readonly TOut[] | Iterator<TOut> | Iterable<TOut> | TOut,
+    ) => readonly TOut[] | Iterable<TOut> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }

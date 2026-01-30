@@ -4,8 +4,8 @@
   "type": "module",
   "types": "types",
   "scripts": {
-    "check": "tsc --noEmit",
-    "check:watch": "tsc --noEmit --watch",
+    "validate": "tsc --noEmit",
+    "validate:watch": "tsc --noEmit --watch",
     "test": "vitest --run --reporter verbose",
     "test:watch": "vitest",
     "lint": "eslint --ext .ts --max-warnings 0 ./src",

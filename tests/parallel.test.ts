@@ -12,7 +12,7 @@ describe("parallel", () => {
 
     expect(result).toStrictEqual([]);
   });
-  test.only("Parallel with all at once", async () => {
+  test("Parallel with all at once", async () => {
     const result = await (Yielded.from([500, 404, 100, 300, 200])
       .awaited()
       .parallel(5)
@@ -26,7 +26,6 @@ describe("parallel", () => {
       .awaited()
       .parallel(3)
       .map(async (it) => sleep(it).then(() => it))
-
       .toArray()) satisfies number[];
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });

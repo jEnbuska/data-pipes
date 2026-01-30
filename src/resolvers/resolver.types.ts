@@ -1,19 +1,19 @@
-import type { IYieldedConsume } from "../consumers/consume.ts";
-import type { IYieldedCount } from "../consumers/count.ts";
-import type { IYieldedEvery } from "../consumers/every.ts";
-import type { IYieldedFind } from "../consumers/find.ts";
-import type { IYieldedFirst } from "../consumers/first.ts";
-import type { IYieldedForEach } from "../consumers/forEach.ts";
-import type { IYieldedGroupBy } from "../consumers/groupBy.ts";
-import type { IYieldedLast } from "../consumers/last.ts";
-import type { IYieldedMaxBy } from "../consumers/maxBy.ts";
-import type { IYieldedMinBy } from "../consumers/minBy.ts";
-import type { IYieldedReduce } from "../consumers/reduce.ts";
-import type { IYieldedSome } from "../consumers/some.ts";
-import type { IYieldedSumBy } from "../consumers/sumBy.ts";
-import type { IYieldedToArray } from "../consumers/toArray.ts";
-import type { IYieldedToReversed } from "../consumers/toReversed.ts";
-import type { IYieldedToSorted } from "../consumers/toSorted.ts";
+import type { IYieldedConsume } from "./apply/consume.ts";
+import type { IYieldedCount } from "./apply/count.ts";
+import type { IYieldedEvery } from "./apply/every.ts";
+import type { IYieldedFind } from "./apply/find.ts";
+import type { IYieldedFirst } from "./apply/first.ts";
+import type { IYieldedForEach } from "./apply/forEach.ts";
+import type { IYieldedGroupBy } from "./apply/groupBy.ts";
+import type { IYieldedLast } from "./apply/last.ts";
+import type { IYieldedMaxBy } from "./apply/maxBy.ts";
+import type { IYieldedMinBy } from "./apply/minBy.ts";
+import type { IYieldedReduce } from "./apply/reduce.ts";
+import type { IYieldedSome } from "./apply/some.ts";
+import type { IYieldedSumBy } from "./apply/sumBy.ts";
+import type { IYieldedToArray } from "./apply/toArray.ts";
+import type { IYieldedToReversed } from "./apply/toReversed.ts";
+import type { IYieldedToSorted } from "./apply/toSorted.ts";
 
 /** If Async then Promise<T> otherwise T */
 export type ReturnValue<T, TAsync extends boolean> = TAsync extends true

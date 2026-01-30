@@ -1,26 +1,26 @@
-import { consumeAsync } from "../consumers/consume.ts";
-import { countParallel } from "../consumers/count.ts";
-import { everyParallel } from "../consumers/every.ts";
-import { findParallel } from "../consumers/find.ts";
-import { firstParallel } from "../consumers/first.ts";
-import { forEachParallel } from "../consumers/forEach.ts";
-import { groupByParallel } from "../consumers/groupBy.ts";
-import { lastParallel } from "../consumers/last.ts";
-import { maxByParallel } from "../consumers/maxBy.ts";
-import { minByParallel } from "../consumers/minBy.ts";
-import { reduceParallel } from "../consumers/reduce.ts";
-import { someParallel } from "../consumers/some.ts";
-import { sumByParallel } from "../consumers/sumBy.ts";
-import { toArrayParallel } from "../consumers/toArray.ts";
-import { toReversedParallel } from "../consumers/toReversed.ts";
-import { toSetParallel } from "../consumers/toSet.ts";
-import { toSortedParallel } from "../consumers/toSorted.ts";
 import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
+import { consumeParallel } from "./apply/consume.ts";
+import { countParallel } from "./apply/count.ts";
+import { everyParallel } from "./apply/every.ts";
+import { findParallel } from "./apply/find.ts";
+import { firstParallel } from "./apply/first.ts";
+import { forEachParallel } from "./apply/forEach.ts";
+import { groupByParallel } from "./apply/groupBy.ts";
+import { lastParallel } from "./apply/last.ts";
+import { maxByParallel } from "./apply/maxBy.ts";
+import { minByParallel } from "./apply/minBy.ts";
+import { reduceParallel } from "./apply/reduce.ts";
+import { someParallel } from "./apply/some.ts";
+import { sumByParallel } from "./apply/sumBy.ts";
+import { toArrayParallel } from "./apply/toArray.ts";
+import { toReversedParallel } from "./apply/toReversed.ts";
+import { toSetParallel } from "./apply/toSet.ts";
+import { toSortedParallel } from "./apply/toSorted.ts";
 import type {
   IAsyncYieldedResolver,
   IYieldedResolver,
@@ -28,6 +28,7 @@ import type {
 
 export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedParallelGenerator<T>;
+  protected parallelCount: number;
 
   protected constructor(
     parent:
@@ -39,7 +40,9 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
             | IYieldedAsyncGenerator
           )),
     generator: IYieldedParallelGenerator<T>,
+    parallelCount: number,
   ) {
+    this.parallelCount = parallelCount;
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
         if (generator === parent) return;
@@ -56,12 +59,16 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
     }
   }
 
-  async #apply<TArgs extends any[], TReturn>(
-    cb: (...args: [IYieldedParallelGenerator<T>, ...TArgs]) => Promise<TReturn>,
+  async #apply<TReturn, TArgs extends any[]>(
+    cb: (
+      generator: IYieldedParallelGenerator<T>,
+      parallel: number,
+      ...args: TArgs
+    ) => Promise<TReturn>,
     ...args: TArgs
   ): Promise<TReturn> {
     using generator = this.generator;
-    return await cb(generator, ...args);
+    return await cb(generator, this.parallelCount, ...args);
   }
 
   forEach(...args: Parameters<IAsyncYieldedResolver<T>["forEach"]>) {
@@ -146,14 +153,14 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   }
 
   consume() {
-    return this.#apply(consumeAsync);
+    return this.#apply(consumeParallel);
   }
 
   first() {
-    return this.#apply(firstParallel);
+    return this.#apply(firstParallel<T>);
   }
 
   last() {
-    return this.#apply(lastParallel);
+    return this.#apply(lastParallel<T>);
   }
 }
