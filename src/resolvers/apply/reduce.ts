@@ -4,7 +4,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedReduce<T, TAsync extends boolean> {
@@ -105,11 +105,11 @@ export function reduceParallel(
   let hasAcc = !!rest.length;
   if (hasAcc) acc = Promise.resolve(rest[0]);
   let index = 0;
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    throttle: 1,
-    async onNext({ value }) {
+    parallelOnNext: 1,
+    async onNext(value) {
       if (!hasAcc) {
         acc = value;
         hasAcc = true;
@@ -117,7 +117,7 @@ export function reduceParallel(
       }
       acc = await reducer(await acc, value, index++);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(acc);
     },
   });

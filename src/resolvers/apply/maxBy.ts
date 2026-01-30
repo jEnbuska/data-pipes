@@ -11,7 +11,7 @@ import {
   PLACEHOLDER,
   withIndex1,
 } from "../../utils.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedMaxBy<T, TAsync extends boolean> {
@@ -91,10 +91,10 @@ export function maxByParallel<T>(
   };
   const getAccValue = memoize(callback);
   let index = 0;
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    async onNext({ value }) {
+    async onNext(value) {
       if (isPlaceholder(acc.item)) {
         acc.item = value;
         return;
@@ -108,7 +108,7 @@ export function maxByParallel<T>(
         acc = { value: numb, item: value };
       }
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       if (isPlaceholder(acc.item)) return resolve(undefined);
       resolve(acc.item);
     },

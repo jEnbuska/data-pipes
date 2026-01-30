@@ -6,7 +6,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedDistinctBy<T, TAsync extends boolean> {
   /**
@@ -67,16 +67,15 @@ export function distinctByParallel<T, TSelect>(
   selector: (next: T) => IPromiseOrNot<TSelect>,
 ): IYieldedParallelGenerator<T> {
   const set = new Set<TSelect>();
-  return YieldedParallelGenerator.create<T>({
+  return createParallel<T>({
     generator,
     parallel,
-    async handleNext(next) {
+    async onNext(next) {
       const key = await next.then(selector);
-      if (set.has(key)) return { type: "CONTINUE" };
+      if (set.has(key)) return { CONTINUE: null };
       set.add(key);
       return {
-        type: "YIELD",
-        payload: next,
+        YIELD: next,
       };
     },
   });

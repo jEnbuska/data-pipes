@@ -7,7 +7,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { locked } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedBatch<T, TAsync extends boolean> {
   /**
@@ -79,19 +79,19 @@ export function batchParallel<T>(
     return predicate(acc);
   });
   let acc: T[] = [];
-  return YieldedParallelGenerator.create<T, T[]>({
+  return createParallel<T, T[]>({
     generator,
     parallel,
-    async handleNext(next) {
+    async onNext(next) {
       const match = await lockedPredicate(next);
-      if (match) return { type: "CONTINUE" };
+      if (match) return { CONTINUE: null };
       const payload = acc;
       acc = [];
-      return { type: "YIELD", payload };
+      return { YIELD: payload };
     },
-    handleDone() {
-      if (acc.length) return { type: "YIELD", payload: acc };
-      return { type: "RETURN" };
+    onDone() {
+      if (acc.length) return { YIELD: acc };
+      return { RETURN: null };
     },
   });
 }

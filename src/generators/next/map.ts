@@ -6,7 +6,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { withIndex1 } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedMap<T, TAsync extends boolean> {
   /**
@@ -41,14 +41,11 @@ export function mapParallel<T, TOut>(
   mapper: (next: T, index: number) => IPromiseOrNot<TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(mapper);
-  return YieldedParallelGenerator.create<T, TOut>({
+  return createParallel<T, TOut>({
     generator,
     parallel,
-    handleNext(next) {
-      return {
-        type: "YIELD",
-        payload: next.then(callback),
-      };
+    onNext(next) {
+      return { YIELD: next.then(callback) };
     },
   });
 }

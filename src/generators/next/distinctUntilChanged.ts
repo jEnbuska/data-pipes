@@ -6,8 +6,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { locked } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedDistinctUntilChanged<T, TAsync extends boolean> {
   /**
@@ -76,25 +75,21 @@ export function distinctUntilChangedParallel<T>(
   parallel: number,
   compare: (previous: T, current: T) => IPromiseOrNot<boolean> = defaultCompare,
 ): IYieldedParallelGenerator<T> {
-  const lockedCompare = locked(
-    async (previous: Promise<T>, next: Promise<T>) => {
-      return compare(await previous, await next);
-    },
-  );
   let previous: Promise<T> | undefined;
-  return YieldedParallelGenerator.create<T>({
+  return createParallel<T>({
     generator,
     parallel,
-    async handleNext(next) {
+    parallelOnNext: 1,
+    async onNext(next) {
       if (!previous) {
         previous = next;
-        return { type: "YIELD", payload: next };
+        return { YIELD: next };
       }
-      if (await lockedCompare(previous, next)) {
+      if (await compare(await previous, await next)) {
         previous = next;
-        return { type: "YIELD", payload: next };
+        return { YIELD: next };
       }
-      return { type: "CONTINUE" };
+      return { CONTINUE: null };
     },
   });
 }

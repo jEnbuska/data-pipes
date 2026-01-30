@@ -2,7 +2,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedToArray<T, TAsync extends boolean> {
@@ -28,13 +28,13 @@ export function toArrayParallel<T>(
   parallel: number,
 ): Promise<T[]> {
   const arr: T[] = [];
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    onNext({ value }) {
+    onNext(value) {
       arr.push(value);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(arr);
     },
   });

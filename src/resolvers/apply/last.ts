@@ -3,7 +3,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedLast<T, TAsync extends boolean> {
@@ -46,13 +46,13 @@ export function lastParallel<T>(
   parallel: number,
 ): Promise<T | undefined> {
   let last: T | undefined;
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     parallel,
     generator,
-    onNext({ value }) {
+    onNext(value) {
       last = value;
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(last);
     },
   });

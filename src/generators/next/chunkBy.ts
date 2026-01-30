@@ -6,7 +6,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedChunkBy<T, TParallel extends boolean> {
   /**
@@ -95,19 +95,19 @@ export function chunkByParallel<T, TIdentifier = any>(
     const index = indexMap.get(key)!;
     acc[index].push(next);
   }
-  return YieldedParallelGenerator.create<T, T[]>({
+  return createParallel<T, T[]>({
     generator,
     parallel,
-    handleNext(next) {
+    onNext(next) {
       void storePending(next.then(stash));
-      return { type: "CONTINUE" };
+      return { CONTINUE: null };
     },
-    async handleDone() {
-      await Promise.all(pending.values());
+    async onDone() {
+      await Promise.all(pending);
       if (acc.length) {
-        return { type: "YIELD", payload: acc.shift()! };
+        return { YIELD: acc.shift()! };
       }
-      return { type: "RETURN" };
+      return { RETURN: null };
     },
   });
 }

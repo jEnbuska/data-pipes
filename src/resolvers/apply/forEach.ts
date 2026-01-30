@@ -2,7 +2,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedForEach<T, TAsync extends boolean> {
@@ -43,13 +43,13 @@ export function forEachParallel<T>(
   callback: (next: T, index: number) => unknown,
 ): Promise<void> {
   let index = 0;
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    onNext({ value }) {
+    onNext(value) {
       callback(value, index++);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(undefined);
     },
   });

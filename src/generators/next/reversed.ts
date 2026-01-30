@@ -4,7 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedReverse<T, TAsync extends boolean> {
   /**
@@ -53,15 +53,15 @@ export function reversedParallel<T>(
   parallel: number,
 ): IYieldedParallelGenerator<T> {
   const acc: Array<Promise<T>> = [];
-  return YieldedParallelGenerator.create<T>({
+  return createParallel<T>({
     generator,
     parallel,
-    handleNext(next) {
+    onNext(next) {
       acc.unshift(next);
-      return { type: "CONTINUE" };
+      return { CONTINUE: null };
     },
-    handleDone() {
-      return { type: "YIELD_ALL", payload: acc };
+    onDone() {
+      return { YIELD_ALL: acc };
     },
   });
 }

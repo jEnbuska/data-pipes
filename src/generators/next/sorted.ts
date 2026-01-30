@@ -12,7 +12,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { locked } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedSorted<T, TAsync extends boolean> {
   /**
@@ -66,16 +66,16 @@ export function sortedParallel<T = never>(
     const index = await findIndex(next);
     arr.splice(index, 0, next);
   });
-  return YieldedParallelGenerator.create<T>({
+  return createParallel<T>({
     generator,
     parallel,
-    handleNext(next) {
+    onNext(next) {
       void next.then(lockedUpdate);
-      return { type: "CONTINUE" };
+      return { CONTINUE: null };
     },
-    handleDone() {
-      if (!arr.length) return { type: "RETURN" };
-      return { type: "YIELD_ALL", payload: arr };
+    onDone() {
+      if (!arr.length) return { RETURN: null };
+      return { YIELD_ALL: arr };
     },
   });
 }

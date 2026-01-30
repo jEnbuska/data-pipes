@@ -7,7 +7,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { withIndex1 } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedFlatMap<T, TAsync extends boolean> {
   /**
@@ -88,15 +88,15 @@ export function flatMapParallel<T, TOut>(
   ) => IPromiseOrNot<readonly TOut[] | Iterable<TOut> | TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(flatMapper);
-  return YieldedParallelGenerator.create<T, TOut>({
+  return createParallel<T, TOut>({
     generator,
     parallel,
-    async handleNext(next) {
+    async onNext(next) {
       const value: any = await next.then(callback);
       if (value?.[Symbol.iterator]) {
-        return { type: "YIELD_ALL", payload: value };
+        return { YIELD_ALL: value };
       }
-      return { type: "YIELD", payload: value };
+      return { YIELD: value };
     },
   });
 }

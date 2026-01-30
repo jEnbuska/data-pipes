@@ -1,10 +1,9 @@
 import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
 import { DONE } from "../../src/utils.ts";
 
-export function MockIYieldedParallelGenerator<T>(
-  [...values]: Array<T | Promise<T>>,
-  parallel = 1,
-): IYieldedParallelGenerator<T> & Disposable {
+export function MockIYieldedParallelGenerator<T>([...values]: Array<
+  T | Promise<T>
+>): IYieldedParallelGenerator<T> & Disposable {
   let disposed = false;
   return Object.assign(
     {

@@ -1,16 +1,16 @@
 import { describe, expect, test } from "vitest";
+import { createParallel } from "../src/generators/createParallel.ts";
 import { ParallelYielded } from "../src/generators/ParallelYielded.ts";
-import { YieldedParallelGenerator } from "../src/generators/YieldedParallelGenerator.ts";
 import { MockIYieldedParallelGenerator } from "./utils/MockIYieldedParallelGenerator.ts";
 import { delay } from "./utils/sleep.ts";
 
 describe("YieldedParallelGenerator", () => {
   describe("handleNext YIELD", () => {
     test("empty generator, parallel 1", async () => {
-      const generator = YieldedParallelGenerator.create({
+      const generator = createParallel({
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
-        handleNext() {
+        onNext() {
           throw new Error("Should not be called");
         },
       });
@@ -18,10 +18,10 @@ describe("YieldedParallelGenerator", () => {
       expect(result.done).toBe(true);
     });
     test("empty generator, parallel 3", async () => {
-      const generator = YieldedParallelGenerator.create({
+      const generator = createParallel({
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
-        handleNext() {
+        onNext() {
           throw new Error("Should not be called");
         },
       });
@@ -30,11 +30,11 @@ describe("YieldedParallelGenerator", () => {
     });
 
     test("generator with one sync, parallel 1", async () => {
-      const generator = YieldedParallelGenerator.create<number>({
+      const generator = createParallel<number>({
         generator: MockIYieldedParallelGenerator([1]),
         parallel: 1,
-        handleNext(next) {
-          return { type: "YIELD", payload: next };
+        onNext(next) {
+          return { YIELD: next };
         },
       });
       const result1 = await generator.next();
@@ -46,11 +46,11 @@ describe("YieldedParallelGenerator", () => {
 
     test("generator with 5 sync, parallel 1", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
-      const generator = YieldedParallelGenerator.create<number>({
+      const generator = createParallel<number>({
         generator: MockIYieldedParallelGenerator(values),
         parallel: 1,
-        handleNext(next) {
-          return { type: "YIELD", payload: next };
+        onNext(next) {
+          return { YIELD: next };
         },
       });
       for (const value of values) {
@@ -64,11 +64,11 @@ describe("YieldedParallelGenerator", () => {
 
     test("generator with 5 sync, parallel 5", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
-      const generator = YieldedParallelGenerator.create<number>({
+      const generator = createParallel<number>({
         generator: MockIYieldedParallelGenerator(values),
         parallel: 5,
-        handleNext(next) {
-          return { type: "YIELD", payload: next };
+        onNext(next) {
+          return { YIELD: next };
         },
       });
       for (const value of values) {
@@ -82,26 +82,37 @@ describe("YieldedParallelGenerator", () => {
   });
   describe("toArray", () => {
     const inputTemplate = [
-      [1, 100],
+      [1, 300],
       [2, 50],
       [3, 0],
-      [4, 400],
-      [5, 300],
+      [4, 200],
+      [5, 400],
     ] as const;
     const input = inputTemplate.map(([v, ms]) => delay(v, ms));
 
     test("generator with 5 async, parallel 5", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
-        MockIYieldedParallelGenerator(input),
-        YieldedParallelGenerator.create<number>({
-          generator: MockIYieldedParallelGenerator(input),
+        mock,
+        createParallel<number>({
+          generator: mock,
           parallel: 5,
-          handleNext(next) {
-            return { type: "YIELD", payload: next };
+          onNext(next) {
+            return { YIELD: next };
           },
         }),
         5,
       ).toArray();
+
+      console.log("array", array);
 
       const expected = inputTemplate
         .toSorted((a, b) => a[1] - b[1])
@@ -109,23 +120,55 @@ describe("YieldedParallelGenerator", () => {
       expect(array).toEqual(expected);
     });
 
-    test.only("generator with 5 async, parallel 3", async () => {
+    test("generator with 5 async, parallel 3", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
-        MockIYieldedParallelGenerator(input),
-        YieldedParallelGenerator.create<number>({
-          generator: MockIYieldedParallelGenerator(input),
+        mock,
+        createParallel<number>({
+          generator: mock,
           parallel: 3,
-          handleNext(next) {
-            return { type: "YIELD", payload: next };
+          onNext(next) {
+            return { YIELD: next };
           },
         }),
         3,
       ).toArray();
 
-      const expected = inputTemplate
-        .toSorted((a, b) => a[1] - b[1])
-        .map(([v]) => v);
-      expect(array).toEqual(expected);
+      console.log("ARRAY", array);
+      expect(array).toStrictEqual([3, 2, 4, 1, 5]);
+    });
+    test("generator with 5 async, parallel 2", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
+      const array = await new ParallelYielded(
+        mock,
+        createParallel<number>({
+          generator: mock,
+          parallel: 2,
+          onNext(next) {
+            return { YIELD: next };
+          },
+        }),
+        2,
+      ).toArray();
+
+      console.log("ARRAY", array);
+      expect(array).toStrictEqual([2, 3, 4, 1, 5]);
     });
   });
 });

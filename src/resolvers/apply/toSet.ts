@@ -2,7 +2,7 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedToSet<T, TAsync extends boolean> {
@@ -24,13 +24,13 @@ export function toSetParallel<T>(
   const set = new Set<T>();
   const add = set.add.bind(set);
 
-  return ParallelGeneratorResolver.run<T, Set<T>>({
+  return resolveParallel<T, Set<T>>({
     generator,
     parallel,
-    onNext({ value }) {
+    onNext(value) {
       add(value);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(set);
     },
   });

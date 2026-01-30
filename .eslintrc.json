@@ -21,6 +21,7 @@
     ],
     "no-unused-vars": "off",
     "import/no-duplicates": "warn",
+    "no-unmodified-loop-condition": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/strict-boolean-expressions": "off",
     "@typescript-eslint/prefer-nullish-coalescing": "off",

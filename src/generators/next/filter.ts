@@ -5,7 +5,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { withIndex1 } from "../../utils.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedFilter<T, TAsync extends boolean> {
   /**
@@ -70,13 +70,13 @@ export function filterParallel(
   predicate: (next: unknown) => unknown,
 ): IYieldedParallelGenerator<unknown> {
   const callback = withIndex1(predicate);
-  return YieldedParallelGenerator.create<unknown>({
+  return createParallel<unknown>({
     generator,
     parallel,
-    async handleNext(next) {
+    async onNext(next) {
       const match = await next.then(callback);
-      if (!match) return { type: "CONTINUE" };
-      return { type: "YIELD", payload: next };
+      if (!match) return { CONTINUE: null };
+      return { YIELD: next };
     },
   });
 }

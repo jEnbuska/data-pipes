@@ -6,7 +6,7 @@ import type {
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { isPlaceholder, memoize, PLACEHOLDER } from "../../utils.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedMinBy<T, TAsync extends boolean> {
@@ -84,10 +84,10 @@ export function minByParallel<T>(
   };
   let index = 0;
   const getAccValue = memoize(callback);
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    async onNext({ value }) {
+    async onNext(value) {
       if (isPlaceholder(acc.item)) {
         acc.item = value;
         return;
@@ -102,7 +102,7 @@ export function minByParallel<T>(
         acc = { value: numb, item: value };
       }
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       if (isPlaceholder(acc.item)) return resolve(undefined);
       resolve(acc.item);
     },

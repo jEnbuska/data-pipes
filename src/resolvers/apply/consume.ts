@@ -3,7 +3,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedConsume<TAsync extends boolean> {
@@ -38,10 +38,10 @@ export function consumeParallel(
   generator: IYieldedParallelGenerator,
   parallel: number,
 ): Promise<void> {
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve();
     },
   });

@@ -4,7 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedSumBy<T, TAsync extends boolean> {
@@ -50,13 +50,13 @@ export function sumByParallel<T>(
   mapper: (next: T) => IPromiseOrNot<number>,
 ): Promise<number> {
   let acc = 0;
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     generator,
     parallel,
-    async onNext({ value }) {
+    async onNext(value) {
       acc += await mapper(value);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(acc);
     },
   });

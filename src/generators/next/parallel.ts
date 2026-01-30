@@ -14,7 +14,7 @@ export function parallel<T>(
 
   async function getNext(): Promise<IteratorResult<Promise<T>, void>> {
     while (parallel && !exhausted) {
-      void handleNext(generator.next());
+      void onNext(generator.next());
     }
     while (true) {
       const result = await Promise.race(parallelQueue);
@@ -23,7 +23,7 @@ export function parallel<T>(
     }
   }
 
-  async function handleNext(next: Promise<IteratorResult<T, void>>) {
+  async function onNext(next: Promise<IteratorResult<T, void>>) {
     parallel--;
     parallelQueue.push(next);
     const result = await next;

@@ -4,7 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { YieldedParallelGenerator } from "../YieldedParallelGenerator.ts";
+import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedFlat<T, TAsync extends boolean> {
   /**
@@ -70,15 +70,15 @@ export function flatParallel<T, const Depth extends number = 1>(
   depth?: Depth,
 ): IYieldedParallelGenerator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
-  return YieldedParallelGenerator.create<T, FlatArray<T[], Depth>>({
+  return createParallel<T, FlatArray<T[], Depth>>({
     generator,
     parallel,
-    async handleNext(next) {
+    async onNext(next) {
       const value = await next;
       if (!Array.isArray(value) || depth <= 0) {
-        return { type: "YIELD", payload: next as any };
+        return { YIELD: next as any };
       }
-      return { type: "YIELD_ALL", payload: value.flat(depth - 1) as any };
+      return { YIELD_ALL: value.flat(depth - 1) as any };
     },
   });
 }

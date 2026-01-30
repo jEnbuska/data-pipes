@@ -3,7 +3,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedToReversed<T, TAsync extends boolean> {
@@ -49,13 +49,13 @@ export function toReversedParallel<T>(
   parallel: number,
 ): Promise<T[]> {
   const arr: T[] = [];
-  return ParallelGeneratorResolver.run({
+  return resolveParallel({
     parallel,
     generator,
-    onNext({ value }) {
+    onNext(value) {
       arr.unshift(value);
     },
-    onDoneAndIdle(resolve) {
+    onDone(resolve) {
       resolve(arr);
     },
   });
