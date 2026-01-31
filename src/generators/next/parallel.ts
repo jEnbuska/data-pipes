@@ -1,62 +1,53 @@
-import type {
+import {
   IYieldedAsyncGenerator,
+  IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { DONE } from "../../utils.ts";
+import { DONE, throttleParallel } from "../../utils.ts";
 
 export function parallel<T>(
-  generator: IYieldedAsyncGenerator<T>,
+  generator: IYieldedAsyncGenerator<T> | IYieldedIterator<T>,
   parallel: number,
 ): IYieldedParallelGenerator<T> {
-  const parallelQueue: Array<Promise<IteratorResult<T, void>>> = [];
-  let exhausted = false;
-  let resolvable = Promise.withResolvers<IteratorResult<T, void>>();
-
-  async function getNext(): Promise<IteratorResult<Promise<T>, void>> {
-    while (parallel && !exhausted) {
-      void onNext(generator.next());
-    }
-    while (true) {
-      const result = await Promise.race(parallelQueue);
-      if (!result.done) return { value: Promise.resolve(result.value) };
-      if (!parallelQueue.length) return result;
-    }
-  }
-
-  async function onNext(next: Promise<IteratorResult<T, void>>) {
-    parallel--;
-    parallelQueue.push(next);
-    const result = await next;
-    if (result.done) {
-      exhausted = true;
-    }
-    parallel++;
-    resolvable.resolve(result);
-    resolvable = Promise.withResolvers<IteratorResult<T, void>>();
-  }
-
-  function dispose() {
-    void generator.return();
+  let done = false;
+  function onDone() {
+    done = true;
     return DONE;
   }
+  const getNext = throttleParallel(async function (): Promise<
+    IteratorResult<Promise<T>, void>
+  > {
+    if (done) return onDone();
+    const next = await generator.next();
+    if (next.done || done) {
+      await getNext.all();
+      return onDone();
+    }
+    return {
+      value: Promise.resolve(next.value),
+    };
+  }, parallel);
+
   return {
     [Symbol.asyncIterator]() {
       return this;
     },
 
     async [Symbol.asyncDispose]() {
-      dispose();
+      onDone();
     },
     async next(..._: [] | [void]): Promise<IteratorResult<Promise<T>, void>> {
       return getNext();
     },
 
     async return() {
-      return dispose();
+      void generator.return?.();
+      return onDone();
     },
 
-    async throw() {
-      return dispose();
+    async throw(error) {
+      void generator.throw?.(error);
+      return onDone();
     },
   };
 }

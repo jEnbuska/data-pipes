@@ -112,8 +112,6 @@ describe("YieldedParallelGenerator", () => {
         5,
       ).toArray();
 
-      console.log("array", array);
-
       const expected = inputTemplate
         .toSorted((a, b) => a[1] - b[1])
         .map(([v]) => v);

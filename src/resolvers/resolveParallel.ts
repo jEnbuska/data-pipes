@@ -68,9 +68,10 @@ export function resolveParallel<T, TReturn>(args: {
       if (!next.done) {
         void handleNext(next.value);
         void getNext();
-        return;
       }
-      await onDepleted(resolvable.resolve, handleNext.all);
+      await onDepleted(resolvable.resolve, async () => {
+        await handleNext.all();
+      });
       await handleNext.all();
       await onDone(resolvable.resolve);
     } catch (e) {

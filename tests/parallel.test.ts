@@ -2,8 +2,8 @@ import { describe, expect, test } from "vitest";
 import { Yielded } from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
-describe.skip("parallel", () => {
-  test("Parallel with empty list", async () => {
+describe("parallel", () => {
+  test.only("Parallel with empty list", async () => {
     const result = (await Yielded.from([] as number[])
       .map((it) => it)
       .awaited()
@@ -21,7 +21,7 @@ describe.skip("parallel", () => {
     expect(result).toStrictEqual([100, 200, 300, 404, 500]);
   });
 
-  test.only("Parallel with 3 parallel count", async () => {
+  test("Parallel with 3 parallel count", async () => {
     const result = (await Yielded.from([550, 450, 300, 10, 100])
       .awaited()
       .parallel(3)
