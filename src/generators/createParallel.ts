@@ -2,7 +2,7 @@ import type {
   IPromiseOrNot,
   IYieldedParallelGenerator,
 } from "../shared.types.ts";
-import { DONE, throttle } from "../utils.ts";
+import { DONE, throttleParallel } from "../utils.ts";
 import { assertIsValidParallelArguments } from "./parallelUtils.ts";
 
 type YieldCommand<T> = { YIELD: IPromiseOrNot<T> };
@@ -85,7 +85,9 @@ export function createParallel<T, TOut = T>(args: {
     );
   }
 
-  const handleNext = throttle(async function handleNext(promise: Promise<T>) {
+  const handleNext = throttleParallel(async function handleNext(
+    promise: Promise<T>,
+  ) {
     if (disposed) return;
     try {
       const command = await onNext(promise);
@@ -95,7 +97,7 @@ export function createParallel<T, TOut = T>(args: {
     }
   }, parallelOnNext);
 
-  const getNext = throttle(async function getNext() {
+  const getNext = throttleParallel(async function getNext() {
     if (depleted || disposed) return;
     try {
       const next = await generator.next();
@@ -148,7 +150,7 @@ export function createParallel<T, TOut = T>(args: {
         if (value) return { value, done: false };
       }
       while (!handleNext.isIdle() && !disposed) {
-        await handleNext.waitForAnyResolved();
+        await handleNext.race();
         {
           const value = buffer.shift();
           if (value) return { value, done: false };
@@ -164,7 +166,7 @@ export function createParallel<T, TOut = T>(args: {
         if (value) return { value, done: false };
       }
       while (!handleNext.isIdle() && !disposed) {
-        await handleNext.waitForAnyResolved();
+        await handleNext.race();
         const value = buffer.shift();
         if (value) return { value, done: false };
       }

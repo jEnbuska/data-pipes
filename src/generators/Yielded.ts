@@ -1,23 +1,23 @@
-import { AsyncYielded } from "./generators/AsyncYielded.ts";
-import { awaited } from "./generators/next/awaited.ts";
-import { batchSync } from "./generators/next/batch.ts";
-import { chunkBySync } from "./generators/next/chunkBy.ts";
-import { distinctBySync } from "./generators/next/distinctBy.ts";
-import { distinctUntilChangedSync } from "./generators/next/distinctUntilChanged.ts";
-import { dropLastSync } from "./generators/next/dropLast.ts";
-import { dropWhileSync } from "./generators/next/dropWhile.ts";
-import { flatSync } from "./generators/next/flat.ts";
-import { flatMapSync } from "./generators/next/flatMap.ts";
-import { liftSync } from "./generators/next/lift.ts";
-import { reversedSync } from "./generators/next/reversed.ts";
-import { sortedSync } from "./generators/next/sorted.ts";
-import { takeSync } from "./generators/next/take.ts";
-import { takeLastSync } from "./generators/next/takeLast.ts";
-import { takeWhileSync } from "./generators/next/takeWhile.ts";
-import { tapSync } from "./generators/next/tap.ts";
-import { YieldedResolver } from "./resolvers/YieldedResolver.ts";
-import type { IYieldedGenerator, IYieldedIterator } from "./shared.types.ts";
-import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
+import { YieldedResolver } from "../resolvers/YieldedResolver.ts";
+import type { IYieldedGenerator, IYieldedIterator } from "../shared.types.ts";
+import type { IAsyncYielded, IYielded } from "../yielded.types.ts";
+import { AsyncYielded } from "./AsyncYielded.ts";
+import { awaited } from "./next/awaited.ts";
+import { batchSync } from "./next/batch.ts";
+import { chunkBySync } from "./next/chunkBy.ts";
+import { distinctBySync } from "./next/distinctBy.ts";
+import { distinctUntilChangedSync } from "./next/distinctUntilChanged.ts";
+import { dropLastSync } from "./next/dropLast.ts";
+import { dropWhileSync } from "./next/dropWhile.ts";
+import { flatSync } from "./next/flat.ts";
+import { flatMapSync } from "./next/flatMap.ts";
+import { liftSync } from "./next/lift.ts";
+import { reversedSync } from "./next/reversed.ts";
+import { sortedSync } from "./next/sorted.ts";
+import { takeSync } from "./next/take.ts";
+import { takeLastSync } from "./next/takeLast.ts";
+import { takeWhileSync } from "./next/takeWhile.ts";
+import { tapSync } from "./next/tap.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(

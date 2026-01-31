@@ -14,7 +14,7 @@ export interface IYieldedToReversed<T, TAsync extends boolean> {
    * Items are inserted into the result incrementally as they are
    * produced by the generator, so the reversal happens **one item
    * at a time** rather than by collecting all items first and
-   * reversing afterwards.
+   * reversing afterward.
    *
    * The generator is fully consumed before the final array is returned.
    * @example

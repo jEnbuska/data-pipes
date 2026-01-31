@@ -76,7 +76,7 @@ type ThrottleQueueItem<TArgs extends any[], TReturn> = {
   args: TArgs;
   resolvable: PromiseWithResolvers<TReturn>;
 };
-export function throttle<TArgs extends any[], TReturn>(
+export function throttleParallel<TArgs extends any[], TReturn>(
   cb: (...args: TArgs) => Promise<TReturn>,
   limit: number,
 ) {
@@ -85,58 +85,74 @@ export function throttle<TArgs extends any[], TReturn>(
     throw new RangeError("Limit must be greater than 0");
   }
   const queue: Array<ThrottleQueueItem<TArgs, TReturn>> = [];
-  const inFlight = new Set<Promise<unknown>>();
+  const inFlight = new Set<Promise<TReturn>>();
+
+  let current = Promise.withResolvers<TReturn>();
+  let previous: Promise<TReturn> | undefined;
 
   async function processQueue() {
     if (active >= limit) return;
     const next = queue.shift();
     if (!next) return;
     active++;
+    const promise = cb(...next.args);
+    inFlight.add(promise);
     try {
-      const promise = cb(...next.args);
-      inFlight.add(promise);
       const result = await promise;
       next.resolvable.resolve(result);
-    } catch (e) {
-      next.resolvable.reject(e);
+      current.resolve(promise);
+    } catch (error) {
+      next.resolvable.reject(error);
+      current.reject(error);
     } finally {
       active--;
+      previous = promise;
       inFlight.delete(promise);
+      current = Promise.withResolvers<TReturn>();
       void processQueue();
     }
   }
   function isIdle() {
-    return active > 0 || queue.length > 0;
+    return !active && !queue.length;
   }
-  async function waitForIdle() {
-    while (!isIdle()) {
-      await Promise.all(inFlight);
-    }
+  async function race() {
+    if (active) return current.promise;
   }
-  async function waitForAnyResolved() {
-    await Promise.race(inFlight);
-  }
+
   return Object.assign(
     function throttledFunction(...args: TArgs): Promise<TReturn> {
       const resolvable = Promise.withResolvers<TReturn>();
       queue.push({ args, resolvable });
+      const { promise } = current;
       void processQueue();
-      return resolvable.promise;
+      return promise;
     },
-    { waitForIdle, isIdle, waitForAnyResolved },
-  );
-}
 
-export function once<TArgs extends any[], TReturn>(
-  cb?: (...args: TArgs) => TReturn,
-) {
-  if (!cb) return cb;
-  let called = false;
-  let returnValue: TReturn;
-  return function onceFunction(...args: TArgs): TReturn {
-    if (called) return returnValue!;
-    called = true;
-    returnValue = cb(...args);
-    return returnValue;
-  };
+    {
+      async onNext(cb: (value: TReturn) => unknown) {
+        let cancelled = false;
+        while (!cancelled) {
+          await current.promise.then((value) => {
+            if (!cancelled) {
+              return cb(value);
+            }
+          });
+        }
+        return () => {
+          cancelled = true;
+        };
+      },
+      async all(): Promise<Array<Awaited<TReturn>>> {
+        while (true) {
+          const promise = await Promise.all(inFlight);
+          if (isIdle()) return promise;
+        }
+      },
+      isIdle,
+      race,
+      async previous() {
+        return previous;
+      },
+    },
+  );
 }

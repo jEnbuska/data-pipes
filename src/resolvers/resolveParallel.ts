@@ -1,6 +1,6 @@
 import { assertIsValidParallelArguments } from "../generators/parallelUtils.ts";
 import type { IYieldedParallelGenerator } from "../shared.types.ts";
-import { throttle } from "../utils.ts";
+import { throttleParallel } from "../utils.ts";
 
 type ResolveCallback<TReturn> = (returnValue: TReturn) => void;
 
@@ -52,7 +52,9 @@ export function resolveParallel<T, TReturn>(args: {
     returned = true;
     void generator.return();
   }
-  const handleNext = throttle(async function handleNext(promise: Promise<T>) {
+  const handleNext = throttleParallel(async function handleNext(
+    promise: Promise<T>,
+  ) {
     try {
       const value = await promise;
       return await onNext(value, resolve);
@@ -60,7 +62,7 @@ export function resolveParallel<T, TReturn>(args: {
       reject(e);
     }
   }, parallelOnNext);
-  void throttle(async function getNext() {
+  void throttleParallel(async function getNext() {
     try {
       const next = await generator.next();
       if (!next.done) {
@@ -68,8 +70,8 @@ export function resolveParallel<T, TReturn>(args: {
         void getNext();
         return;
       }
-      await onDepleted(resolvable.resolve, handleNext.waitForIdle);
-      await handleNext.waitForIdle();
+      await onDepleted(resolvable.resolve, handleNext.all);
+      await handleNext.all();
       await onDone(resolvable.resolve);
     } catch (e) {
       reject(e);
