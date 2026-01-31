@@ -141,8 +141,6 @@ describe("YieldedParallelGenerator", () => {
         }),
         3,
       ).toArray();
-
-      console.log("ARRAY", array);
       expect(array).toStrictEqual([3, 2, 4, 1, 5]);
     });
     test("generator with 5 async, parallel 2", async () => {
@@ -166,8 +164,6 @@ describe("YieldedParallelGenerator", () => {
         }),
         2,
       ).toArray();
-
-      console.log("ARRAY", array);
       expect(array).toStrictEqual([2, 3, 4, 1, 5]);
     });
   });

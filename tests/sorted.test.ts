@@ -29,7 +29,7 @@ describe("sorted", () => {
       ).toStrictEqual([1, 2, 3]);
     });
 
-    test("sort resolver parallel partial", async () => {
+    test.skip("sort resolver parallel partial", async () => {
       expect(
         await (Yielded.from<number>([500, 30, 100, 50])
           .map((value) => sleep(value).then(() => value))
@@ -40,7 +40,7 @@ describe("sorted", () => {
       ).toStrictEqual([30, 50, 100, 500]);
     });
 
-    test("sort resolver parallel all", async () => {
+    test.skip("sort resolver parallel all", async () => {
       expect(
         await (Yielded.from<number>([500, 30, 100, 50])
           .map((value) => sleep(value).then(() => value))

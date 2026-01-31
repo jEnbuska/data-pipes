@@ -26,7 +26,7 @@ function isContinueCommand<T>(
 function isYieldCommand<T>(
   command: NextCommand<T>,
 ): command is YieldCommand<T> {
-  return "CONTINUE" in command;
+  return "YIELD" in command;
 }
 function isReturnCommand<T>(command: NextCommand<T>): command is ReturnCommand {
   return "RETURN" in command;
@@ -34,7 +34,7 @@ function isReturnCommand<T>(command: NextCommand<T>): command is ReturnCommand {
 function isYieldAllCommand<T>(
   command: NextCommand<T>,
 ): command is YieldAllCommand<T> {
-  return "RETURN" in command;
+  return "YIELD_ALL" in command;
 }
 
 export function createParallel<T, TOut = T>(args: {

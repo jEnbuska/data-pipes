@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { Yielded } from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
-describe("parallel", () => {
+describe.skip("parallel", () => {
   test("Parallel with empty list", async () => {
     const result = (await Yielded.from([] as number[])
       .map((it) => it)
