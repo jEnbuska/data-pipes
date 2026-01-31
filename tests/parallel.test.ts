@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { Yielded } from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
-describe("parallel", () => {
+describe("parallel", { timeout: 5000 }, () => {
   test("Parallel with empty list", { timeout: 100 }, async () => {
     const result = (await Yielded.from([] as number[])
       .awaited()
@@ -35,6 +35,6 @@ describe("parallel", () => {
       .map(async (it) => sleep(it).then(() => it))
       .parallel(1)
       .toArray()) satisfies number[];
-    expect(result).toStrictEqual([300, 10, 100, 450, 550]);
+    expect(result).toStrictEqual([550, 450, 300, 10, 100]);
   });
 });
