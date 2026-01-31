@@ -15,7 +15,7 @@ export interface IYieldedToSorted<T, TAsync extends boolean> {
    * Items are inserted into the sorted result incrementally as they are
    * produced by the generator. Sorting happens **one item at a time** using
    * the provided comparison function, rather than collecting all items first
-   * and sorting afterwards.
+   * and sorting afterward.
    *
    * The generator is still fully consumed before the final array is returned.
    *

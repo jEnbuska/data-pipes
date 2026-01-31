@@ -39,6 +39,12 @@ interface ISharedYieldedResolver<T, TAsync extends boolean>
     IYieldedConsume<TAsync>,
     IYieldedForEach<T, TAsync> {}
 
+export type IYieldedIterable<T, TAsync extends boolean> = TAsync extends true
+  ?
+      | AsyncIterable<T, void | undefined, void | undefined>
+      | Iterable<T, void | undefined, void | undefined>
+  : Iterable<T, void | undefined, void | undefined>;
+
 export interface IAsyncYieldedResolver<T> extends ISharedYieldedResolver<
   T,
   true

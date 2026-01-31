@@ -1,8 +1,9 @@
+import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
 import { YieldedResolver } from "../resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "../shared.types.ts";
 import type { IAsyncYielded, IYielded } from "../yielded.types.ts";
 import { AsyncYielded } from "./AsyncYielded.ts";
-import { awaited } from "./next/awaited.ts";
+import { syncToAwaited } from "./next/awaited.ts";
 import { batchSync } from "./next/batch.ts";
 import { chunkBySync } from "./next/chunkBy.ts";
 import { distinctBySync } from "./next/distinctBy.ts";
@@ -136,7 +137,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     flatMapper: (
       next: T,
       index: number,
-    ) => readonly TOut[] | Iterable<TOut> | TOut,
+    ) => readonly TOut[] | IYieldedIterable<TOut, false> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }
@@ -174,7 +175,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   }
 
   awaited(): IAsyncYielded<Awaited<T>> {
-    return new AsyncYielded(this.generator, awaited(this.generator));
+    return new AsyncYielded(this.generator, syncToAwaited(this.generator));
   }
 
   reversed() {

@@ -1,13 +1,14 @@
-import {
+import { resolveParallel } from "../../resolvers/resolveParallel.ts";
+import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { DONE, throttleParallel } from "../../utils.ts";
 
-export function parallel<T>(
+export function toParallel<T>(
   generator: IYieldedAsyncGenerator<T> | IYieldedIterator<T>,
-  parallel: number,
+  count: number,
 ): IYieldedParallelGenerator<T> {
   let done = false;
   function onDone() {
@@ -17,16 +18,17 @@ export function parallel<T>(
   const getNext = throttleParallel(async function (): Promise<
     IteratorResult<Promise<T>, void>
   > {
-    if (done) return onDone();
+    if (done) return DONE;
     const next = await generator.next();
+    if (done) return DONE;
     if (next.done || done) {
-      await getNext.all();
+      while (getNext.count() > 1) await getNext.race();
       return onDone();
     }
     return {
       value: Promise.resolve(next.value),
     };
-  }, parallel);
+  }, count);
 
   return {
     [Symbol.asyncIterator]() {
@@ -36,7 +38,8 @@ export function parallel<T>(
     async [Symbol.asyncDispose]() {
       onDone();
     },
-    async next(..._: [] | [void]): Promise<IteratorResult<Promise<T>, void>> {
+    async next(): Promise<IteratorResult<Promise<T>, void>> {
+      if (done) return DONE;
       return getNext();
     },
 
@@ -50,4 +53,60 @@ export function parallel<T>(
       return onDone();
     },
   };
+}
+
+// change to number of parallel downstream
+export function parallelUpdate<T>(
+  generator: IYieldedParallelGenerator<T>,
+  count: number,
+): IYieldedParallelGenerator<T> {
+  const buffer = new Array<T>();
+  let disposed = false;
+  const parallelGenerator = Object.assign(
+    {
+      [Symbol.asyncIterator]() {
+        return this;
+      },
+
+      async [Symbol.asyncDispose]() {
+        disposed = true;
+      },
+      async next(..._: [] | [void]): Promise<IteratorResult<Promise<T>, void>> {
+        if (disposed || !buffer.length) return DONE;
+        const value = buffer.shift()!;
+        return { value: Promise.resolve(value) };
+      },
+
+      async return() {
+        disposed = true;
+        return DONE;
+      },
+
+      async throw() {
+        disposed = true;
+        return DONE;
+      },
+    },
+    {
+      [Symbol.dispose]() {
+        disposed = true;
+      },
+    },
+  );
+
+  void resolveParallel({
+    generator,
+    parallel: count,
+    onNext(next, resolve) {
+      if (disposed) {
+        resolve(undefined);
+      }
+      buffer.push(next);
+      void parallelGenerator.next();
+    },
+    onDone() {
+      void parallelGenerator.return();
+    },
+  });
+  return parallelGenerator;
 }

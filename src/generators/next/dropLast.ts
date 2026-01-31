@@ -90,7 +90,7 @@ export function dropLastParallel<T>(
     },
     onDone() {
       if (!buffer.length) return { RETURN: null };
-      return { YIELD_ALL: buffer };
+      return { YIELD_FLAT: buffer };
     },
   });
 }

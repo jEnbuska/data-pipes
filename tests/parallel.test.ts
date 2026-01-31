@@ -3,13 +3,11 @@ import { Yielded } from "../src/index.ts";
 import { sleep } from "./utils/sleep.ts";
 
 describe("parallel", () => {
-  test.only("Parallel with empty list", async () => {
+  test("Parallel with empty list", { timeout: 100 }, async () => {
     const result = (await Yielded.from([] as number[])
-      .map((it) => it)
       .awaited()
-      .parallel(10)
+      .parallel(2)
       .toArray()) satisfies number[];
-
     expect(result).toStrictEqual([]);
   });
   test("Parallel with all at once", async () => {
@@ -26,6 +24,16 @@ describe("parallel", () => {
       .awaited()
       .parallel(3)
       .map(async (it) => sleep(it).then(() => it))
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([300, 10, 100, 450, 550]);
+  });
+
+  test("Parallel to awaited", async () => {
+    const result = (await Yielded.from([550, 450, 300, 10, 100])
+      .awaited()
+      .parallel(3)
+      .map(async (it) => sleep(it).then(() => it))
+      .parallel(1)
       .toArray()) satisfies number[];
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });

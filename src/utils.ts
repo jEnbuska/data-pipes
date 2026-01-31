@@ -129,6 +129,9 @@ export function throttleParallel<TArgs extends any[], TReturn>(
     },
 
     {
+      count() {
+        return active;
+      },
       async onNext(cb: (value: TReturn) => unknown) {
         let cancelled = false;
         while (!cancelled) {

@@ -72,7 +72,7 @@ export function takeLastParallel<T>(
     },
     onDone() {
       if (!acc.length) return { RETURN: null };
-      return { YIELD_ALL: acc };
+      return { YIELD_FLAT: acc };
     },
   });
 }

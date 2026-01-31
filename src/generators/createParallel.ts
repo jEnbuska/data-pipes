@@ -6,13 +6,19 @@ import { DONE, throttleParallel } from "../utils.ts";
 import { assertIsValidParallelArguments } from "./parallelUtils.ts";
 
 type YieldCommand<T> = { YIELD: IPromiseOrNot<T> };
-type YieldAllCommand<T> = { YIELD_ALL: IPromiseOrNot<Array<IPromiseOrNot<T>>> };
+type YieldFlatCommand<T> = {
+  YIELD_FLAT: IPromiseOrNot<
+    | IPromiseOrNot<T>
+    | Iterable<IPromiseOrNot<T>>
+    | AsyncIterable<IPromiseOrNot<T>>
+  >;
+};
 type ReturnCommand = { RETURN: null };
 type ContinueCommand = { CONTINUE: null };
 
 type NextCommand<T> =
   | YieldCommand<T>
-  | YieldAllCommand<T>
+  | YieldFlatCommand<T>
   | ReturnCommand
   | ContinueCommand;
 
@@ -31,10 +37,30 @@ function isYieldCommand<T>(
 function isReturnCommand<T>(command: NextCommand<T>): command is ReturnCommand {
   return "RETURN" in command;
 }
-function isYieldAllCommand<T>(
+function isYieldFlatCommand<T>(
   command: NextCommand<T>,
-): command is YieldAllCommand<T> {
-  return "YIELD_ALL" in command;
+): command is YieldFlatCommand<T> {
+  return "YIELD_FLAT" in command;
+}
+
+function isAsyncIterable<T>(
+  obj: T | Iterable<T> | AsyncIterable<T>,
+): obj is AsyncIterable<T> {
+  return Boolean(
+    obj &&
+    // @ts-expect-error
+    typeof obj[Symbol.asyncIterator] === "function",
+  );
+}
+
+function isIterable<T>(
+  obj: T | Iterable<T> | AsyncIterable<T>,
+): obj is Iterable<T> {
+  return Boolean(
+    obj &&
+    // @ts-expect-error
+    typeof obj[Symbol.iterator] === "function",
+  );
 }
 
 export function createParallel<T, TOut = T>(args: {
@@ -74,10 +100,26 @@ export function createParallel<T, TOut = T>(args: {
       buffer.push(Promise.resolve(command.YIELD));
       return;
     }
-    if (isYieldAllCommand(command)) {
-      for (const item of await command.YIELD_ALL) {
-        buffer.push(Promise.resolve(item));
+    if (isYieldFlatCommand(command)) {
+      const YieldFlat = await command.YIELD_FLAT;
+      if (Array.isArray(YieldFlat)) {
+        Array.prototype.push.apply(buffer, YieldFlat);
+        return;
       }
+      if (isAsyncIterable(YieldFlat)) {
+        const generator = YieldFlat[Symbol.asyncIterator]();
+        let next = await generator.next();
+        while (!next.done) {
+          buffer.push(Promise.resolve(next.value));
+          next = await generator.next();
+        }
+        return;
+      }
+      if (isIterable(YieldFlat)) {
+        for (const next of YieldFlat) buffer.push(Promise.resolve(next));
+        return;
+      }
+      buffer.push(Promise.resolve(YieldFlat));
       return;
     }
     throw new TypeError(

@@ -1,3 +1,4 @@
+import type { IYieldedIterable } from "../../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
   INextYielded,
@@ -39,7 +40,10 @@ export interface IYieldedFlatMap<T, TAsync extends boolean> {
     mapper: (
       next: T,
       index: number,
-    ) => ICallbackReturn<readonly TOut[] | Iterable<TOut> | TOut, TAsync>,
+    ) => ICallbackReturn<
+      readonly TOut[] | IYieldedIterable<TOut, TAsync> | TOut,
+      TAsync
+    >,
   ): INextYielded<TOut, TAsync>;
 }
 
@@ -48,7 +52,7 @@ export function* flatMapSync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => readonly TOut[] | Iterable<TOut> | TOut,
+  ) => readonly TOut[] | IYieldedIterable<TOut, false> | TOut,
 ): IYieldedIterator<TOut> {
   const callback = withIndex1(flatMapper);
   for (const next of generator) {
@@ -66,7 +70,7 @@ export async function* flatMapAsync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => IPromiseOrNot<readonly TOut[] | Iterable<TOut> | TOut>,
+  ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
 ): IYieldedAsyncGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   for await (const next of generator) {
@@ -85,18 +89,14 @@ export function flatMapParallel<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => IPromiseOrNot<readonly TOut[] | Iterable<TOut> | TOut>,
+  ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   return createParallel<T, TOut>({
     generator,
     parallel,
     async onNext(next) {
-      const value: any = await next.then(callback);
-      if (value?.[Symbol.iterator]) {
-        return { YIELD_ALL: value };
-      }
-      return { YIELD: value };
+      return { YIELD_FLAT: await next.then(callback) };
     },
   });
 }

@@ -78,7 +78,7 @@ export function flatParallel<T, const Depth extends number = 1>(
       if (!Array.isArray(value) || depth <= 0) {
         return { YIELD: next as any };
       }
-      return { YIELD_ALL: value.flat(depth - 1) as any };
+      return { YIELD_FLAT: value.flat(depth - 1) as any };
     },
   });
 }

@@ -1,3 +1,4 @@
+import { assertIsValidParallelArguments } from "../generators/parallelUtils.ts";
 import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
@@ -28,7 +29,7 @@ import type {
 
 export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedParallelGenerator<T>;
-  protected parallelCount: number;
+  protected _parallel: number;
 
   protected constructor(
     parent:
@@ -40,9 +41,10 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
             | IYieldedAsyncGenerator
           )),
     generator: IYieldedParallelGenerator<T>,
-    parallelCount: number,
+    parallel: number,
   ) {
-    this.parallelCount = parallelCount;
+    assertIsValidParallelArguments({ parallel });
+    this._parallel = parallel;
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
         if (generator === parent) return;
@@ -68,7 +70,7 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
     ...args: TArgs
   ): Promise<TReturn> {
     using generator = this.generator;
-    return await cb(generator, this.parallelCount, ...args);
+    return await cb(generator, this._parallel, ...args);
   }
 
   forEach(...args: Parameters<IAsyncYieldedResolver<T>["forEach"]>) {

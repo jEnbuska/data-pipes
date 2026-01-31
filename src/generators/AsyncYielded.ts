@@ -1,4 +1,5 @@
 import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver.ts";
+import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
 import type {
   IPromiseOrNot,
   IYieldedAsyncGenerator,
@@ -18,7 +19,7 @@ import { flatAsync } from "./next/flat.ts";
 import { flatMapAsync } from "./next/flatMap.ts";
 import { liftAsync } from "./next/lift.ts";
 import { mapAsync } from "./next/map.ts";
-import { parallel } from "./next/parallel.ts";
+import { toParallel } from "./next/parallel.ts";
 import { reversedAsync } from "./next/reversed.ts";
 import { sortedAsync } from "./next/sorted.ts";
 import { takeAsync } from "./next/take.ts";
@@ -117,7 +118,7 @@ export class AsyncYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => IPromiseOrNot<TOut | readonly TOut[] | IteratorObject<TOut>>,
+    ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
   ) {
     return this.#next(flatMapAsync, callback);
   }
@@ -174,7 +175,7 @@ export class AsyncYielded<T>
   parallel(parallelCount: number): IAsyncYielded<T> {
     return new ParallelYielded<T>(
       this.generator,
-      parallel(this.generator, parallelCount),
+      toParallel(this.generator, parallelCount),
       parallelCount,
     );
   }

@@ -75,7 +75,7 @@ export function sortedParallel<T = never>(
     },
     onDone() {
       if (!arr.length) return { RETURN: null };
-      return { YIELD_ALL: arr };
+      return { YIELD_FLAT: arr };
     },
   });
 }

@@ -61,7 +61,7 @@ export function reversedParallel<T>(
       return { CONTINUE: null };
     },
     onDone() {
-      return { YIELD_ALL: acc };
+      return { YIELD_FLAT: acc };
     },
   });
 }
