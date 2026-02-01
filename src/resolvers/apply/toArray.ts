@@ -19,7 +19,9 @@ export async function toArrayAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
 ): Promise<T[]> {
   const arr: T[] = [];
-  for await (const next of generator) arr.push(next);
+  for await (const next of generator) {
+    arr.push(next);
+  }
   return arr;
 }
 

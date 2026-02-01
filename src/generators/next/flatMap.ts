@@ -2,10 +2,10 @@ import type { IYieldedIterable } from "../../resolvers/resolver.types.ts";
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { withIndex1 } from "../../utils.ts";
 import { createParallel } from "../createParallel.ts";
@@ -70,7 +70,7 @@ export async function* flatMapAsync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
 ): IYieldedAsyncGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   for await (const next of generator) {
@@ -89,14 +89,16 @@ export function flatMapParallel<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   return createParallel<T, TOut>({
     generator,
     parallel,
     async onNext(next) {
-      return { YIELD_FLAT: await next.then(callback) };
+      const res = await next.then(callback);
+      if (Array.isArray(res)) return res as any; // TODO
+      return [res] as any;
     },
   });
 }

@@ -4,6 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
+import { withIndex1 } from "../../utils.ts";
 import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedTap<T, TAsync extends boolean> {
@@ -28,25 +29,27 @@ export interface IYieldedTap<T, TAsync extends boolean> {
    * console.log(storer) // [2, 4, 6]
    * ```
    */
-  tap(callback: (next: T) => unknown): INextYielded<T, TAsync>;
+  tap(callback: (next: T, index: number) => unknown): INextYielded<T, TAsync>;
 }
 
 export function* tapSync<T>(
   generator: IYieldedIterator<T>,
-  consumer: (next: T) => unknown,
+  consumer: (next: T, index: number) => unknown,
 ): IYieldedIterator<T> {
+  let index = 0;
   for (const next of generator) {
-    consumer(next);
+    consumer(next, index++);
     yield next;
   }
 }
 
 export async function* tapAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  consumer: (next: T) => unknown,
+  consumer: (next: T, index: number) => unknown,
 ): IYieldedAsyncGenerator<T> {
+  let index = 0;
   for await (const next of generator) {
-    consumer(next);
+    consumer(next, index++);
     yield next;
   }
 }
@@ -54,14 +57,15 @@ export async function* tapAsync<T>(
 export function tapParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  consumer: (next: T) => unknown,
+  consumer: (next: T, index: number) => unknown,
 ): IYieldedParallelGenerator<T> {
+  const callback = withIndex1(consumer);
   return createParallel({
     generator,
     parallel,
     onNext(value) {
-      void value.then(consumer);
-      return { YIELD: value };
+      void value.then(callback);
+      return [value];
     },
   });
 }

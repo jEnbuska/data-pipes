@@ -1,10 +1,10 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { locked } from "../../utils.ts";
 import { createParallel } from "../createParallel.ts";
@@ -36,18 +36,19 @@ export interface IYieldedBatch<T, TAsync extends boolean> {
    * ```
    */
   batch(
-    predicate: (acc: T[]) => ICallbackReturn<boolean, TAsync>,
+    predicate: (acc: T[], index: number) => ICallbackReturn<boolean, TAsync>,
   ): INextYielded<T[], TAsync>;
 }
 
 export function* batchSync<T>(
   generator: IYieldedIterator<T>,
-  predicate: (acc: T[]) => boolean,
+  predicate: (acc: T[], index: number) => boolean,
 ): IYieldedIterator<T[]> {
+  let index = 0;
   let acc: T[] = [];
   for (const next of generator) {
     acc.push(next);
-    if (predicate(acc)) continue;
+    if (predicate(acc, index++)) continue;
     yield acc;
     acc = [];
   }
@@ -56,12 +57,13 @@ export function* batchSync<T>(
 
 export async function* batchAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  predicate: (batch: T[]) => IPromiseOrNot<boolean>,
+  predicate: (batch: T[], index: number) => MaybeAsync<boolean>,
 ): IYieldedAsyncGenerator<T[]> {
+  let index = 0;
   let acc: T[] = [];
   for await (const next of generator) {
     acc.push(next);
-    if (await predicate(acc)) continue;
+    if (await predicate(acc, index++)) continue;
     yield acc;
     acc = [];
   }
@@ -71,12 +73,13 @@ export async function* batchAsync<T>(
 export function batchParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  predicate: (batch: T[]) => IPromiseOrNot<boolean>,
+  predicate: (batch: T[], index: number) => MaybeAsync<boolean>,
 ): IYieldedParallelGenerator<T[]> {
+  let index = 0;
   const lockedPredicate = locked(async (next: Promise<T>) => {
     const value = await next;
     acc.push(value);
-    return predicate(acc);
+    return predicate(acc, index++);
   });
   let acc: T[] = [];
   return createParallel<T, T[]>({
@@ -84,14 +87,13 @@ export function batchParallel<T>(
     parallel,
     async onNext(next) {
       const match = await lockedPredicate(next);
-      if (match) return { CONTINUE: null };
+      if (match) return [];
       const payload = acc;
       acc = [];
-      return { YIELD: payload };
+      return [payload];
     },
     onDone() {
-      if (acc.length) return { YIELD: acc };
-      return { RETURN: null };
+      if (acc.length) return [acc];
     },
   });
 }

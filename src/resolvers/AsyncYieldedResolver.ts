@@ -1,7 +1,8 @@
 import type {
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
+  IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../shared.types.ts";
 import { consumeAsync } from "./apply/consume.ts";
 import { countAsync } from "./apply/count.ts";
@@ -31,7 +32,12 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected constructor(
     parent:
       | undefined
-      | ((IYieldedAsyncGenerator | IYieldedIterator) & Disposable),
+      | (Disposable &
+          (
+            | IYieldedAsyncGenerator
+            | IYieldedIterator
+            | IYieldedParallelGenerator
+          )),
     generator: IYieldedAsyncGenerator<T>,
   ) {
     this.generator = Object.assign(generator, {
@@ -63,12 +69,14 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   }
 
   reduce<TOut>(
-    reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
-    initialValue: IPromiseOrNot<TOut>,
+    reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
+    initialValue: MaybeAsync<TOut>,
   ): Promise<TOut>;
+
   reduce(
     reducer: (acc: T, next: T, index: number) => T,
   ): Promise<T | undefined>;
+
   reduce(...args: unknown[]) {
     // @ts-expect-error
     return this.#apply(reduceAsync, ...args);
@@ -89,7 +97,9 @@ export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   find<TOut extends T>(
     predicate: (next: T) => next is TOut,
   ): Promise<TOut | undefined>;
+
   find(predicate: (next: T) => unknown): Promise<T | undefined>;
+
   find(...args: unknown[]) {
     // @ts-expect-error
     return this.#apply(findAsync, ...args);

@@ -50,21 +50,30 @@ export async function* parallelToAwaited<T>(
   let done = false;
   const buffer: T[] = [];
   let resolvable = Promise.withResolvers<void>();
-  void resolveParallel({
+  using _ = resolveParallel<T, void>({
     generator,
     parallel,
-    onNext(next) {
-      buffer.push(next);
+    onNext(value) {
+      console.log("PUSH", value);
+      buffer.push(value);
       resolvable.resolve();
-      resolvable = Promise.withResolvers<void>();
     },
-    onDepleted() {
+    onDone(resolve) {
       done = true;
       resolvable.resolve();
+      resolve();
     },
   });
-  while (!done) {
+
+  for await (const next of generator) {
+    yield next;
+  }
+
+  while (!done || buffer.length) {
+    while (buffer.length) {
+      yield buffer.shift()!;
+    }
     await resolvable.promise;
-    if (buffer.length) yield buffer.shift()!;
+    resolvable = Promise.withResolvers<void>();
   }
 }

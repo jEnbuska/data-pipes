@@ -30,27 +30,28 @@ export interface IYieldedFilter<T, TAsync extends boolean> {
    */
 
   filter<TOut extends T>(
-    predicate: (next: T) => next is TOut,
+    predicate: (next: T, index: number) => next is TOut,
   ): INextYielded<TOut, TAsync>;
   filter(
-    predicate: (next: T) => ICallbackReturn<unknown, TAsync>,
+    predicate: (next: T, index: number) => ICallbackReturn<unknown, TAsync>,
   ): INextYielded<T, TAsync>;
 }
 
 export function filterAsync<T, TOut extends T = T>(
   generator: IYieldedAsyncGenerator<T>,
-  predicate: (next: T) => next is TOut,
+  predicate: (next: T, index: number) => next is TOut,
 ): IYieldedAsyncGenerator<TOut>;
 export function filterAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  predicate: (next: T) => unknown,
+  predicate: (next: T, index: number) => unknown,
 ): IYieldedAsyncGenerator<T>;
 export async function* filterAsync(
   generator: IYieldedAsyncGenerator,
-  predicate: (next: unknown) => unknown,
+  predicate: (next: unknown, index: number) => unknown,
 ): IYieldedAsyncGenerator {
+  let index = 0;
   for await (const next of generator) {
-    if (await predicate(next)) yield next;
+    if (await predicate(next, index++)) yield next;
   }
 }
 
@@ -75,8 +76,8 @@ export function filterParallel(
     parallel,
     async onNext(next) {
       const match = await next.then(callback);
-      if (!match) return { CONTINUE: null };
-      return { YIELD: next };
+      if (!match) return [];
+      return [next];
     },
   });
 }

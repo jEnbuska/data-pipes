@@ -1,9 +1,9 @@
 import type {
   ICallbackReturn,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
@@ -58,7 +58,7 @@ export function toSortedSync<T>(
 
 export async function toSortedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+  compareFn: (a: T, b: T) => MaybeAsync<number>,
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
@@ -75,14 +75,14 @@ export async function toSortedAsync<T>(
 export function toSortedParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+  compareFn: (a: T, b: T) => MaybeAsync<number>,
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
   return resolveParallel({
     generator,
     parallel,
-    parallelOnNext: 1,
+    chokeOnNext: true,
     async onNext(value) {
       const index = await findIndex(value);
       arr.splice(index, 0, value);
@@ -95,7 +95,7 @@ export function toSortedParallel<T>(
 
 export function createIndexFinderAsync<T>(
   arr: T[],
-  comparator: (a: T, b: T) => IPromiseOrNot<number>,
+  comparator: (a: T, b: T) => MaybeAsync<number>,
 ) {
   return async function findIndexAsync(
     next: T,

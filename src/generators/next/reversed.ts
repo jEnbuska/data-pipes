@@ -58,10 +58,10 @@ export function reversedParallel<T>(
     parallel,
     onNext(next) {
       acc.unshift(next);
-      return { CONTINUE: null };
+      return [];
     },
     onDone() {
-      return { YIELD_FLAT: acc };
+      return acc;
     },
   });
 }

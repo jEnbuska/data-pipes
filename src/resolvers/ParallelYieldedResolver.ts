@@ -1,9 +1,9 @@
-import { assertIsValidParallelArguments } from "../generators/parallelUtils.ts";
+import { assertIsValidParallel } from "../generators/parallelUtils.ts";
 import type {
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../shared.types.ts";
 import { consumeParallel } from "./apply/consume.ts";
 import { countParallel } from "./apply/count.ts";
@@ -29,6 +29,7 @@ import type {
 
 export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedParallelGenerator<T>;
+
   protected _parallel: number;
 
   protected constructor(
@@ -36,14 +37,14 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
       | undefined
       | (Disposable &
           (
-            | IYieldedParallelGenerator
-            | IYieldedIterator
-            | IYieldedAsyncGenerator
+            | IYieldedParallelGenerator<any>
+            | IYieldedIterator<any>
+            | IYieldedAsyncGenerator<any>
           )),
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
   ) {
-    assertIsValidParallelArguments({ parallel });
+    assertIsValidParallel(parallel);
     this._parallel = parallel;
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
@@ -78,12 +79,14 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   }
 
   reduce<TOut>(
-    reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
-    initialValue: IPromiseOrNot<TOut>,
+    reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
+    initialValue: MaybeAsync<TOut>,
   ): Promise<TOut>;
+
   reduce(
     reducer: (acc: T, next: T, index: number) => T,
   ): Promise<T | undefined>;
+
   reduce(...args: unknown[]) {
     // @ts-expect-error
     return this.#apply(reduceParallel, ...args);
@@ -104,7 +107,9 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   find<TOut extends T>(
     predicate: (next: T) => next is TOut,
   ): Promise<TOut | undefined>;
+
   find(predicate: (next: T) => unknown): Promise<T | undefined>;
+
   find(...args: Parameters<IAsyncYieldedResolver<T>["find"]>) {
     // @ts-expect-error
     return this.#apply(findParallel, ...args);
@@ -144,6 +149,7 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
   ): Promise<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>
   >;
+
   groupBy<TKey extends PropertyKey>(
     keySelector: (next: T) => Promise<TKey> | TKey,
     groups?: undefined,

@@ -1,10 +1,10 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { createParallel } from "../createParallel.ts";
 
@@ -53,7 +53,7 @@ export function* dropWhileSync<T>(
 
 export async function* dropWhileAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  predicate: (next: T) => IPromiseOrNot<boolean>,
+  predicate: (next: T) => MaybeAsync<boolean>,
 ): IYieldedAsyncGenerator<T> {
   for await (const next of generator) {
     if (await predicate(next)) continue;
@@ -68,7 +68,7 @@ export async function* dropWhileAsync<T>(
 export function dropWhileParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  predicate: (next: T) => IPromiseOrNot<boolean>,
+  predicate: (next: T) => MaybeAsync<boolean>,
 ): IYieldedParallelGenerator<T> {
   let drop = true;
   return createParallel<T>({
@@ -76,13 +76,13 @@ export function dropWhileParallel<T>(
     parallel,
     async onNext(next) {
       if (!drop) {
-        return { YIELD: next };
+        return [next];
       }
       if (await predicate(await next)) {
         drop = false;
-        return { YIELD: next };
+        return [next];
       }
-      return { CONTINUE: null };
+      return [];
     },
   });
 }

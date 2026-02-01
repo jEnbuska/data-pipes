@@ -1,9 +1,9 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { withIndex1 } from "../../utils.ts";
 import { createParallel } from "../createParallel.ts";
@@ -21,13 +21,13 @@ export interface IYieldedMap<T, TAsync extends boolean> {
    * ```
    */
   map<TOut>(
-    mapper: (next: T) => ICallbackReturn<TOut, TAsync>,
+    mapper: (next: T, index: number) => ICallbackReturn<TOut, TAsync>,
   ): INextYielded<TOut, TAsync>;
 }
 
 export async function* mapAsync<T, TOut>(
   generator: IYieldedAsyncGenerator<T>,
-  mapper: (next: T, index: number) => IPromiseOrNot<TOut>,
+  mapper: (next: T, index: number) => MaybeAsync<TOut>,
 ): IYieldedAsyncGenerator<TOut> {
   let index = 0;
   for await (const next of generator) {
@@ -38,14 +38,14 @@ export async function* mapAsync<T, TOut>(
 export function mapParallel<T, TOut>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  mapper: (next: T, index: number) => IPromiseOrNot<TOut>,
+  mapper: (next: T, index: number) => MaybeAsync<TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(mapper);
   return createParallel<T, TOut>({
     generator,
     parallel,
     onNext(next) {
-      return { YIELD: next.then(callback) };
+      return [next.then(callback)];
     },
   });
 }

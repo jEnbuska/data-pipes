@@ -1,9 +1,9 @@
 import type {
   ICallbackReturn,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { isPlaceholder, memoize, PLACEHOLDER } from "../../utils.ts";
 import { resolveParallel } from "../resolveParallel.ts";
@@ -57,7 +57,7 @@ export function minBySync<T>(
 
 export async function minByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  callback: (next: T) => IPromiseOrNot<number>,
+  callback: (next: T) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;
@@ -76,7 +76,7 @@ export async function minByAsync<T>(
 export function minByParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  callback: (next: T, index: number) => IPromiseOrNot<number>,
+  callback: (next: T, index: number) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   let acc: { item: T | symbol; value: number | symbol } = {
     item: PLACEHOLDER,

@@ -1,10 +1,10 @@
 import { ParallelYieldedResolver } from "../resolvers/ParallelYieldedResolver.ts";
 import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
 import type {
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../shared.types.ts";
 import type { IAsyncYielded } from "../yielded.types.ts";
 import { AsyncYielded } from "./AsyncYielded.ts";
@@ -21,7 +21,7 @@ import { flatParallel } from "./next/flat.ts";
 import { flatMapParallel } from "./next/flatMap.ts";
 import { liftParallel } from "./next/lift.ts";
 import { mapParallel } from "./next/map.ts";
-import { parallelUpdate } from "./next/parallel.ts";
+import { parallelThrottleUpdate } from "./next/parallel.ts";
 import { reversedParallel } from "./next/reversed.ts";
 import { sortedParallel } from "./next/sorted.ts";
 import { takeParallel } from "./next/take.ts";
@@ -35,7 +35,11 @@ export class ParallelYielded<T>
 {
   public constructor(
     parent: Disposable &
-      (IYieldedParallelGenerator | IYieldedIterator | IYieldedAsyncGenerator),
+      (
+        | IYieldedParallelGenerator<any>
+        | IYieldedIterator<any>
+        | IYieldedAsyncGenerator<any>
+      ),
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
   ) {
@@ -76,7 +80,9 @@ export class ParallelYielded<T>
   }
 
   filter<TOut extends T>(fn: (next: T) => next is TOut): IAsyncYielded<T>;
+
   filter(fn: (next: T) => any): IAsyncYielded<T>;
+
   filter(...args: unknown[]) {
     // @ts-expect-error
     return this.#next(filterParallel, ...args);
@@ -90,12 +96,12 @@ export class ParallelYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => IPromiseOrNot<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+    ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
   ) {
     return this.#next(flatMapParallel, callback);
   }
 
-  map<TOut>(mapper: (next: T) => IPromiseOrNot<TOut>) {
+  map<TOut>(mapper: (next: T, index: number) => MaybeAsync<TOut>) {
     return this.#next(mapParallel, mapper);
   }
 
@@ -141,23 +147,23 @@ export class ParallelYielded<T>
   lift<TOut>(middleware: any): IAsyncYielded<TOut> {
     return new ParallelYielded<TOut>(
       this.generator,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+       
       liftParallel(this.generator, this._parallel, middleware),
       this._parallel,
     ) as any;
   }
 
-  parallel(count: number): IAsyncYielded<T> {
-    if (count === 1) {
-      return new AsyncYielded(
+  parallel(parallel: number): IAsyncYielded<T> {
+    if (parallel === 1) {
+      return new AsyncYielded<T>(
         this.generator,
         parallelToAwaited(this.generator, this._parallel),
       );
     }
     return new ParallelYielded<T>(
       this.generator,
-      parallelUpdate(this.generator, this._parallel),
-      count,
+      parallelThrottleUpdate(this.generator, parallel),
+      parallel,
     );
   }
 }

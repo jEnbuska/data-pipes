@@ -1,10 +1,10 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { createParallel } from "../createParallel.ts";
 
@@ -56,7 +56,7 @@ export function* distinctUntilChangedSync<T>(
 
 export async function* distinctUntilChangedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  compare: (previous: T, current: T) => IPromiseOrNot<boolean> = defaultCompare,
+  compare: (previous: T, current: T) => MaybeAsync<boolean> = defaultCompare,
 ): IYieldedAsyncGenerator<T> {
   const first = await generator.next();
   if (first.done) return;
@@ -73,23 +73,23 @@ export async function* distinctUntilChangedAsync<T>(
 export function distinctUntilChangedParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  compare: (previous: T, current: T) => IPromiseOrNot<boolean> = defaultCompare,
+  compare: (previous: T, current: T) => MaybeAsync<boolean> = defaultCompare,
 ): IYieldedParallelGenerator<T> {
   let previous: Promise<T> | undefined;
   return createParallel<T>({
     generator,
     parallel,
-    parallelOnNext: 1,
+    chokeOnNext: true,
     async onNext(next) {
       if (!previous) {
         previous = next;
-        return { YIELD: next };
+        return [next];
       }
       if (await compare(await previous, await next)) {
         previous = next;
-        return { YIELD: next };
+        return [next];
       }
-      return { CONTINUE: null };
+      return [];
     },
   });
 }

@@ -1,10 +1,10 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { createParallel } from "../createParallel.ts";
 
@@ -50,7 +50,7 @@ export function* distinctBySync<T, TSelect>(
 
 export async function* distinctByAsync<T, TSelect>(
   generator: IYieldedAsyncGenerator<T>,
-  selector: (next: T) => IPromiseOrNot<TSelect>,
+  selector: (next: T) => MaybeAsync<TSelect>,
 ): IYieldedAsyncGenerator<T> {
   const set = new Set<TSelect>();
   for await (const next of generator) {
@@ -64,7 +64,7 @@ export async function* distinctByAsync<T, TSelect>(
 export function distinctByParallel<T, TSelect>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  selector: (next: T) => IPromiseOrNot<TSelect>,
+  selector: (next: T) => MaybeAsync<TSelect>,
 ): IYieldedParallelGenerator<T> {
   const set = new Set<TSelect>();
   return createParallel<T>({
@@ -72,11 +72,9 @@ export function distinctByParallel<T, TSelect>(
     parallel,
     async onNext(next) {
       const key = await next.then(selector);
-      if (set.has(key)) return { CONTINUE: null };
+      if (set.has(key)) return [];
       set.add(key);
-      return {
-        YIELD: next,
-      };
+      return [next];
     },
   });
 }

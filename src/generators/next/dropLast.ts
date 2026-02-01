@@ -84,13 +84,12 @@ export function dropLastParallel<T>(
       buffer.push(next);
       if (skipped < count) {
         skipped++;
-        return { CONTINUE: null };
+        return [];
       }
-      return { YIELD: buffer.shift()! };
+      return [buffer.shift()!];
     },
     onDone() {
-      if (!buffer.length) return { RETURN: null };
-      return { YIELD_FLAT: buffer };
+      return buffer;
     },
   });
 }

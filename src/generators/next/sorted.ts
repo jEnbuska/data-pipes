@@ -6,10 +6,10 @@ import {
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { locked } from "../../utils.ts";
 import { createParallel } from "../createParallel.ts";
@@ -50,7 +50,7 @@ export function* sortedSync<T>(
 
 export async function* sortedAsync<T = never>(
   generator: IYieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+  compareFn: (a: T, b: T) => MaybeAsync<number>,
 ): IYieldedAsyncGenerator<T> {
   yield* await toSortedAsync(generator, compareFn);
 }
@@ -58,7 +58,7 @@ export async function* sortedAsync<T = never>(
 export function sortedParallel<T = never>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  compareFn: (a: T, b: T) => IPromiseOrNot<number>,
+  compareFn: (a: T, b: T) => MaybeAsync<number>,
 ): IYieldedParallelGenerator<T> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
@@ -71,11 +71,10 @@ export function sortedParallel<T = never>(
     parallel,
     onNext(next) {
       void next.then(lockedUpdate);
-      return { CONTINUE: null };
+      return [];
     },
     onDone() {
-      if (!arr.length) return { RETURN: null };
-      return { YIELD_FLAT: arr };
+      return arr;
     },
   });
 }

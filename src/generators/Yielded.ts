@@ -39,9 +39,11 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   static from<T>(
     generatorFunction: () => Iterable<T, unknown, unknown>,
   ): IYielded<T>;
+
   static from<T>(
     asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
   ): IAsyncYielded<T>;
+
   static from<T>(
     asyncFunction: Promise<T[]> | Promise<T> | (() => Promise<T[] | T>),
   ): IAsyncYielded<T>;
@@ -60,12 +62,13 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
    * Yielded.from(data)
    * */
   static from<T>(data: T): IYielded<T>;
+
   static from(source: any) {
     if (typeof source === "function") {
       source = source();
     }
     if (source?.[Symbol.iterator]) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+       
       return new Yielded<any>(
         undefined,
         source[Symbol.iterator]() as IYieldedIterator<any>,
@@ -95,13 +98,17 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return new Yielded<TNext>(this.generator, next(this.generator, ...args));
   }
 
-  filter<TOut extends T>(predicate: (next: T) => next is TOut): IYielded<TOut>;
-  filter(predicate: (next: T) => unknown): IYielded<T>;
-  filter(predicate: (next: T) => unknown) {
+  filter<TOut extends T>(
+    predicate: (next: T, index: number) => next is TOut,
+  ): IYielded<TOut>;
+
+  filter(predicate: (next: T, index: number) => unknown): IYielded<T>;
+
+  filter(predicate: (next: T, index: number) => unknown) {
     return new Yielded(this.generator, this.generator.filter(predicate));
   }
 
-  map<TOut>(mapper: (next: T) => TOut): IYielded<TOut> {
+  map<TOut>(mapper: (next: T, index: number) => TOut): IYielded<TOut> {
     return new Yielded(this.generator, this.generator.map(mapper));
   }
 

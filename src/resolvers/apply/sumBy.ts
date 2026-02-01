@@ -1,8 +1,8 @@
 import type {
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
@@ -35,7 +35,7 @@ export function sumBySync<T>(
 
 export async function sumByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  mapper: (next: T) => IPromiseOrNot<number>,
+  mapper: (next: T) => MaybeAsync<number>,
 ): Promise<number> {
   let acc = 0;
   for await (const next of generator) {
@@ -47,7 +47,7 @@ export async function sumByAsync<T>(
 export function sumByParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  mapper: (next: T) => IPromiseOrNot<number>,
+  mapper: (next: T) => MaybeAsync<number>,
 ): Promise<number> {
   let acc = 0;
   return resolveParallel({

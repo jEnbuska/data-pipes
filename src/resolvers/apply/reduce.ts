@@ -1,8 +1,8 @@
 import type {
   ICallbackReturn,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
@@ -57,12 +57,12 @@ export interface IYieldedReduce<T, TAsync extends boolean> {
 
 export async function reduceAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  reducer: (acc: T, next: T, index: number) => IPromiseOrNot<T>,
+  reducer: (acc: T, next: T, index: number) => MaybeAsync<T>,
 ): Promise<T>;
 export async function reduceAsync<T, TOut>(
   generator: IYieldedAsyncGenerator<T>,
-  reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
-  initialValue: IPromiseOrNot<TOut>,
+  reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
+  initialValue: MaybeAsync<TOut>,
 ): Promise<TOut>;
 export async function reduceAsync(
   generator: IYieldedAsyncGenerator,
@@ -87,13 +87,13 @@ export async function reduceAsync(
 export function reduceParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  reducer: (acc: T, next: T, index: number) => IPromiseOrNot<T>,
+  reducer: (acc: T, next: T, index: number) => MaybeAsync<T>,
 ): Promise<T>;
 export function reduceParallel<T, TOut>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  reducer: (acc: TOut, next: T, index: number) => IPromiseOrNot<TOut>,
-  initialValue: IPromiseOrNot<TOut>,
+  reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
+  initialValue: MaybeAsync<TOut>,
 ): Promise<TOut>;
 export function reduceParallel(
   generator: IYieldedParallelGenerator,
@@ -108,7 +108,7 @@ export function reduceParallel(
   return resolveParallel({
     generator,
     parallel,
-    parallelOnNext: 1,
+    chokeOnNext: true,
     async onNext(value) {
       if (!hasAcc) {
         acc = value;

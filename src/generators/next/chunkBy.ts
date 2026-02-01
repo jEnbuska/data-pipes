@@ -1,10 +1,10 @@
 import type {
   ICallbackReturn,
   INextYielded,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { createParallel } from "../createParallel.ts";
 
@@ -56,7 +56,7 @@ export function* chunkBySync<T, TIdentifier = any>(
 
 export async function* chunkByAsync<T, TIdentifier = any>(
   generator: IYieldedAsyncGenerator<T>,
-  keySelector: (next: T) => IPromiseOrNot<TIdentifier>,
+  keySelector: (next: T) => MaybeAsync<TIdentifier>,
 ): IYieldedAsyncGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
@@ -76,7 +76,7 @@ export async function* chunkByAsync<T, TIdentifier = any>(
 export function chunkByParallel<T, TIdentifier = any>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  keySelector: (next: T) => IPromiseOrNot<TIdentifier>,
+  keySelector: (next: T) => MaybeAsync<TIdentifier>,
 ): IYieldedParallelGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
@@ -100,14 +100,11 @@ export function chunkByParallel<T, TIdentifier = any>(
     parallel,
     onNext(next) {
       void storePending(next.then(stash));
-      return { CONTINUE: null };
+      return [];
     },
     async onDone() {
       await Promise.all(pending);
-      if (acc.length) {
-        return { YIELD: acc.shift()! };
-      }
-      return { RETURN: null };
+      if (acc.length) return [acc.shift()!];
     },
   });
 }

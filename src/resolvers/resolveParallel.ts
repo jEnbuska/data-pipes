@@ -1,6 +1,6 @@
-import { assertIsValidParallelArguments } from "../generators/parallelUtils.ts";
+import { assertIsValidParallel } from "../generators/parallelUtils.ts";
 import type { IYieldedParallelGenerator } from "../shared.types.ts";
-import { throttleParallel } from "../utils.ts";
+import { throttle, throttleParallel } from "../utils.ts";
 
 type ResolveCallback<TReturn> = (returnValue: TReturn) => void;
 
@@ -19,20 +19,23 @@ type OnDepleted<TReturn> = (
 export function resolveParallel<T, TReturn>(args: {
   generator: IYieldedParallelGenerator<T>;
   parallel: number;
-  parallelOnNext?: number;
+  chokeOnNext?: boolean;
   onNext?: OnNext<T, TReturn>;
   onDepleted?: OnDepleted<TReturn>;
   onDone?: OnDone<TReturn>;
-}): Promise<TReturn> {
+  debugName?: string;
+  onDispose?: () => unknown;
+}): Promise<TReturn> & Disposable {
   const {
     generator,
     parallel,
-    parallelOnNext = parallel,
+    chokeOnNext = parallel,
     onNext = () => {},
     onDepleted = () => {},
     onDone = () => {},
+    onDispose,
   } = args;
-  assertIsValidParallelArguments({ parallel, parallelOnNext });
+  assertIsValidParallel(parallel);
   const resolvable = Promise.withResolvers<TReturn>();
   let returned = false;
   function reject(error: any) {
@@ -51,17 +54,21 @@ export function resolveParallel<T, TReturn>(args: {
   function dispose() {
     returned = true;
     void generator.return();
+    onDispose?.();
   }
-  const handleNext = throttleParallel(async function handleNext(
-    promise: Promise<T>,
-  ) {
-    try {
-      const value = await promise;
-      return await onNext(value, resolve);
-    } catch (e) {
-      reject(e);
-    }
-  }, parallelOnNext);
+  const handleNext = throttle(
+    chokeOnNext ? 1 : parallel,
+    async function handleNext(promise: Promise<T>) {
+      try {
+        const value = await promise;
+        console.log("VALUE", value);
+        return await onNext(await promise, resolve);
+      } catch (error) {
+        reject(error);
+      }
+    },
+  );
+
   void throttleParallel(async function getNext() {
     try {
       const next = await generator.next();

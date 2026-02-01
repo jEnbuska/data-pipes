@@ -13,6 +13,7 @@ import type { IYieldedResolver } from "./resolver.types.ts";
 
 export class YieldedResolver<T> implements IYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedIterator<T>;
+
   protected constructor(
     parent: undefined | (IYieldedIterator & Disposable),
     generator: IYieldedIterator<T>,
@@ -51,7 +52,9 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
     reducer: (acc: TOut, next: T, index: number) => TOut,
     initialValue: TOut,
   ): TOut;
+
   reduce(reducer: (acc: T, next: T, index: number) => T): T | undefined;
+
   reduce(...args: Parameters<IYieldedResolver<T>["reduce"]>) {
     using generator = this.generator;
     return generator.reduce(...args);
@@ -70,6 +73,7 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
   find<TOut extends T>(predicate: (next: T) => next is TOut): TOut | undefined;
 
   find(predicate: (next: T) => unknown): T | undefined;
+
   find(...args: Parameters<IYieldedResolver<T>["find"]>) {
     using generator = this.generator;
     return generator.find(...args);
@@ -113,10 +117,12 @@ export class YieldedResolver<T> implements IYieldedResolver<T> {
     keySelector: (next: T) => TKey,
     groups: TGroups[],
   ): Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>;
+
   groupBy<TKey extends PropertyKey>(
     keySelector: (next: T) => TKey,
     groups?: undefined,
   ): Partial<Record<TKey, T[]>>;
+
   groupBy(...args: unknown[]): any {
     // @ts-expect-error
     return this.#apply(groupBySync, ...args);

@@ -1,9 +1,9 @@
 import type {
   ICallbackReturn,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import {
   isPlaceholder,
@@ -63,7 +63,7 @@ export function maxBySync<T>(
 
 export async function maxByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  getValue: (next: T, index: number) => IPromiseOrNot<number>,
+  getValue: (next: T, index: number) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;
@@ -83,7 +83,7 @@ export async function maxByAsync<T>(
 export function maxByParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  callback: (next: T, index: number) => IPromiseOrNot<number>,
+  callback: (next: T, index: number) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   let acc: { item: T | symbol; value: number | symbol } = {
     item: PLACEHOLDER,

@@ -56,9 +56,9 @@ export function dropParallel<T>(
     onNext(next) {
       if (count > 0) {
         count--;
-        return { CONTINUE: null };
+        return [];
       }
-      return { YIELD: next };
+      return [next];
     },
   });
 }

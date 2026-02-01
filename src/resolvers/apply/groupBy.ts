@@ -1,9 +1,9 @@
 import type {
   ICallbackReturn,
-  IPromiseOrNot,
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
+  MaybeAsync,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
@@ -81,7 +81,7 @@ export function groupBySync(
 
 export async function groupByAsync(
   generator: IYieldedAsyncGenerator,
-  keySelector: (next: unknown) => IPromiseOrNot<PropertyKey>,
+  keySelector: (next: unknown) => MaybeAsync<PropertyKey>,
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);
@@ -96,7 +96,7 @@ export async function groupByAsync(
 export function groupByParallel(
   generator: IYieldedParallelGenerator<unknown>,
   parallel: number,
-  keySelector: (next: unknown) => IPromiseOrNot<PropertyKey>,
+  keySelector: (next: unknown) => MaybeAsync<PropertyKey>,
   groups: PropertyKey[] = [],
 ) {
   const record = createInitialGroups(groups);

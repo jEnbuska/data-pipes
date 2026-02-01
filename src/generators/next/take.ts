@@ -66,15 +66,13 @@ export function takeParallel<T>(
   parallel: number,
   count: number,
 ): IYieldedParallelGenerator<T> {
-  if (count <= 0) return (async function* () {})();
+  if (count <= 0) return (async function* () {})() as any;
   return createParallel<T>({
     generator,
     parallel,
     onNext(next) {
-      if (count-- <= 0) {
-        return { RETURN: null };
-      }
-      return { YIELD: next };
+      if (count-- <= 0) return;
+      return [next];
     },
   });
 }
