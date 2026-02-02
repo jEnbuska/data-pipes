@@ -1,9 +1,10 @@
+import { DONE } from "../../constants";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { DONE, throttleParallel } from "../../utils.ts";
+} from "../../shared.types";
+import { throttleParallel } from "../../utils/throttleParallel";
 import type { IAsyncYielded } from "../../yielded.types.ts";
 import { mapParallel } from "./map.ts";
 

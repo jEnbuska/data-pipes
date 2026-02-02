@@ -5,8 +5,8 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../../shared.types.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedDistinctBy<T, TAsync extends boolean> {
   /**

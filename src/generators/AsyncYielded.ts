@@ -1,22 +1,22 @@
-import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver.ts";
-import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
+import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver";
+import type { IYieldedIterable } from "../resolvers/resolver.types";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../shared.types.ts";
-import type { IAsyncYielded } from "../yielded.types.ts";
-import { batchAsync } from "./next/batch.ts";
-import { chunkByAsync } from "./next/chunkBy.ts";
-import { distinctByAsync } from "./next/distinctBy.ts";
-import { distinctUntilChangedAsync } from "./next/distinctUntilChanged.ts";
-import { dropAsync } from "./next/drop.ts";
-import { dropLastAsync } from "./next/dropLast.ts";
-import { dropWhileAsync } from "./next/dropWhile.ts";
-import { filterAsync } from "./next/filter.ts";
-import { flatAsync } from "./next/flat.ts";
-import { flatMapAsync } from "./next/flatMap.ts";
+} from "../shared.types";
+import type { IAsyncYielded } from "../yielded.types";
+import { batchAsync } from "./next/batch";
+import { chunkByAsync } from "./next/chunkBy";
+import { distinctByAsync } from "./next/distinctBy";
+import { distinctUntilChangedAsync } from "./next/distinctUntilChanged";
+import { dropAsync } from "./next/drop";
+import { dropLastAsync } from "./next/dropLast";
+import { dropWhileAsync } from "./next/dropWhile";
+import { filterAsync } from "./next/filter";
+import { flatAsync } from "./next/flat";
+import { flatMapAsync } from "./next/flatMap";
 import { liftAsync } from "./next/lift.ts";
 import { mapAsync } from "./next/map.ts";
 import { generatorToParallel } from "./next/parallel.ts";
@@ -58,7 +58,7 @@ export class AsyncYielded<T>
     }
     if (source[Symbol.asyncIterator]) {
       return new AsyncYielded<unknown>(
-        undefined,  
+        undefined,
         source[Symbol.asyncIterator](),
       );
     }

@@ -2,7 +2,7 @@ import {
   createIndexFinderAsync,
   toSortedAsync,
   toSortedSync,
-} from "../../resolvers/apply/toSorted.ts";
+} from "../../resolvers/apply/toSorted";
 import type {
   ICallbackReturn,
   INextYielded,
@@ -10,9 +10,9 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../../shared.types.ts";
-import { locked } from "../../utils.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { throttle } from "../../utils/throttle";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedSorted<T, TAsync extends boolean> {
   /**
@@ -62,7 +62,7 @@ export function sortedParallel<T = never>(
 ): IYieldedParallelGenerator<T> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
-  const lockedUpdate = locked(async (next: T) => {
+  const lockedUpdate = throttle(1, async (next: T) => {
     const index = await findIndex(next);
     arr.splice(index, 0, next);
   });

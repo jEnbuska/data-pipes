@@ -6,7 +6,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types.ts";
-import { locked } from "../../utils.ts";
+import { throttle } from "../../utils/throttle.ts";
 import { createParallel } from "../createParallel.ts";
 
 export interface IYieldedBatch<T, TAsync extends boolean> {
@@ -76,7 +76,7 @@ export function batchParallel<T>(
   predicate: (batch: T[], index: number) => MaybeAsync<boolean>,
 ): IYieldedParallelGenerator<T[]> {
   let index = 0;
-  const lockedPredicate = locked(async (next: Promise<T>) => {
+  const lockedPredicate = throttle(1, async (next: Promise<T>) => {
     const value = await next;
     acc.push(value);
     return predicate(acc, index++);

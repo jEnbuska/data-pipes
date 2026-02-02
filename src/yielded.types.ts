@@ -1,10 +1,10 @@
-import type { IYieldedAwaited } from "./generators/next/awaited.ts";
-import type { IYieldedBatch } from "./generators/next/batch.ts";
-import type { IYieldedChunkBy } from "./generators/next/chunkBy.ts";
-import type { IYieldedDistinctBy } from "./generators/next/distinctBy.ts";
-import type { IYieldedDistinctUntilChanged } from "./generators/next/distinctUntilChanged.ts";
-import type { IYieldedDrop } from "./generators/next/drop.ts";
-import type { IYieldedDropLast } from "./generators/next/dropLast.ts";
+import type { IYieldedAwaited } from "./generators/next/awaited";
+import type { IYieldedBatch } from "./generators/next/batch";
+import type { IYieldedChunkBy } from "./generators/next/chunkBy";
+import type { IYieldedDistinctBy } from "./generators/next/distinctBy";
+import type { IYieldedDistinctUntilChanged } from "./generators/next/distinctUntilChanged";
+import type { IYieldedDrop } from "./generators/next/drop";
+import type { IYieldedDropLast } from "./generators/next/dropLast";
 import type { IYieldedDropWhile } from "./generators/next/dropWhile.ts";
 import type { IYieldedFilter } from "./generators/next/filter.ts";
 import type { IYieldedFlat } from "./generators/next/flat.ts";

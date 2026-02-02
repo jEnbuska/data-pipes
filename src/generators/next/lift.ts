@@ -4,7 +4,7 @@ import type {
   IYieldedGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
+} from "../../shared.types";
 
 export interface IYieldedLift<T, TAsync extends boolean> {
   /**

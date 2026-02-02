@@ -1,9 +1,9 @@
 import type {
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+} from "../../shared.types";
+import { resolveParallel } from "../resolveParallel";
+import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedSome<T, TAsync extends boolean> {
   /**

@@ -2,8 +2,8 @@ import type {
   INextYielded,
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedDrop<T, TAsync extends boolean> {
   /**

@@ -1,0 +1,85 @@
+import { ThrottleQueueItem } from "./types.ts";
+
+export function throttleParallel<TArgs extends any[], TReturn>(
+  cb: (...args: TArgs) => Promise<TReturn>,
+  limit: number,
+) {
+  let active = 0;
+  if (limit <= 0) {
+    throw new RangeError("Limit must be greater than 0");
+  }
+  const queue: Array<ThrottleQueueItem<TArgs, TReturn>> = [];
+  const inFlight = new Set<Promise<TReturn>>();
+
+  let current = Promise.withResolvers<TReturn>();
+  let previous: Promise<TReturn> | undefined;
+
+  async function processQueue() {
+    if (active >= limit) return;
+    const next = queue.shift();
+    if (!next) return;
+    active++;
+    const promise = cb(...next.args);
+    inFlight.add(promise);
+    try {
+      const result = await promise;
+      next.resolvable.resolve(result);
+      current.resolve(promise);
+    } catch (error) {
+      next.resolvable.reject(error);
+      current.reject(error);
+    } finally {
+      active--;
+      previous = promise;
+      inFlight.delete(promise);
+      current = Promise.withResolvers<TReturn>();
+      void processQueue();
+    }
+  }
+  function isIdle() {
+    return !active && !queue.length;
+  }
+  async function race() {
+    if (active) return current.promise;
+  }
+
+  return Object.assign(
+    function throttledFunction(...args: TArgs): Promise<TReturn> {
+      const resolvable = Promise.withResolvers<TReturn>();
+      queue.push({ args, resolvable });
+      const { promise } = current;
+      void processQueue();
+      return promise;
+    },
+
+    {
+      count() {
+        return active;
+      },
+      async onNext(cb: (value: TReturn) => unknown) {
+        let cancelled = false;
+        while (!cancelled) {
+          await current.promise.then((value) => {
+            if (!cancelled) {
+              return cb(value);
+            }
+          });
+        }
+        return () => {
+          cancelled = true;
+        };
+      },
+      async all(): Promise<Array<Awaited<TReturn>>> {
+        while (true) {
+          const promise = await Promise.all(inFlight);
+          if (isIdle()) return promise;
+        }
+      },
+      isIdle,
+      race,
+      async previous() {
+        return previous;
+      },
+    },
+  );
+}

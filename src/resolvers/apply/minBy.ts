@@ -4,10 +4,11 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../../shared.types.ts";
-import { isPlaceholder, memoize, PLACEHOLDER } from "../../utils.ts";
-import { resolveParallel } from "../resolveParallel.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+} from "../../shared.types";
+import { memoize } from "../../utils/memoize";
+import { getPlaceholder, isPlaceholder } from "../../utils/placeholder";
+import { resolveParallel } from "../resolveParallel";
+import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedMinBy<T, TAsync extends boolean> {
   /**
@@ -79,8 +80,8 @@ export function minByParallel<T>(
   callback: (next: T, index: number) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   let acc: { item: T | symbol; value: number | symbol } = {
-    item: PLACEHOLDER,
-    value: PLACEHOLDER,
+    item: getPlaceholder(),
+    value: getPlaceholder(),
   };
   let index = 0;
   const getAccValue = memoize(callback);

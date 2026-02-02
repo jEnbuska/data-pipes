@@ -1,19 +1,18 @@
 {
-  "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": "./src",
-    "types": ["node"],
-    "lib": ["esnext"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM"],
 
-    "noEmit": true,
-    "moduleDetection": "force",
-    // best practices
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
 
-    "allowImportingTsExtensions": true
+    "noEmit": false
   }
 }

@@ -1,6 +1,7 @@
 import { assertIsValidParallel } from "../generators/parallelUtils.ts";
 import type { IYieldedParallelGenerator } from "../shared.types.ts";
-import { throttle, throttleParallel } from "../utils.ts";
+import { throttle } from "../utils/throttle.ts";
+import { throttleParallel } from "../utils/throttleParallel.ts";
 
 type ResolveCallback<TReturn> = (returnValue: TReturn) => void;
 

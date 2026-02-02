@@ -1,10 +1,10 @@
-import { resolveParallel } from "../../resolvers/resolveParallel.ts";
+import { resolveParallel } from "../../resolvers/resolveParallel";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import type { IAsyncYielded } from "../../yielded.types.ts";
+} from "../../shared.types";
+import type { IAsyncYielded } from "../../yielded.types";
 
 export interface IYieldedAwaited<T> {
   /**

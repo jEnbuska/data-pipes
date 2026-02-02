@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { createParallel } from "../../src/generators/createParallel.ts";
 import { ParallelYielded } from "../../src/generators/ParallelYielded.ts";
-import { delay } from "../utils/delay.ts";
+import { delayValue } from "../utils/delayValue.ts";
 import { MockIYieldedParallelGenerator } from "../utils/MockIYieldedParallelGenerator.ts";
 
 describe("YieldedParallelGenerator", () => {
@@ -88,7 +88,7 @@ describe("YieldedParallelGenerator", () => {
       [4, 200],
       [5, 400],
     ] as const;
-    const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+    const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
 
     test("generator with 5 async, parallel 5", async () => {
       const inputTemplate = [
@@ -98,7 +98,7 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,
@@ -126,7 +126,7 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,
@@ -149,7 +149,7 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,

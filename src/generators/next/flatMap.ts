@@ -1,4 +1,4 @@
-import type { IYieldedIterable } from "../../resolvers/resolver.types.ts";
+import type { IYieldedIterable } from "../../resolvers/resolver.types";
 import type {
   ICallbackReturn,
   INextYielded,
@@ -6,9 +6,9 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../../shared.types.ts";
-import { withIndex1 } from "../../utils.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { withIndex1 } from "../../utils/withIndex";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedFlatMap<T, TAsync extends boolean> {
   /**

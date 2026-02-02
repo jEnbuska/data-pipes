@@ -4,9 +4,9 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
-} from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+} from "../../shared.types";
+import { resolveParallel } from "../resolveParallel";
+import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedGroupBy<T, TAsync extends boolean> {
   /**

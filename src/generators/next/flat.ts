@@ -3,8 +3,8 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedFlat<T, TAsync extends boolean> {
   /**

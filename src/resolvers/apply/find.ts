@@ -2,9 +2,9 @@ import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+} from "../../shared.types";
+import { resolveParallel } from "../resolveParallel";
+import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedFind<T, TAsync extends boolean> {
   /**

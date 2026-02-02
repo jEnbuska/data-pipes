@@ -1,5 +1,6 @@
 import type { IYieldedParallelGenerator, MaybeAsync } from "../shared.types.ts";
-import { throttle } from "../utils.ts";
+import { throttle } from "../utils/throttle.ts";
+import { assertIsValidParallel } from "./parallelUtils.ts";
 
 type ExpandResult<R> =
   | undefined
@@ -26,6 +27,193 @@ function getIterator<TOut>(
     return value as AsyncIterator<TOut> | Iterator<TOut>;
   }
   throw new Error("Invalid ExpandResult");
+}
+
+type ParallelGeneratorArguments<T, TOut> = {
+  generator: IYieldedParallelGenerator<T>;
+  onNext?: (value: Promise<T>) => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
+  onDepleted?: () => unknown;
+  onDone?: () => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
+  chokeOnNext?: boolean;
+  parallel: number;
+  maxBuffer?: number;
+  signal?: AbortSignal;
+};
+export function parallelGenerator<T, TOut>({
+  generator,
+  parallel,
+  maxBuffer = 10_000,
+  signal,
+  chokeOnNext,
+  onNext,
+  onDone,
+  onDepleted,
+}: ParallelGeneratorArguments<T, TOut>): IYieldedParallelGenerator<TOut> {
+  assertIsValidParallel(parallel);
+  if (!Number.isInteger(maxBuffer) || maxBuffer <= 0) {
+    throw new RangeError("maxBuffer must be a positive integer");
+  }
+
+  let closed = false;
+  const pendingNext: Array<(r: IteratorResult<Promise<TOut>, void>) => void> =
+    [];
+  const buffer: Array<
+    Iterator<MaybeAsync<TOut>> | AsyncIterator<MaybeAsync<TOut>>
+  > = [];
+  let activeWorkers = 0;
+  let upstreamDone = false;
+
+  function isDone(): boolean {
+    console.log("isDone?");
+    return upstreamDone && activeWorkers === 0 && buffer.length === 0;
+  }
+
+  function abort() {
+    console.log("abort?");
+    if (closed) return;
+    closed = true;
+
+    while (pendingNext.length) {
+      pendingNext.shift()!({ value: undefined, done: true });
+    }
+
+    buffer.length = 0;
+    void generator.return?.();
+  }
+
+  let getNext = function getNext() {
+    return generator.next();
+  };
+  if (chokeOnNext) {
+    getNext = throttle(1, getNext);
+  }
+  async function tryDrainBuffer(): Promise<
+    IteratorResult<Promise<TOut>, void> | undefined
+  > {
+    console.log("tryDrainBuffer");
+    while (buffer.length) {
+      const it = buffer[0];
+      const r = await it.next();
+      if (!r.done) {
+        return { value: Promise.resolve(r.value), done: false as const };
+      }
+      buffer.shift();
+    }
+  }
+  function maybeSpawnWorker() {
+    console.log("maybeSpawnWorker");
+    if (signal?.aborted) return;
+    if (activeWorkers >= parallel) return;
+    if (upstreamDone) return;
+    if (buffer.length >= maxBuffer) return;
+    console.log("next run worker");
+    return runWorker();
+  }
+
+  async function runWorker(): Promise<void> {
+    console.log("RUN WORK");
+
+    activeWorkers++;
+    try {
+      if (signal?.aborted) return;
+      console.log("GET NEXT UPstream");
+      const { value, done } = await getNext();
+      console.log("GOT NEXT UPSTREAM");
+      if (done) {
+        console.log("done");
+        upstreamDone = true;
+        flush();
+        return;
+      }
+
+      console.log("get mapper");
+      const mapped = await onNext?.(value);
+      console.log("MAPPED", mapped);
+      if (!mapped) return;
+      const iterator = getIterator(mapped);
+
+      console.log("CREATED ITERATOR", iterator);
+
+      const first = iterator as any;
+      console.log("FIRST", first);
+      if (!first.done) {
+        // push first value to buffer
+        buffer.push(iterator);
+        // resolve a pending next if exists
+        if (pendingNext.length > 0) {
+          flush();
+        }
+      }
+    } catch (e) {
+      console.error(e);
+      throw e;
+    } finally {
+      console.log("fINALLY ERROR");
+      activeWorkers--;
+      flush();
+      maybeSpawnWorker();
+    }
+  }
+  function flush() {
+    while (pendingNext.length) {
+      void tryDrainBuffer().then((r) => {
+        if (!r) return;
+        if (!pendingNext.length) return;
+        pendingNext.shift()!(r);
+      });
+    }
+
+    if (isDone()) {
+      while (pendingNext.length) {
+        pendingNext.shift()!({ value: undefined, done: true });
+      }
+    }
+  }
+  return {
+    async return(): Promise<IteratorReturnResult<void | undefined>> {
+      console.log("return");
+      abort();
+      return { value: undefined, done: true };
+    },
+
+    async throw(err: unknown): Promise<IteratorReturnResult<void | undefined>> {
+      console.log("throw");
+      abort();
+      throw err;
+    },
+
+    [Symbol.asyncIterator]() {
+      console.log("asyncIterator");
+      return this as AsyncGenerator<TOut>;
+    },
+
+    async [Symbol.asyncDispose]() {
+      console.log("async dispose");
+      abort();
+    },
+    async next(): Promise<IteratorResult<Promise<TOut>, void>> {
+      console.log("next");
+
+      if (closed || signal?.aborted) {
+        return { value: undefined, done: true };
+      }
+
+      const buffered = await tryDrainBuffer();
+
+      if (buffered) return buffered;
+      console.log("no buffer to drain");
+
+      if (isDone()) {
+        return { value: undefined, done: true };
+      }
+      const { resolve, promise } =
+        Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
+      pendingNext.push(resolve);
+      maybeSpawnWorker();
+
+      return promise;
+    },
+  };
 }
 
 export class ParallelGenerator<
@@ -61,16 +249,7 @@ export class ParallelGenerator<
 
   readonly #nextUpstream: () => Promise<IteratorResult<Promise<T>, void>>;
 
-  constructor(options: {
-    generator: IYieldedParallelGenerator<T>;
-    onNext?: (value: Promise<T>) => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
-    onDepleted?: () => unknown;
-    onDone?: () => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
-    chokeOnNext?: boolean;
-    parallel: number;
-    maxBuffer?: number;
-    signal?: AbortSignal;
-  }) {
+  constructor(options: ParallelGeneratorArguments<T, TOut>) {
     const {
       generator,
       onNext,

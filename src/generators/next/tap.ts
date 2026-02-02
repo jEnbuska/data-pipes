@@ -3,9 +3,9 @@ import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { withIndex1 } from "../../utils.ts";
-import { createParallel } from "../createParallel.ts";
+} from "../../shared.types";
+import { withIndex1 } from "../../utils/withIndex";
+import { createParallel } from "../createParallel";
 
 export interface IYieldedTap<T, TAsync extends boolean> {
   /**

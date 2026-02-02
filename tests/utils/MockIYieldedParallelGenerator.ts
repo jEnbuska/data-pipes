@@ -1,5 +1,4 @@
 import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
-import { DONE } from "../../src/utils.ts";
 
 export function MockIYieldedParallelGenerator<T>([...values]: Array<
   Promise<T> | T
@@ -16,7 +15,8 @@ export function MockIYieldedParallelGenerator<T>([...values]: Array<
       },
       async next(): Promise<IteratorResult<Promise<T>, void>> {
         console.log("NEXT", "GT NEXT VALUE");
-        if (disposed || !values.length) return DONE;
+        if (disposed || !values.length)
+          return { done: true, value: undefined } as const;
         const value = values.shift()!;
         console.log("return value", value);
         return { value: Promise.resolve(value), done: false };
@@ -24,12 +24,12 @@ export function MockIYieldedParallelGenerator<T>([...values]: Array<
 
       async return() {
         disposed = true;
-        return DONE;
+        return { done: true, value: undefined } as const;
       },
 
       async throw() {
         disposed = true;
-        return DONE;
+        return { done: true, value: undefined } as const;
       },
     },
     {
