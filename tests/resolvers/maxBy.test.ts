@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "bun:test";
 import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("maxBy", () => {

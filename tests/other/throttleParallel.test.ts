@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "bun:test";
 import { throttleParallel } from "../../src/utils/throttleParallel.ts";
 import { range } from "../utils/range.ts";
 import { sleep } from "../utils/sleep.ts";

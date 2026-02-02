@@ -14,11 +14,10 @@ export function MockIYieldedParallelGenerator<T>([...values]: Array<
         disposed = true;
       },
       async next(): Promise<IteratorResult<Promise<T>, void>> {
-        console.log("NEXT", "GT NEXT VALUE");
-        if (disposed || !values.length)
+        if (disposed || !values.length) {
           return { done: true, value: undefined } as const;
+        }
         const value = values.shift()!;
-        console.log("return value", value);
         return { value: Promise.resolve(value), done: false };
       },
 

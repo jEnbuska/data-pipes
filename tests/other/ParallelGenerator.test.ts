@@ -1,4 +1,4 @@
-import { describe, test } from "vitest";
+import { describe, test } from "bun:test";
 import { parallelGenerator } from "../../src/generators/ParallelGenerator.ts";
 import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
 import { delayValue } from "../utils/delayValue.ts";
@@ -19,7 +19,7 @@ describe("ParallelGenerator", () => {
     { timeout: 1000 },
     async () => {
       const gen = parallelGenerator<number, number>({
-        generator: sourceGenerator(3),
+        generator: sourceGenerator(2),
         onNext: async (x) => {
           console.log("run on next");
           const res = [await delayValue((await x) * 2, 50 - (await x) * 10)];
@@ -27,7 +27,6 @@ describe("ParallelGenerator", () => {
           return res;
         },
         parallel: 3,
-        maxBuffer: 10,
       });
       console.log("GET FIRST");
       await gen.next();

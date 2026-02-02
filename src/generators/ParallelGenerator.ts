@@ -1,3 +1,4 @@
+import { DONE } from "../constants.ts";
 import type { IYieldedParallelGenerator, MaybeAsync } from "../shared.types.ts";
 import { throttle } from "../utils/throttle.ts";
 import { assertIsValidParallel } from "./parallelUtils.ts";
@@ -12,7 +13,7 @@ type ExpandResult<R> =
 
 function getIterator<TOut>(
   value: Exclude<ExpandResult<TOut>, undefined>,
-): AsyncIterator<TOut> | Iterator<TOut> {
+): AsyncIterator<MaybeAsync<TOut>> | Iterator<MaybeAsync<TOut>> {
   if (
     typeof (value as AsyncIterable<TOut>)[Symbol.asyncIterator] === "function"
   ) {
@@ -29,191 +30,44 @@ function getIterator<TOut>(
   throw new Error("Invalid ExpandResult");
 }
 
+type BufferedProvider<TOut> = () => Promise<
+  IteratorResult<TOut, void | undefined>
+>;
+function createBufferedProvider<TOut extends MaybeAsync<any>>(
+  value: Exclude<ExpandResult<TOut>, undefined>,
+): BufferedProvider<TOut> {
+  const iterator = getIterator(value);
+  return throttle(1, async () => {
+    const next = await iterator.next();
+    if (next.done) return next;
+    if (!next.value || !(next.value instanceof Promise)) {
+      next.value = Promise.resolve(next.value);
+    }
+    return next as any;
+  });
+}
+
 type ParallelGeneratorArguments<T, TOut> = {
   generator: IYieldedParallelGenerator<T>;
   onNext?: (value: Promise<T>) => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
-  onDepleted?: () => unknown;
   onDone?: () => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
   chokeOnNext?: boolean;
   parallel: number;
-  maxBuffer?: number;
-  signal?: AbortSignal;
 };
 export function parallelGenerator<T, TOut>({
   generator,
   parallel,
-  maxBuffer = 10_000,
-  signal,
   chokeOnNext,
   onNext,
   onDone,
-  onDepleted,
 }: ParallelGeneratorArguments<T, TOut>): IYieldedParallelGenerator<TOut> {
-  assertIsValidParallel(parallel);
-  if (!Number.isInteger(maxBuffer) || maxBuffer <= 0) {
-    throw new RangeError("maxBuffer must be a positive integer");
-  }
-
-  let closed = false;
-  const pendingNext: Array<(r: IteratorResult<Promise<TOut>, void>) => void> =
-    [];
-  const buffer: Array<
-    Iterator<MaybeAsync<TOut>> | AsyncIterator<MaybeAsync<TOut>>
-  > = [];
-  let activeWorkers = 0;
-  let upstreamDone = false;
-
-  function isDone(): boolean {
-    console.log("isDone?");
-    return upstreamDone && activeWorkers === 0 && buffer.length === 0;
-  }
-
-  function abort() {
-    console.log("abort?");
-    if (closed) return;
-    closed = true;
-
-    while (pendingNext.length) {
-      pendingNext.shift()!({ value: undefined, done: true });
-    }
-
-    buffer.length = 0;
-    void generator.return?.();
-  }
-
-  let getNext = function getNext() {
-    return generator.next();
-  };
-  if (chokeOnNext) {
-    getNext = throttle(1, getNext);
-  }
-  async function tryDrainBuffer(): Promise<
-    IteratorResult<Promise<TOut>, void> | undefined
-  > {
-    console.log("tryDrainBuffer");
-    while (buffer.length) {
-      const it = buffer[0];
-      const r = await it.next();
-      if (!r.done) {
-        return { value: Promise.resolve(r.value), done: false as const };
-      }
-      buffer.shift();
-    }
-  }
-  function maybeSpawnWorker() {
-    console.log("maybeSpawnWorker");
-    if (signal?.aborted) return;
-    if (activeWorkers >= parallel) return;
-    if (upstreamDone) return;
-    if (buffer.length >= maxBuffer) return;
-    console.log("next run worker");
-    return runWorker();
-  }
-
-  async function runWorker(): Promise<void> {
-    console.log("RUN WORK");
-
-    activeWorkers++;
-    try {
-      if (signal?.aborted) return;
-      console.log("GET NEXT UPstream");
-      const { value, done } = await getNext();
-      console.log("GOT NEXT UPSTREAM");
-      if (done) {
-        console.log("done");
-        upstreamDone = true;
-        flush();
-        return;
-      }
-
-      console.log("get mapper");
-      const mapped = await onNext?.(value);
-      console.log("MAPPED", mapped);
-      if (!mapped) return;
-      const iterator = getIterator(mapped);
-
-      console.log("CREATED ITERATOR", iterator);
-
-      const first = iterator as any;
-      console.log("FIRST", first);
-      if (!first.done) {
-        // push first value to buffer
-        buffer.push(iterator);
-        // resolve a pending next if exists
-        if (pendingNext.length > 0) {
-          flush();
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      throw e;
-    } finally {
-      console.log("fINALLY ERROR");
-      activeWorkers--;
-      flush();
-      maybeSpawnWorker();
-    }
-  }
-  function flush() {
-    while (pendingNext.length) {
-      void tryDrainBuffer().then((r) => {
-        if (!r) return;
-        if (!pendingNext.length) return;
-        pendingNext.shift()!(r);
-      });
-    }
-
-    if (isDone()) {
-      while (pendingNext.length) {
-        pendingNext.shift()!({ value: undefined, done: true });
-      }
-    }
-  }
-  return {
-    async return(): Promise<IteratorReturnResult<void | undefined>> {
-      console.log("return");
-      abort();
-      return { value: undefined, done: true };
-    },
-
-    async throw(err: unknown): Promise<IteratorReturnResult<void | undefined>> {
-      console.log("throw");
-      abort();
-      throw err;
-    },
-
-    [Symbol.asyncIterator]() {
-      console.log("asyncIterator");
-      return this as AsyncGenerator<TOut>;
-    },
-
-    async [Symbol.asyncDispose]() {
-      console.log("async dispose");
-      abort();
-    },
-    async next(): Promise<IteratorResult<Promise<TOut>, void>> {
-      console.log("next");
-
-      if (closed || signal?.aborted) {
-        return { value: undefined, done: true };
-      }
-
-      const buffered = await tryDrainBuffer();
-
-      if (buffered) return buffered;
-      console.log("no buffer to drain");
-
-      if (isDone()) {
-        return { value: undefined, done: true };
-      }
-      const { resolve, promise } =
-        Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
-      pendingNext.push(resolve);
-      maybeSpawnWorker();
-
-      return promise;
-    },
-  };
+  return new ParallelGenerator({
+    generator,
+    parallel,
+    chokeOnNext,
+    onNext,
+    onDone,
+  });
 }
 
 export class ParallelGenerator<
@@ -222,99 +76,52 @@ export class ParallelGenerator<
 > implements IYieldedParallelGenerator<TOut> {
   readonly #source: IYieldedParallelGenerator<T>;
 
-  readonly #onNext?: (
-    value: Promise<T>,
-  ) => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
+  #onNext?: ParallelGeneratorArguments<T, TOut>["onNext"];
+
+  #onDone?: ParallelGeneratorArguments<T, TOut>["onDone"];
 
   readonly #parallel: number;
 
-  readonly #maxBuffer: number;
-
-  readonly #signal?: AbortSignal;
-
-  readonly #pendingNext: Array<
+  readonly #pendingToBeResolved: Array<
     (r: IteratorResult<Promise<TOut>, void>) => void
   > = [];
 
   /** FIFO buffer of remaining iterators */
-  readonly #buffer: Array<
-    Iterator<MaybeAsync<TOut>> | AsyncIterator<MaybeAsync<TOut>>
-  > = [];
+  readonly #buffer: Array<BufferedProvider<MaybeAsync<TOut>>> = [];
 
   #activeWorkers = 0;
 
   #upstreamDone = false;
 
-  #closed = false;
+  #aborted = false;
 
-  readonly #nextUpstream: () => Promise<IteratorResult<Promise<T>, void>>;
+  #resolving = false;
+
+  readonly #getNext: () => Promise<IteratorResult<Promise<T>, void>>;
 
   constructor(options: ParallelGeneratorArguments<T, TOut>) {
     const {
       generator,
       onNext,
-      parallel,
-      maxBuffer = 10_000,
-      signal,
+
       chokeOnNext = false,
+      onDone,
     } = options;
-
-    if (!Number.isInteger(parallel) || parallel < 2 || parallel >= 50) {
-      throw new RangeError("parallel must be an integer between 2 and 49");
-    }
-    if (!Number.isInteger(maxBuffer) || maxBuffer <= 0) {
-      throw new RangeError("maxBuffer must be a positive integer");
-    }
-
+    const parallel = Math.floor(options.parallel);
+    assertIsValidParallel(parallel);
     this.#source = generator;
     this.#onNext = onNext;
+    this.#onDone = onDone;
     this.#parallel = parallel;
-    this.#maxBuffer = maxBuffer;
-    this.#signal = signal;
-    this.#nextUpstream = function nextUpstream() {
+    this.#getNext = function getNext() {
       return generator.next();
     };
     if (chokeOnNext) {
-      this.#nextUpstream = throttle(1, this.#nextUpstream);
+      this.#getNext = throttle(1, this.#getNext);
     }
-
-    // signal?.addEventListener("abort", () => this.#abort(), { once: true });
   }
 
   // ---------------- AsyncGenerator ----------------
-
-  async next(): Promise<IteratorResult<Promise<TOut>, void>> {
-    console.log("next");
-    if (this.#closed || this.#signal?.aborted) {
-      return { value: undefined, done: true };
-    }
-
-    const buffered = await this.#tryDrainBuffer();
-
-    if (buffered) return buffered;
-    console.log("no buffer to drain");
-
-    if (this.#isDone()) {
-      return { value: undefined, done: true };
-    }
-    const { resolve, promise } =
-      Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
-    this.#pendingNext.push(resolve);
-    this.#maybeSpawnWorker();
-    return promise;
-  }
-
-  async return(): Promise<IteratorReturnResult<void | undefined>> {
-    console.log("return");
-    this.#abort();
-    return { value: undefined, done: true };
-  }
-
-  async throw(err: unknown): Promise<IteratorReturnResult<void | undefined>> {
-    console.log("throw");
-    this.#abort();
-    throw err;
-  }
 
   [Symbol.asyncIterator]() {
     console.log("asyncIterator");
@@ -326,109 +133,110 @@ export class ParallelGenerator<
     this.#abort();
   }
 
-  // ---------------- Internal ----------------
+  async return(): Promise<IteratorReturnResult<void | undefined>> {
+    console.log("return");
+    this.#abort();
+    return DONE;
+  }
 
-  async #runWorker(): Promise<void> {
-    console.log("RUN WORK");
-    this.#activeWorkers++;
+  async throw(err: unknown): Promise<IteratorReturnResult<void | undefined>> {
+    console.log("throw");
+    this.#abort();
+    throw err;
+  }
+
+  async next(): Promise<IteratorResult<Promise<TOut>, void>> {
+    if (this.#aborted) return DONE;
+    const buffered = await this.#getNextFromBuffer();
+    if (buffered) return buffered;
+    if (this.#upstreamDone || this.#aborted) return DONE;
+    const { resolve, promise } =
+      Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
+
+    this.#pendingToBeResolved.push(resolve);
+    if (this.#activeWorkers < this.#parallel) {
+      void this.#runWorker();
+    }
+    return promise;
+  }
+
+  async #trackFinalized(promise: Promise<IteratorResult<Promise<TOut>>>) {
     try {
-      if (this.#signal?.aborted) return;
-      console.log("GET NEXT UPstream");
-      const { value, done } = await this.#nextUpstream();
-      console.log("GOT NEXT UPSTREAM");
-      if (done) {
-        this.#upstreamDone = true;
-        this.#flush();
-        return;
-      }
-
-      const mapped = await this.#onNext?.(value);
-      console.log("MAPPED", mapped);
-      if (!mapped) return;
-      const iterator = getIterator(mapped);
-
-      console.log("CREATED ITERATOR", iterator);
-
-      const first = await iterator.next();
-      console.log("FIRST", first);
-      if (!first.done) {
-        // push first value to buffer
-        this.#buffer.push(iterator);
-        // resolve a pending next if exists
-        if (this.#pendingNext.length > 0) {
-          this.#flush();
+      return await promise;
+    } finally {
+      if (this.#upstreamDone && !this.#buffer.length && !this.#activeWorkers) {
+        console.log("FINALIZE", this.#pendingToBeResolved.length);
+        while (this.#pendingToBeResolved.length) {
+          this.#pendingToBeResolved.shift()!(DONE);
         }
       }
-    } catch (e) {
-      console.error(e);
-      throw e;
-    } finally {
-      console.log("fINALLY ERROR");
-      this.#activeWorkers--;
-      this.#flush();
-      this.#maybeSpawnWorker();
     }
   }
 
-  async #tryDrainBuffer(): Promise<
-    IteratorResult<Promise<TOut>, void> | undefined
-  > {
-    console.log("tryDrainBuffer");
-    while (this.#buffer.length) {
-      const it = this.#buffer[0];
-      const r = await it.next();
-      if (!r.done) {
-        return { value: Promise.resolve(r.value), done: false as const };
+  // ---------------- Internal ----------------
+
+  async #runWorker(): Promise<void> {
+    while (true) {
+      this.#activeWorkers++;
+      while (true) {
+        if (this.#aborted || !this.#pendingToBeResolved.length) return;
+        if (this.#upstreamDone) {
+          this.#activeWorkers--;
+          return;
+        }
+        const next = await this.#getNext();
+        if (next.done) {
+          this.#upstreamDone = true;
+          break;
+        }
+        const mapped = await this.#onNext?.(next.value);
+        if (!mapped) continue;
+        this.#buffer.push(createBufferedProvider(mapped));
+        break;
       }
+      this.#activeWorkers--;
+      if (!this.#resolving) void this.#runResolver();
+    }
+  }
+
+  async #runResolver() {
+    this.#resolving = true;
+    while (this.#pendingToBeResolved.length) {
+      if (this.#aborted) return;
+      const next = await this.#getNextFromBuffer();
+      if (!next) break;
+      if (this.#aborted) return;
+      this.#pendingToBeResolved.shift()!(next);
+    }
+    this.#resolving = false;
+  }
+
+  async #resolvePendingFromBuffer() {
+    const next = await this.#getNextFromBuffer();
+    if (!next) return;
+    if (this.#aborted) return;
+    this.#pendingToBeResolved.shift()!(next);
+  }
+
+  async #getNextFromBuffer(): Promise<
+    undefined | IteratorYieldResult<Promise<TOut>>
+  > {
+    while (this.#buffer.length) {
+      const next = await this.#buffer[0]!();
+      if (!next.done) return next as IteratorYieldResult<Promise<TOut>>;
       this.#buffer.shift();
     }
   }
 
-  #maybeSpawnWorker() {
-    console.log("maybeSpawnWorker");
-    if (this.#signal?.aborted) return;
-    if (this.#activeWorkers >= this.#parallel) return;
-    if (this.#upstreamDone) return;
-    if (this.#buffer.length >= this.#maxBuffer) return;
-    console.log("next run worker");
-    void this.#runWorker();
-  }
-
-  #flush() {
-    while (this.#pendingNext.length) {
-      void this.#tryDrainBuffer().then((r) => {
-        if (!r) return;
-        if (!this.#pendingNext.length) return;
-        this.#pendingNext.shift()!(r);
-      });
-    }
-
-    if (this.#isDone()) {
-      while (this.#pendingNext.length) {
-        this.#pendingNext.shift()!({ value: undefined, done: true });
-      }
-    }
-  }
-
-  #isDone(): boolean {
-    console.log("isDone?");
-    return (
-      this.#upstreamDone &&
-      this.#activeWorkers === 0 &&
-      this.#buffer.length === 0
-    );
-  }
-
   #abort() {
-    console.log("abort?");
-    if (this.#closed) return;
-    this.#closed = true;
-
-    while (this.#pendingNext.length) {
-      this.#pendingNext.shift()!({ value: undefined, done: true });
-    }
-
-    this.#buffer.length = 0;
+    if (this.#aborted) return;
+    this.#aborted = true;
+    this.#upstreamDone = true;
     void this.#source.return?.();
+    while (this.#pendingToBeResolved.length) {
+      this.#pendingToBeResolved.shift()!(DONE);
+    }
+    this.#onNext = undefined;
+    this.#onDone = undefined;
   }
 }

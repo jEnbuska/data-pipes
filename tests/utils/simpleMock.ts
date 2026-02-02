@@ -1,4 +1,4 @@
-import { expect } from "vitest";
+import { expect } from "bun:test";
 
 export function simpleMock<T extends any[]>(args: T) {
   let index = 0;

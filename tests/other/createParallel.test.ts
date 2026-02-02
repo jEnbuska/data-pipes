@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { describe, expect, test } from "bun:test";
 import { createParallel } from "../../src/generators/createParallel.ts";
 import { ParallelYielded } from "../../src/generators/ParallelYielded.ts";
 import { delayValue } from "../utils/delayValue.ts";
