@@ -1,4 +1,4 @@
-import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver";
+import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver.ts";
 import type { IYieldedIterable } from "../resolvers/resolver.types";
 import type {
   IYieldedAsyncGenerator,
@@ -6,17 +6,14 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../shared.types";
-import type { IAsyncYielded } from "../yielded.types";
-import { batchAsync } from "./next/batch";
-import { chunkByAsync } from "./next/chunkBy";
-import { distinctByAsync } from "./next/distinctBy";
-import { distinctUntilChangedAsync } from "./next/distinctUntilChanged";
-import { dropAsync } from "./next/drop";
-import { dropLastAsync } from "./next/dropLast";
-import { dropWhileAsync } from "./next/dropWhile";
-import { filterAsync } from "./next/filter";
-import { flatAsync } from "./next/flat";
-import { flatMapAsync } from "./next/flatMap";
+import type { IAsyncYielded, IParallelYielded } from "../yielded.types";
+import { batchAsync } from "./next/batch.ts";
+import { chunkByAsync } from "./next/chunkBy.ts";
+import { dropAsync } from "./next/drop.ts";
+import { dropLastAsync } from "./next/dropLast.ts";
+import { filterAsync } from "./next/filter.ts";
+import { flatAsync } from "./next/flat.ts";
+import { flatMapAsync } from "./next/flatMap.ts";
 import { liftAsync } from "./next/lift.ts";
 import { mapAsync } from "./next/map.ts";
 import { generatorToParallel } from "./next/parallel.ts";
@@ -93,16 +90,6 @@ export class AsyncYielded<T>
     return this.#next(chunkByAsync, ...args);
   }
 
-  distinctBy(...args: Parameters<IAsyncYielded<T>["distinctBy"]>) {
-    return this.#next(distinctByAsync, ...args);
-  }
-
-  distinctUntilChanged(
-    ...args: Parameters<IAsyncYielded<T>["distinctUntilChanged"]>
-  ) {
-    return this.#next(distinctUntilChangedAsync, ...args);
-  }
-
   filter<TOut extends T>(
     fn: (next: T, index: number) => next is TOut,
   ): AsyncYielded<TOut>;
@@ -124,7 +111,7 @@ export class AsyncYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+    ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "async"> | TOut>,
   ) {
     return this.#next(flatMapAsync, callback);
   }
@@ -148,10 +135,6 @@ export class AsyncYielded<T>
 
   dropLast(...args: Parameters<IAsyncYielded<T>["dropLast"]>) {
     return this.#next(dropLastAsync, ...args);
-  }
-
-  dropWhile(...args: Parameters<IAsyncYielded<T>["dropWhile"]>) {
-    return this.#next(dropWhileAsync, ...args);
   }
 
   take(...args: Parameters<IAsyncYielded<T>["take"]>) {
@@ -178,7 +161,7 @@ export class AsyncYielded<T>
     return this.#next(sortedAsync, ...args);
   }
 
-  parallel(parallelCount: number): IAsyncYielded<T> {
+  parallel(parallelCount: number): IParallelYielded<T> {
     return new ParallelYielded<T>(
       this.generator,
       generatorToParallel(this.generator, parallelCount),

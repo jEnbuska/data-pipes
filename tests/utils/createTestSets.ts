@@ -15,7 +15,7 @@ export function createTestSets<T>(array: T[]) {
       yield* array;
     }),
     fromArray: Yielded.from(array),
-    fromSingle: Yielded.from(array[0]),
+    fromSingle: Yielded.from(array[0]!),
     fromSingleAsync: Yielded.from(array[0]).awaited(),
     fromPromises: Yielded.from(array).map((next) => Promise.resolve(next)),
     fromResolvedPromises: Yielded.from(array)

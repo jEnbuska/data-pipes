@@ -1,12 +1,13 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedFlat<T, TAsync extends boolean> {
+export interface IYieldedFlat<T, TFlow extends IYieldedFlow> {
   /**
    * Returns a new sequence where all sub-array elements are recursively
    * concatenated into it up to the specified depth.
@@ -33,7 +34,7 @@ export interface IYieldedFlat<T, TAsync extends boolean> {
    */
   flat<Depth extends number = 1>(
     depth?: Depth,
-  ): INextYielded<FlatArray<T[], Depth>, TAsync>;
+  ): INextYielded<FlatArray<T[], Depth>, TFlow>;
 }
 
 export function* flatSync<T, const Depth extends number = 1>(
@@ -70,7 +71,7 @@ export function flatParallel<T, const Depth extends number = 1>(
   depth?: Depth,
 ): IYieldedParallelGenerator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
-  return createParallel<T, FlatArray<T[], Depth>>({
+  return ParallelGenerator.create<T, FlatArray<T[], Depth>>({
     generator,
     parallel,
     async onNext(next) {

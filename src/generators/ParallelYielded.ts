@@ -6,16 +6,13 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../shared.types.ts";
-import type { IAsyncYielded } from "../yielded.types.ts";
+import type { IAsyncYielded, IParallelYielded } from "../yielded.types.ts";
 import { AsyncYielded } from "./AsyncYielded.ts";
 import { parallelToAwaited } from "./next/awaited.ts";
 import { batchParallel } from "./next/batch.ts";
 import { chunkByParallel } from "./next/chunkBy.ts";
-import { distinctByParallel } from "./next/distinctBy.ts";
-import { distinctUntilChangedParallel } from "./next/distinctUntilChanged.ts";
 import { dropParallel } from "./next/drop.ts";
 import { dropLastParallel } from "./next/dropLast.ts";
-import { dropWhileParallel } from "./next/dropWhile.ts";
 import { filterParallel } from "./next/filter.ts";
 import { flatParallel } from "./next/flat.ts";
 import { flatMapParallel } from "./next/flatMap.ts";
@@ -31,7 +28,7 @@ import { tapParallel } from "./next/tap.ts";
 
 export class ParallelYielded<T>
   extends ParallelYieldedResolver<T>
-  implements IAsyncYielded<T>
+  implements IParallelYielded<T>
 {
   public constructor(
     parent: Disposable &
@@ -53,7 +50,7 @@ export class ParallelYielded<T>
       ...args: TArgs
     ) => IYieldedParallelGenerator<TNext>,
     ...args: TArgs
-  ): IAsyncYielded<TNext> {
+  ): IParallelYielded<TNext> {
     return new ParallelYielded<TNext>(
       this.generator,
       next(this.generator, this._parallel, ...args),
@@ -61,27 +58,17 @@ export class ParallelYielded<T>
     );
   }
 
-  batch(...args: Parameters<IAsyncYielded<T>["batch"]>) {
+  batch(...args: Parameters<IParallelYielded<T>["batch"]>) {
     return this.#next(batchParallel, ...args);
   }
 
-  chunkBy(...args: Parameters<IAsyncYielded<T>["chunkBy"]>) {
+  chunkBy(...args: Parameters<IParallelYielded<T>["chunkBy"]>) {
     return this.#next(chunkByParallel, ...args);
   }
 
-  distinctBy(...args: Parameters<IAsyncYielded<T>["distinctBy"]>) {
-    return this.#next(distinctByParallel, ...args);
-  }
+  filter<TOut extends T>(fn: (next: T) => next is TOut): IParallelYielded<T>;
 
-  distinctUntilChanged(
-    ...args: Parameters<IAsyncYielded<T>["distinctUntilChanged"]>
-  ) {
-    return this.#next(distinctUntilChangedParallel, ...args);
-  }
-
-  filter<TOut extends T>(fn: (next: T) => next is TOut): IAsyncYielded<T>;
-
-  filter(fn: (next: T) => any): IAsyncYielded<T>;
+  filter(fn: (next: T) => any): IParallelYielded<T>;
 
   filter(...args: unknown[]) {
     // @ts-expect-error
@@ -96,7 +83,9 @@ export class ParallelYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+    ) => MaybeAsync<
+      readonly TOut[] | IYieldedIterable<TOut, "parallel"> | TOut
+    >,
   ) {
     return this.#next(flatMapParallel, callback);
   }
@@ -112,23 +101,19 @@ export class ParallelYielded<T>
     return this.#next(dropParallel, count);
   }
 
-  dropLast(...args: Parameters<IAsyncYielded<T>["dropLast"]>) {
+  dropLast(...args: Parameters<IParallelYielded<T>["dropLast"]>) {
     return this.#next(dropLastParallel, ...args);
   }
 
-  dropWhile(...args: Parameters<IAsyncYielded<T>["dropWhile"]>) {
-    return this.#next(dropWhileParallel, ...args);
-  }
-
-  take(...args: Parameters<IAsyncYielded<T>["take"]>) {
+  take(...args: Parameters<IParallelYielded<T>["take"]>) {
     return this.#next(takeParallel, ...args);
   }
 
-  takeLast(...args: Parameters<IAsyncYielded<T>["takeLast"]>) {
+  takeLast(...args: Parameters<IParallelYielded<T>["takeLast"]>) {
     return this.#next(takeLastParallel, ...args);
   }
 
-  takeWhile(...args: Parameters<IAsyncYielded<T>["takeWhile"]>) {
+  takeWhile(...args: Parameters<IParallelYielded<T>["takeWhile"]>) {
     return this.#next(takeWhileParallel, ...args);
   }
 
@@ -144,26 +129,26 @@ export class ParallelYielded<T>
     return this.#next(sortedParallel, ...args);
   }
 
-  lift<TOut>(middleware: any): IAsyncYielded<TOut> {
+  lift<TOut>(middleware: any): IParallelYielded<TOut> {
     return new ParallelYielded<TOut>(
       this.generator,
-       
       liftParallel(this.generator, this._parallel, middleware),
       this._parallel,
     ) as any;
   }
 
-  parallel(parallel: number): IAsyncYielded<T> {
-    if (parallel === 1) {
-      return new AsyncYielded<T>(
-        this.generator,
-        parallelToAwaited(this.generator, this._parallel),
-      );
-    }
+  parallel(parallel: number): IParallelYielded<T> {
     return new ParallelYielded<T>(
       this.generator,
-      parallelThrottleUpdate(this.generator, parallel),
+      parallelThrottleUpdate(this.generator, this._parallel),
       parallel,
+    );
+  }
+
+  awaited(): IAsyncYielded<Awaited<T>> {
+    return new AsyncYielded<Awaited<T>>(
+      this.generator,
+      parallelToAwaited(this.generator, this._parallel),
     );
   }
 }

@@ -1,12 +1,13 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedCount<TAsync extends boolean> {
+export interface IYieldedCount<TFlow extends IYieldedFlow> {
   /**
    * Counts the number of items produced by the generator.
    *
@@ -21,7 +22,7 @@ export interface IYieldedCount<TAsync extends boolean> {
    * Yielded.from([]).count() satisfies number // 0
    * ```
    */
-  count(): ReturnValue<number, TAsync>;
+  count(): ReturnValue<number, TFlow>;
 }
 
 function counter(_acc: unknown, _next: unknown, index: number) {

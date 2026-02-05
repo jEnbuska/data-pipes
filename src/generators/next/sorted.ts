@@ -7,14 +7,15 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
 import { throttle } from "../../utils/throttle";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedSorted<T, TAsync extends boolean> {
+export interface IYieldedSorted<T, TFlow extends IYieldedFlow> {
   /**
    * Sorts the items produced by the generator according to the provided
    * comparison function, then yields them one by one to the next operation
@@ -37,8 +38,8 @@ export interface IYieldedSorted<T, TAsync extends boolean> {
    * ```
    */
   sorted(
-    compareFn: (a: T, b: T) => ICallbackReturn<number, TAsync>,
-  ): INextYielded<T, TAsync>;
+    compareFn: (a: T, b: T) => ICallbackReturn<number, TFlow>,
+  ): INextYielded<T, TFlow>;
 }
 
 export function* sortedSync<T>(
@@ -66,7 +67,7 @@ export function sortedParallel<T = never>(
     const index = await findIndex(next);
     arr.splice(index, 0, next);
   });
-  return createParallel<T>({
+  return ParallelGenerator.create<T>({
     generator,
     parallel,
     onNext(next) {

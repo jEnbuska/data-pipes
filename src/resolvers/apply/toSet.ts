@@ -1,12 +1,13 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedToSet<T, TAsync extends boolean> {
-  toSet(): ReturnValue<Set<T>, TAsync>;
+export interface IYieldedToSet<T, TFlow extends IYieldedFlow> {
+  toSet(): ReturnValue<Set<T>, TFlow>;
 }
 
 export async function toSetAsync<T>(

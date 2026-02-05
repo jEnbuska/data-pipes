@@ -1,3 +1,4 @@
+import type { IYieldedFlow } from "../shared.types.ts";
 import type { IYieldedConsume } from "./apply/consume.ts";
 import type { IYieldedCount } from "./apply/count.ts";
 import type { IYieldedEvery } from "./apply/every.ts";
@@ -15,43 +16,51 @@ import type { IYieldedToArray } from "./apply/toArray.ts";
 import type { IYieldedToReversed } from "./apply/toReversed.ts";
 import type { IYieldedToSorted } from "./apply/toSorted.ts";
 
-/** If Async then Promise<T> otherwise T */
-export type ReturnValue<T, TAsync extends boolean> = TAsync extends true
-  ? Promise<T>
-  : T;
+/** If sync then T otherwise Promise<T> */
+export type ReturnValue<T, TFlow extends IYieldedFlow> = TFlow extends "sync"
+  ? T
+  : Promise<T>;
 
-interface ISharedYieldedResolver<T, TAsync extends boolean>
+interface ISharedYieldedResolver<T, TFlow extends IYieldedFlow>
   extends
-    IYieldedReduce<T, TAsync>,
-    IYieldedFind<T, TAsync>,
-    IYieldedMaxBy<T, TAsync>,
-    IYieldedSome<T, TAsync>,
-    IYieldedEvery<T, TAsync>,
-    IYieldedMinBy<T, TAsync>,
-    IYieldedGroupBy<T, TAsync>,
-    IYieldedCount<TAsync>,
-    IYieldedSumBy<T, TAsync>,
-    IYieldedToSorted<T, TAsync>,
-    IYieldedToReversed<T, TAsync>,
-    IYieldedToArray<T, TAsync>,
-    IYieldedFirst<T, TAsync>,
-    IYieldedLast<T, TAsync>,
-    IYieldedConsume<TAsync>,
-    IYieldedForEach<T, TAsync> {}
+    IYieldedReduce<T, TFlow>,
+    IYieldedFind<T, TFlow>,
+    IYieldedMaxBy<T, TFlow>,
+    IYieldedSome<T, TFlow>,
+    IYieldedEvery<T, TFlow>,
+    IYieldedMinBy<T, TFlow>,
+    IYieldedGroupBy<T, TFlow>,
+    IYieldedCount<TFlow>,
+    IYieldedSumBy<T, TFlow>,
+    IYieldedToSorted<T, TFlow>,
+    IYieldedToReversed<T, TFlow>,
+    IYieldedToArray<T, TFlow>,
+    IYieldedFirst<T, TFlow>,
+    IYieldedLast<T, TFlow>,
+    IYieldedConsume<TFlow>,
+    IYieldedForEach<T, TFlow> {}
 
-export type IYieldedIterable<T, TAsync extends boolean> = TAsync extends true
-  ?
+export type IYieldedIterable<
+  T,
+  TFlow extends IYieldedFlow,
+> = TFlow extends "sync"
+  ? Iterable<T, void | undefined, void | undefined>
+  :
       | AsyncIterable<T, void | undefined, void | undefined>
-      | Iterable<T, void | undefined, void | undefined>
-  : Iterable<T, void | undefined, void | undefined>;
+      | Iterable<T, void | undefined, void | undefined>;
 
 export interface IAsyncYieldedResolver<T> extends ISharedYieldedResolver<
   T,
-  true
+  "async"
 > {
   [Symbol.asyncIterator](): AsyncGenerator<T>;
 }
 
-export interface IYieldedResolver<T> extends ISharedYieldedResolver<T, false> {
+export interface IParallelYieldedResolver<T> extends ISharedYieldedResolver<
+  T,
+  "parallel"
+> {}
+
+export interface IYieldedResolver<T> extends ISharedYieldedResolver<T, "sync"> {
   [Symbol.iterator](): Generator<T>;
 }

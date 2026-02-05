@@ -1,13 +1,14 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
 import { withIndex1 } from "../../utils/withIndex";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedTap<T, TAsync extends boolean> {
+export interface IYieldedTap<T, TFlow extends IYieldedFlow> {
   /**
    * Calls the provided consumer function for each item produced by the generator
    * without modifying the items, then yields the original items to the next operation.
@@ -29,7 +30,7 @@ export interface IYieldedTap<T, TAsync extends boolean> {
    * console.log(storer) // [2, 4, 6]
    * ```
    */
-  tap(callback: (next: T, index: number) => unknown): INextYielded<T, TAsync>;
+  tap(callback: (next: T, index: number) => unknown): INextYielded<T, TFlow>;
 }
 
 export function* tapSync<T>(
@@ -60,7 +61,7 @@ export function tapParallel<T>(
   consumer: (next: T, index: number) => unknown,
 ): IYieldedParallelGenerator<T> {
   const callback = withIndex1(consumer);
-  return createParallel({
+  return ParallelGenerator.create({
     generator,
     parallel,
     onNext(value) {

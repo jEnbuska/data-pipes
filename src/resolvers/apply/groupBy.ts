@@ -1,14 +1,15 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedGroupBy<T, TAsync extends boolean> {
+export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
   /**
    * Groups items produced by the generator using a key derived from each item.
    *
@@ -39,16 +40,16 @@ export interface IYieldedGroupBy<T, TAsync extends boolean> {
    *    ```
    */
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
-    keySelector: (next: T) => ICallbackReturn<TKey, TAsync>,
+    keySelector: (next: T) => ICallbackReturn<TKey, TFlow>,
     groups: TGroups[],
   ): ReturnValue<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>,
-    TAsync
+    TFlow
   >;
   groupBy<TKey extends PropertyKey>(
-    keySelector: (next: T) => ICallbackReturn<TKey, TAsync>,
+    keySelector: (next: T) => ICallbackReturn<TKey, TFlow>,
     groups?: undefined,
-  ): ReturnValue<Partial<Record<TKey, T[]>>, TAsync>;
+  ): ReturnValue<Partial<Record<TKey, T[]>>, TFlow>;
 }
 
 export function groupBySync<T, TKey extends PropertyKey>(

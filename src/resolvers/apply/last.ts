@@ -1,12 +1,13 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedLast<T, TAsync extends boolean> {
+export interface IYieldedLast<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the last item produced by the generator.
    *
@@ -24,7 +25,7 @@ export interface IYieldedLast<T, TAsync extends boolean> {
    *   .last() satisfies number | undefined // undefined
    * ```
    */
-  last(): ReturnValue<T | undefined, TAsync>;
+  last(): ReturnValue<T | undefined, TFlow>;
 }
 
 export function lastSync<T>(generator: IYieldedIterator<T>) {

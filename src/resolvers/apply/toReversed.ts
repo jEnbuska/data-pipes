@@ -1,12 +1,13 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedToReversed<T, TAsync extends boolean> {
+export interface IYieldedToReversed<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the items produced by the generator in reverse order
    * as a new array.
@@ -23,7 +24,7 @@ export interface IYieldedToReversed<T, TAsync extends boolean> {
    *   .toReversed() satisfies number[] // [3,2,1]
    * ```
    **/
-  toReversed(): ReturnValue<T[], TAsync>;
+  toReversed(): ReturnValue<T[], TFlow>;
 }
 
 export function toReversedSync<T>(generator: IYieldedIterator<T>): T[] {

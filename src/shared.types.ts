@@ -1,4 +1,8 @@
-import type { IAsyncYielded, IYielded } from "./yielded.types.ts";
+import type {
+  IAsyncYielded,
+  IParallelYielded,
+  IYielded,
+} from "./yielded.types.ts";
 
 export type IYieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
   TOut,
@@ -6,24 +10,12 @@ export type IYieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
   void
 >;
 
-/* export type IYieldedParallelGenerator<TOut = unknown> = AsyncGenerator<
-  Promise<TOut>,
-  undefined | void,
-  void
->; */
-
 export interface IYieldedParallelGenerator<
   TOut = unknown,
 > extends AsyncDisposable {
-  // NOTE: 'next' is defined using a tuple to ensure we report the correct assignability errors in all places.
-  next(_?: undefined): Promise<IteratorResult<Promise<TOut>, void | undefined>>;
+  next(_?: undefined): Promise<IteratorResult<Promise<TOut>, void>>;
   return(value?: undefined): Promise<IteratorReturnResult<void | undefined>>;
   throw(e: any): Promise<IteratorReturnResult<void | undefined>>;
-  [Symbol.asyncIterator](): AsyncGenerator<
-    TOut,
-    void | undefined,
-    void | undefined
-  >;
 }
 
 export type IYieldedIterator<TOut = unknown> = IteratorObject<
@@ -32,16 +24,25 @@ export type IYieldedIterator<TOut = unknown> = IteratorObject<
   void
 >;
 
-export type IPromiseOrNot<T> = Promise<T> | T;
-export type IYieldedGenerator<T, TAsync extends boolean> = TAsync extends true
+export type IYieldedGenerator<
+  T,
+  TFlow extends IYieldedFlow,
+> = TFlow extends "async"
   ? IYieldedAsyncGenerator<T>
-  : IYieldedIterator<T>;
+  : TFlow extends "parallel"
+    ? IYieldedParallelGenerator<T>
+    : IYieldedIterator<T>;
 
-export type ICallbackReturn<T, TAsync extends boolean> = TAsync extends true
-  ? Promise<T> | T
-  : T;
-export type INextYielded<T, TAsync extends boolean> = TAsync extends true
+export type ICallbackReturn<
+  T,
+  TFlow extends IYieldedFlow,
+> = TFlow extends "sync" ? T : Promise<T> | T;
+export type INextYielded<T, TFlow extends IYieldedFlow> = TFlow extends "async"
   ? IAsyncYielded<T>
-  : IYielded<T>;
+  : TFlow extends "parallel"
+    ? IParallelYielded<T>
+    : IYielded<T>;
 
 export type MaybeAsync<T> = Promise<T> | T;
+
+export type IYieldedFlow = "sync" | "async" | "parallel";

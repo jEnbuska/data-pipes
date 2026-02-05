@@ -2,13 +2,14 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedChunkBy<T, TParallel extends boolean> {
+export interface IYieldedChunkBy<T, TFlow extends IYieldedFlow> {
   /**
    * Splits the items produced by the generator into chunks based on the
    * key returned by the provided selector function.
@@ -32,8 +33,8 @@ export interface IYieldedChunkBy<T, TParallel extends boolean> {
    *   .toArray() satisfies string[][] // [['apple', 'apricot'], ['banana', 'blueberry']]
    */
   chunkBy<TIdentifier>(
-    fn: (next: T) => ICallbackReturn<TIdentifier, TParallel>,
-  ): INextYielded<T[], TParallel>;
+    fn: (next: T) => ICallbackReturn<TIdentifier, TFlow>,
+  ): INextYielded<T[], TFlow>;
 }
 
 export function* chunkBySync<T, TIdentifier = any>(
@@ -49,7 +50,7 @@ export function* chunkBySync<T, TIdentifier = any>(
       acc.push([]);
     }
     const index = indexMap.get(key)!;
-    acc[index].push(next);
+    acc[index]!.push(next);
   }
   yield* acc;
 }
@@ -68,7 +69,7 @@ export async function* chunkByAsync<T, TIdentifier = any>(
       acc.push([]);
     }
     const index = indexMap.get(key)!;
-    acc[index].push(next);
+    acc[index]!.push(next);
   }
   yield* acc;
 }
@@ -93,9 +94,9 @@ export function chunkByParallel<T, TIdentifier = any>(
       acc.push([]);
     }
     const index = indexMap.get(key)!;
-    acc[index].push(next);
+    acc[index]!.push(next);
   }
-  return createParallel<T, T[]>({
+  return ParallelGenerator.create<T, T[]>({
     generator,
     parallel,
     onNext(next) {

@@ -1,12 +1,13 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedFind<T, TAsync extends boolean> {
+export interface IYieldedFind<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the first item in the generator that satisfies the provided predicate.
    *
@@ -28,10 +29,10 @@ export interface IYieldedFind<T, TAsync extends boolean> {
    */
   find<TOut extends T>(
     predicate: (next: T) => next is TOut,
-  ): ReturnValue<TOut | undefined, TAsync>;
+  ): ReturnValue<TOut | undefined, TFlow>;
   find(
-    predicate: (next: T) => ICallbackReturn<unknown, TAsync>,
-  ): ReturnValue<T | undefined, TAsync>;
+    predicate: (next: T) => ICallbackReturn<unknown, TFlow>,
+  ): ReturnValue<T | undefined, TFlow>;
 }
 
 export function findAsync<T, TOut extends T = T>(

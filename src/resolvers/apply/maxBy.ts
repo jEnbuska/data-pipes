@@ -1,6 +1,7 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
@@ -8,13 +9,13 @@ import type {
 import { memoize } from "../../utils/memoize";
 import { getPlaceholder, isPlaceholder } from "../../utils/placeholder";
 import { withIndex1 } from "../../utils/withIndex";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedMaxBy<T, TAsync extends boolean> {
+export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the item produced by the generator for which the selector
-   * returns the **highest numeric value**.
+   * returns the **the highest numeric value**.
    *
    * Iterates through all items, applying the `selector` to each one and
    * keeping the item with the maximum returned number. If the generator
@@ -35,8 +36,8 @@ export interface IYieldedMaxBy<T, TAsync extends boolean> {
    *  ```
    */
   maxBy(
-    selector: (next: T) => ICallbackReturn<number, TAsync>,
-  ): ReturnValue<T | undefined, TAsync>;
+    selector: (next: T) => ICallbackReturn<number, TFlow>,
+  ): ReturnValue<T | undefined, TFlow>;
 }
 
 export function maxBySync<T>(

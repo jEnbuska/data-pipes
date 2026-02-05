@@ -6,10 +6,7 @@ import { AsyncYielded } from "./AsyncYielded.ts";
 import { syncToAwaited } from "./next/awaited.ts";
 import { batchSync } from "./next/batch.ts";
 import { chunkBySync } from "./next/chunkBy.ts";
-import { distinctBySync } from "./next/distinctBy.ts";
-import { distinctUntilChangedSync } from "./next/distinctUntilChanged.ts";
 import { dropLastSync } from "./next/dropLast.ts";
-import { dropWhileSync } from "./next/dropWhile.ts";
 import { flatSync } from "./next/flat.ts";
 import { flatMapSync } from "./next/flatMap.ts";
 import { liftSync } from "./next/lift.ts";
@@ -68,7 +65,6 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
       source = source();
     }
     if (source?.[Symbol.iterator]) {
-       
       return new Yielded<any>(
         undefined,
         source[Symbol.iterator]() as IYieldedIterator<any>,
@@ -124,16 +120,6 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return this.#next(chunkBySync, ...args);
   }
 
-  distinctBy(...args: Parameters<IYielded<T>["distinctBy"]>) {
-    return this.#next(distinctBySync, ...args);
-  }
-
-  distinctUntilChanged(
-    ...args: Parameters<IYielded<T>["distinctUntilChanged"]>
-  ) {
-    return this.#next(distinctUntilChangedSync, ...args);
-  }
-
   flat<Depth extends number = 1>(
     depth?: Depth,
   ): IYielded<FlatArray<T[], Depth>> {
@@ -144,25 +130,21 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     flatMapper: (
       next: T,
       index: number,
-    ) => readonly TOut[] | IYieldedIterable<TOut, false> | TOut,
+    ) => readonly TOut[] | IYieldedIterable<TOut, "sync"> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }
 
   lift<TOut = never>(
     middleware: (
-      generator: IYieldedGenerator<T, false>,
-    ) => IYieldedGenerator<TOut, false>,
+      generator: IYieldedGenerator<T, "sync">,
+    ) => IYieldedGenerator<TOut, "sync">,
   ): IYielded<TOut> {
     return this.#next(liftSync, middleware);
   }
 
   dropLast(...args: Parameters<IYielded<T>["dropLast"]>) {
     return this.#next(dropLastSync, ...args);
-  }
-
-  dropWhile(...args: Parameters<IYielded<T>["dropWhile"]>) {
-    return this.#next(dropWhileSync, ...args);
   }
 
   take(...args: Parameters<IYielded<T>["take"]>) {

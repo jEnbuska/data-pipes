@@ -1,4 +1,4 @@
-import { resolveParallel } from "../../resolvers/resolveParallel";
+import { resolveParallel } from "../../resolvers/resolveParallel.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
@@ -47,29 +47,22 @@ export async function* parallelToAwaited<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
 ): IYieldedAsyncGenerator<Awaited<T>> {
-  let done = false;
   const buffer: T[] = [];
   let resolvable = Promise.withResolvers<void>();
   using _ = resolveParallel<T, void>({
     generator,
     parallel,
     onNext(value) {
-      console.log("PUSH", value);
       buffer.push(value);
       resolvable.resolve();
     },
     onDone(resolve) {
-      done = true;
       resolvable.resolve();
       resolve();
     },
   });
 
-  for await (const next of generator) {
-    yield next;
-  }
-
-  while (!done || buffer.length) {
+  while (buffer.length) {
     while (buffer.length) {
       yield buffer.shift()!;
     }

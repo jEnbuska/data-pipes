@@ -1,12 +1,13 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedDropLast<T, TAsync extends boolean> {
+export interface IYieldedDropLast<T, TFlow extends IYieldedFlow> {
   /**
    * Drops the last `count` items produced by the generator and yields
    * the remaining items to the next operation in the pipeline.
@@ -36,7 +37,7 @@ export interface IYieldedDropLast<T, TAsync extends boolean> {
    * //         C2
    * ```
    */
-  dropLast(count: number): INextYielded<T, TAsync>;
+  dropLast(count: number): INextYielded<T, TFlow>;
 }
 
 export function* dropLastSync<T>(
@@ -77,7 +78,7 @@ export function dropLastParallel<T>(
 ): IYieldedParallelGenerator<T> {
   const buffer: Array<Promise<T>> = [];
   let skipped = 0;
-  return createParallel<T>({
+  return ParallelGenerator.create<T>({
     generator,
     parallel,
     onNext(next) {

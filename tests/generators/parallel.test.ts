@@ -2,14 +2,18 @@ import { describe, expect, test } from "bun:test";
 import { Yielded } from "../../src/index.ts";
 import { sleep } from "../utils/sleep.ts";
 
-describe("parallel", { timeout: 5000 }, () => {
-  test("Parallel with empty list", { timeout: 100 }, async () => {
-    const result = (await Yielded.from([] as number[])
-      .awaited()
-      .parallel(2)
-      .toArray()) satisfies number[];
-    expect(result).toStrictEqual([]);
-  });
+describe("parallel", () => {
+  test(
+    "Parallel with empty list",
+    async () => {
+      const result = (await Yielded.from([] as number[])
+        .awaited()
+        .parallel(2)
+        .toArray()) satisfies number[];
+      expect(result).toStrictEqual([]);
+    },
+    { timeout: 100 },
+  );
   test("Parallel with all at once", async () => {
     const result = await (Yielded.from([500, 404, 100, 300, 200])
       .awaited()
@@ -28,26 +32,30 @@ describe("parallel", { timeout: 5000 }, () => {
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
 
-  test.only("Parallel to awaited", { timeout: 4000 }, async () => {
-    const tapped: number[] = [];
-    const result = (await Yielded.from([300, 200, 100, 0])
-      .tap((n) => console.log("tap (0)", n))
-      .awaited()
-      .tap((n) => console.log("tap (1)", n))
-      .parallel(5)
-      .tap((n) => console.log("tap (2)", n))
-      .map(async (it) => sleep(it).then(() => it))
-      .tap((n) => console.log("tap (3)", n))
-      .tap((n) => {
-        tapped.push(n);
-      })
-      .parallel(1)
-      .map(async (it, index) => {
-        return sleep(400 - index * 50).then(() => it);
-      })
-      // .tap((value) => console.log("got", value))
-      .toArray()) satisfies number[];
-    console.log("tapped", tapped);
-    expect(tapped).toStrictEqual([0, 100, 200, 300]);
-  });
+  test.only(
+    "Parallel to awaited",
+    async () => {
+      const tapped: number[] = [];
+      void (await Yielded.from([300, 200, 100, 0])
+        .tap((n) => console.log("tap (0)", n))
+        .awaited()
+        .tap((n) => console.log("tap (1)", n))
+        .parallel(5)
+        .tap((n) => console.log("tap (2)", n))
+        .map(async (it) => sleep(it).then(() => it))
+        .tap((n) => console.log("tap (3)", n))
+        .tap((n) => {
+          tapped.push(n);
+        })
+        .parallel(1)
+        .map(async (it, index) => {
+          return sleep(400 - index * 50).then(() => it);
+        })
+        // .tap((value) => console.log("got", value))
+        .toArray()) satisfies number[];
+      console.log("tapped", tapped);
+      expect(tapped).toStrictEqual([0, 100, 200, 300]);
+    },
+    { timeout: 4000 },
+  );
 });

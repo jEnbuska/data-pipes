@@ -1,12 +1,13 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedConsume<TAsync extends boolean> {
+export interface IYieldedConsume<TFlow extends IYieldedFlow> {
   /**
    *  Fully consumes the generator without producing a result.
    *
@@ -19,7 +20,7 @@ export interface IYieldedConsume<TAsync extends boolean> {
    *   .tap(n => console.log(n)) // logs 1, 2, 3
    *   .consume() satisfies void;
    *  */
-  consume(): ReturnValue<void, TAsync>;
+  consume(): ReturnValue<void, TFlow>;
 }
 
 export function consumeSync(generator: IYieldedIterator) {

@@ -4,8 +4,8 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { throttleParallel } from "../../utils/throttleParallel";
-import type { IAsyncYielded } from "../../yielded.types.ts";
+import { throttleParallel } from "../../utils/throttleParallel.ts";
+import type { IParallelYielded } from "../../yielded.types.ts";
 import { mapParallel } from "./map.ts";
 
 export type IYieldedParallel<T> = {
@@ -38,12 +38,12 @@ export type IYieldedParallel<T> = {
    *  .parallel(3)
    *  .toArray() // Promise<[300, 10, 100, 450, 550]>
    */
-  parallel(count: number): IAsyncYielded<T>;
+  parallel(count: number): IParallelYielded<T>;
 };
 
 export function generatorToParallel<T>(
-  generator: IYieldedAsyncGenerator<T> | IYieldedIterator<T>,
-  count: number,
+  generator: (IYieldedAsyncGenerator<T> | IYieldedIterator<T>) & Disposable,
+  parallel: number,
 ): IYieldedParallelGenerator<T> {
   let done = false;
   function onDone() {
@@ -61,13 +61,9 @@ export function generatorToParallel<T>(
     return {
       value: Promise.resolve(next.value),
     };
-  }, count);
+  }, parallel);
 
   return {
-    [Symbol.asyncIterator]() {
-      return this as any;
-    },
-
     async [Symbol.asyncDispose]() {
       onDone();
     },

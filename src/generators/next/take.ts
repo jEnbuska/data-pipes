@@ -1,12 +1,13 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedTake<T, TAsync extends boolean> {
+export interface IYieldedTake<T, TFlow extends IYieldedFlow> {
   /**
    * Yields only the first `count` items produced by the generator to the
    * next operation in the pipeline, then stops the generator.
@@ -36,7 +37,7 @@ export interface IYieldedTake<T, TAsync extends boolean> {
    *   .toArray() satisfies number[] // []
    * ```
    */
-  take(count: number): INextYielded<T, TAsync>;
+  take(count: number): INextYielded<T, TFlow>;
 }
 
 export function* takeSync<T>(
@@ -67,7 +68,7 @@ export function takeParallel<T>(
   count: number,
 ): IYieldedParallelGenerator<T> {
   if (count <= 0) return (async function* () {})() as any;
-  return createParallel<T>({
+  return ParallelGenerator.create<T>({
     generator,
     parallel,
     onNext(next) {

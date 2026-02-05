@@ -1,13 +1,14 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedReduce<T, TAsync extends boolean> {
+export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   /**
    * Reduces the items produced by the generator into a single value.
    *
@@ -47,12 +48,12 @@ export interface IYieldedReduce<T, TAsync extends boolean> {
       acc: TOut,
       next: T,
       index: number,
-    ) => ICallbackReturn<TOut, TAsync>,
-    initialValue: TAsync extends true ? Promise<TOut> | TOut : TOut,
-  ): ReturnValue<TOut, TAsync>;
+    ) => ICallbackReturn<TOut, TFlow>,
+    initialValue: TFlow extends "sync" ? TOut : Promise<TOut> | TOut,
+  ): ReturnValue<TOut, TFlow>;
   reduce(
-    reducer: (acc: T, next: T, index: number) => ICallbackReturn<T, TAsync>,
-  ): ReturnValue<T | undefined, TAsync>;
+    reducer: (acc: T, next: T, index: number) => ICallbackReturn<T, TFlow>,
+  ): ReturnValue<T | undefined, TFlow>;
 }
 
 export async function reduceAsync<T>(

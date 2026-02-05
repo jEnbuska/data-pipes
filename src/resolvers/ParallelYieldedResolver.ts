@@ -24,10 +24,11 @@ import { toSetParallel } from "./apply/toSet.ts";
 import { toSortedParallel } from "./apply/toSorted.ts";
 import type {
   IAsyncYieldedResolver,
+  IParallelYieldedResolver,
   IYieldedResolver,
 } from "./resolver.types.ts";
 
-export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
+export class ParallelYieldedResolver<T> implements IParallelYieldedResolver<T> {
   protected readonly generator: Disposable & IYieldedParallelGenerator<T>;
 
   protected _parallel: number;
@@ -53,13 +54,6 @@ export class ParallelYieldedResolver<T> implements IAsyncYieldedResolver<T> {
         void parent?.[Symbol.dispose]();
       },
     });
-  }
-
-  async *[Symbol.asyncIterator]() {
-    using generator = this.generator;
-    for await (const next of generator) {
-      yield next;
-    }
   }
 
   async #apply<TReturn, TArgs extends any[]>(

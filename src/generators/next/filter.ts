@@ -2,12 +2,13 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types";
 import { withIndex1 } from "../../utils/withIndex";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedFilter<T, TAsync extends boolean> {
+export interface IYieldedFilter<T, TFlow extends IYieldedFlow> {
   /**
    * Filters items produced by the generator using the provided predicate
    * and yields only the items that pass the predicate to the next operation.
@@ -31,10 +32,10 @@ export interface IYieldedFilter<T, TAsync extends boolean> {
 
   filter<TOut extends T>(
     predicate: (next: T, index: number) => next is TOut,
-  ): INextYielded<TOut, TAsync>;
+  ): INextYielded<TOut, TFlow>;
   filter(
-    predicate: (next: T, index: number) => ICallbackReturn<unknown, TAsync>,
-  ): INextYielded<T, TAsync>;
+    predicate: (next: T, index: number) => ICallbackReturn<unknown, TFlow>,
+  ): INextYielded<T, TFlow>;
 }
 
 export function filterAsync<T, TOut extends T = T>(
@@ -71,7 +72,7 @@ export function filterParallel(
   predicate: (next: unknown) => unknown,
 ): IYieldedParallelGenerator<unknown> {
   const callback = withIndex1(predicate);
-  return createParallel<unknown>({
+  return ParallelGenerator.create<unknown>({
     generator,
     parallel,
     async onNext(next) {

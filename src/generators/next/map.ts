@@ -2,13 +2,14 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { withIndex1 } from "../../utils/withIndex";
-import { createParallel } from "../createParallel";
+import { withIndex1 } from "../../utils/withIndex.ts";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedMap<T, TAsync extends boolean> {
+export interface IYieldedMap<T, TFlow extends IYieldedFlow> {
   /**
    * Maps each item produced by the generator using the provided transform
    * function and yields the transformed item to the next operation.
@@ -21,8 +22,8 @@ export interface IYieldedMap<T, TAsync extends boolean> {
    * ```
    */
   map<TOut>(
-    mapper: (next: T, index: number) => ICallbackReturn<TOut, TAsync>,
-  ): INextYielded<TOut, TAsync>;
+    mapper: (next: T, index: number) => ICallbackReturn<TOut, TFlow>,
+  ): INextYielded<TOut, TFlow>;
 }
 
 export async function* mapAsync<T, TOut>(
@@ -41,7 +42,7 @@ export function mapParallel<T, TOut>(
   mapper: (next: T, index: number) => MaybeAsync<TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(mapper);
-  return createParallel<T, TOut>({
+  return ParallelGenerator.create<T, TOut>({
     generator,
     parallel,
     onNext(next) {

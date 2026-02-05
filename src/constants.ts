@@ -1,1 +1,4 @@
-export const DONE = { done: true, value: undefined } as const;
+export const DONE: IteratorReturnResult<void | undefined> = {
+  done: true,
+  value: undefined,
+};

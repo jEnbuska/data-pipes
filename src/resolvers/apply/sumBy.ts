@@ -1,5 +1,6 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
@@ -7,7 +8,7 @@ import type {
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedSumBy<T, TAsync extends boolean> {
+export interface IYieldedSumBy<T, TFlow extends IYieldedFlow> {
   /**
    * Applies the provided selector to each item produced by the generator
    * and returns the sum of the resulting numeric values.
@@ -23,7 +24,7 @@ export interface IYieldedSumBy<T, TAsync extends boolean> {
    * Yielded.from([] as number[])
    * .sumBy(n => n) satisfies number | undefined // 0
    */
-  sumBy(fn: (next: T) => number): ReturnValue<number, TAsync>;
+  sumBy(fn: (next: T) => number): ReturnValue<number, TFlow>;
 }
 
 export function sumBySync<T>(

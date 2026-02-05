@@ -30,7 +30,7 @@ describe("flatMap", () => {
       fromSingle.flatMap((next) => next).toArray() satisfies Array<
         number | number[]
       >,
-    ).toEqual(expected[0]);
+    ).toEqual(expected[0] as any);
   });
 
   test("from resolved promises", async () => {

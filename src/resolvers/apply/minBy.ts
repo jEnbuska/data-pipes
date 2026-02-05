@@ -1,19 +1,20 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
 import { memoize } from "../../utils/memoize";
 import { getPlaceholder, isPlaceholder } from "../../utils/placeholder";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedMinBy<T, TAsync extends boolean> {
+export interface IYieldedMinBy<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the item produced by the generator for which the selector
-   * returns the **lowest numeric value**.
+   * returns the **the lowest numeric value**.
    *
    * Iterates through all items, applying the `selector` to each one and
    * keeping the item with the minimum returned number. If the generator
@@ -34,8 +35,8 @@ export interface IYieldedMinBy<T, TAsync extends boolean> {
    *  ```
    */
   minBy(
-    selector: (next: T) => ICallbackReturn<number, TAsync>,
-  ): ReturnValue<T | undefined, TAsync>;
+    selector: (next: T) => ICallbackReturn<number, TFlow>,
+  ): ReturnValue<T | undefined, TFlow>;
 }
 
 export function minBySync<T>(

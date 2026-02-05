@@ -1,18 +1,19 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedToArray<T, TAsync extends boolean> {
+export interface IYieldedToArray<T, TFlow extends IYieldedFlow> {
   /**
    * Collects all items produced by the generator and returns them
    * as a new array.
    *
    * The generator is fully consumed before the array is returned.
    * */
-  toArray(): ReturnValue<T[], TAsync>;
+  toArray(): ReturnValue<T[], TFlow>;
 }
 
 export async function toArrayAsync<T>(

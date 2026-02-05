@@ -1,11 +1,12 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedForEach<T, TAsync extends boolean> {
+export interface IYieldedForEach<T, TFlow extends IYieldedFlow> {
   /**
    * Invokes the provided callback for each item produced by the generator.
    *
@@ -26,7 +27,7 @@ export interface IYieldedForEach<T, TAsync extends boolean> {
    * // 2 3
    * ```
    */
-  forEach(cb: (next: T, index: number) => unknown): ReturnValue<void, TAsync>;
+  forEach(cb: (next: T, index: number) => unknown): ReturnValue<void, TFlow>;
 }
 
 export async function forEachAsync<T>(

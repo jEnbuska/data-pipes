@@ -5,15 +5,19 @@ import { assertIsValidParallel } from "./parallelUtils.ts";
 
 type ExpandResult<R> =
   | undefined
-  | void
-  | Iterator<R>
-  | Iterable<R>
-  | AsyncIterator<R>
-  | AsyncIterable<R>;
+  | Iterable<MaybeAsync<R>, undefined | void, undefined | void>
+  | Iterator<MaybeAsync<R>, undefined | void, undefined | void>
+  | AsyncIterable<MaybeAsync<R>, undefined | void, undefined | void>
+  | AsyncIterator<MaybeAsync<R>, undefined | void, undefined | void>;
+
+type ParallelGeneratorState = "running" | "done" | "aborted";
 
 function getIterator<TOut>(
   value: Exclude<ExpandResult<TOut>, undefined>,
 ): AsyncIterator<MaybeAsync<TOut>> | Iterator<MaybeAsync<TOut>> {
+  if ("next" in value && typeof (value as any).next === "function") {
+    return value as AsyncIterator<TOut> | Iterator<TOut>;
+  }
   if (
     typeof (value as AsyncIterable<TOut>)[Symbol.asyncIterator] === "function"
   ) {
@@ -30,213 +34,236 @@ function getIterator<TOut>(
   throw new Error("Invalid ExpandResult");
 }
 
-type BufferedProvider<TOut> = () => Promise<
-  IteratorResult<TOut, void | undefined>
->;
-function createBufferedProvider<TOut extends MaybeAsync<any>>(
-  value: Exclude<ExpandResult<TOut>, undefined>,
+type BufferedProvider<TOut> = () => Promise<IteratorYieldResult<TOut>>;
+function createBufferedProvider<TOut>(
+  value: Exclude<ExpandResult<TOut>, undefined | void>,
 ): BufferedProvider<TOut> {
   const iterator = getIterator(value);
-  return throttle(1, async () => {
+  return async () => {
     const next = await iterator.next();
-    if (next.done) return next;
-    if (!next.value || !(next.value instanceof Promise)) {
-      next.value = Promise.resolve(next.value);
-    }
+    if (next.done) return undefined;
+    next.value = Promise.resolve(next.value);
     return next as any;
-  });
+  };
 }
 
-type ParallelGeneratorArguments<T, TOut> = {
+type ParallelGeneratorOnNext<T, TOut> = (
+  value: Promise<T>,
+) => Promise<ExpandResult<MaybeAsync<TOut>>> | ExpandResult<MaybeAsync<TOut>>;
+type ParallelGeneratorOnDone<TOut> = () =>
+  | Promise<ExpandResult<MaybeAsync<TOut>>>
+  | ExpandResult<MaybeAsync<TOut>>;
+export type ParallelGeneratorArguments<T, TOut> = {
   generator: IYieldedParallelGenerator<T>;
-  onNext?: (value: Promise<T>) => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
-  onDone?: () => MaybeAsync<ExpandResult<MaybeAsync<TOut>>>;
-  chokeOnNext?: boolean;
+  onNext: ParallelGeneratorOnNext<T, TOut>;
+  onDone?: ParallelGeneratorOnDone<TOut>;
+  onNextParallel?: number;
   parallel: number;
 };
-export function parallelGenerator<T, TOut>({
-  generator,
-  parallel,
-  chokeOnNext,
-  onNext,
-  onDone,
-}: ParallelGeneratorArguments<T, TOut>): IYieldedParallelGenerator<TOut> {
-  return new ParallelGenerator({
-    generator,
-    parallel,
-    chokeOnNext,
-    onNext,
-    onDone,
-  });
-}
 
 export class ParallelGenerator<
   T,
-  TOut = T,
+  TOut,
 > implements IYieldedParallelGenerator<TOut> {
-  readonly #source: IYieldedParallelGenerator<T>;
+  #state: ParallelGeneratorState = "running";
 
-  #onNext?: ParallelGeneratorArguments<T, TOut>["onNext"];
+  #onNext: ParallelGeneratorArguments<T, TOut>["onNext"];
 
   #onDone?: ParallelGeneratorArguments<T, TOut>["onDone"];
 
+  #pendingWork = new Set<any>();
+
+  #abortResolvable = Promise.withResolvers<never>();
+
+  #doneResolvable = Promise.withResolvers<void>();
+
   readonly #parallel: number;
 
-  readonly #pendingToBeResolved: Array<
-    (r: IteratorResult<Promise<TOut>, void>) => void
-  > = [];
-
-  /** FIFO buffer of remaining iterators */
   readonly #buffer: Array<BufferedProvider<MaybeAsync<TOut>>> = [];
 
-  #activeWorkers = 0;
+  readonly #generator: IYieldedParallelGenerator<T>;
 
-  #upstreamDone = false;
-
-  #aborted = false;
-
-  #resolving = false;
-
-  readonly #getNext: () => Promise<IteratorResult<Promise<T>, void>>;
-
-  constructor(options: ParallelGeneratorArguments<T, TOut>) {
-    const {
+  static create<T, TOut = T>(
+    options: ParallelGeneratorArguments<T, TOut>,
+  ): IYieldedParallelGenerator<TOut> {
+    const { generator, parallel, onNextParallel, onNext, onDone } = options;
+    return new ParallelGenerator<T, TOut>(
       generator,
+      parallel,
       onNext,
-
-      chokeOnNext = false,
       onDone,
-    } = options;
-    const parallel = Math.floor(options.parallel);
+      onNextParallel,
+    ) as any;
+  }
+
+  private constructor(
+    generator: IYieldedParallelGenerator<T>,
+    parallel: number,
+    onNext: ParallelGeneratorOnNext<T, TOut>,
+    onDone?: ParallelGeneratorOnDone<TOut>,
+    onNextParallel = parallel,
+  ) {
+    parallel = Math.floor(parallel);
     assertIsValidParallel(parallel);
-    this.#source = generator;
+    this.#generator = generator;
     this.#onNext = onNext;
+    this.#onNext = throttle(onNextParallel, onNext);
     this.#onDone = onDone;
     this.#parallel = parallel;
-    this.#getNext = function getNext() {
-      return generator.next();
-    };
-    if (chokeOnNext) {
-      this.#getNext = throttle(1, this.#getNext);
-    }
+
+    this.next = throttle(this.#parallel, this.next.bind(this));
   }
 
   // ---------------- AsyncGenerator ----------------
 
-  [Symbol.asyncIterator]() {
-    console.log("asyncIterator");
-    return this as AsyncGenerator<TOut>;
-  }
-
   async [Symbol.asyncDispose]() {
-    console.log("async dispose");
-    this.#abort();
+    this.#setState("aborted");
   }
 
   async return(): Promise<IteratorReturnResult<void | undefined>> {
-    console.log("return");
-    this.#abort();
+    this.#setState("aborted");
     return DONE;
   }
 
   async throw(err: unknown): Promise<IteratorReturnResult<void | undefined>> {
-    console.log("throw");
-    this.#abort();
+    this.#setState("aborted");
     throw err;
   }
 
-  async next(): Promise<IteratorResult<Promise<TOut>, void>> {
-    if (this.#aborted) return DONE;
-    const buffered = await this.#getNextFromBuffer();
-    if (buffered) return buffered;
-    if (this.#upstreamDone || this.#aborted) return DONE;
-    const { resolve, promise } =
-      Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
-
-    this.#pendingToBeResolved.push(resolve);
-    if (this.#activeWorkers < this.#parallel) {
-      void this.#runWorker();
+  #setState(state: ParallelGeneratorState) {
+    switch (state) {
+      case "running":
+        throw new Error('Cannot transition to "running" state');
+      case "done": {
+        this.#state = state;
+        return;
+      }
+      case "aborted": {
+        if (this.#state === "aborted") return;
+        this.#state = state;
+        this.#abortResolvable.reject(new Error("Aborted"));
+        void this.#generator.return();
+        this.#buffer.length = 0;
+        break;
+      }
+      default:
+        throw new Error("Invalid state transition to " + state);
     }
-    return promise;
   }
 
-  async #trackFinalized(promise: Promise<IteratorResult<Promise<TOut>>>) {
+  async next(): Promise<IteratorResult<Promise<TOut>, void>> {
     try {
-      return await promise;
-    } finally {
-      if (this.#upstreamDone && !this.#buffer.length && !this.#activeWorkers) {
-        console.log("FINALIZE", this.#pendingToBeResolved.length);
-        while (this.#pendingToBeResolved.length) {
-          this.#pendingToBeResolved.shift()!(DONE);
+      switch (this.#state) {
+        case "aborted":
+          return DONE;
+        case "done": {
+          await this.#doneResolvable.promise;
+          const buffered = await this.#getNextFromBuffer();
+          console.log("buffered", buffered);
+          return buffered ?? DONE;
+        }
+        case "running": {
+          return await this.#queueHandleNext();
         }
       }
+    } catch (error) {
+      if (this.#state === "aborted") return DONE;
+      this.#setState("aborted");
+      throw error;
     }
   }
 
   // ---------------- Internal ----------------
 
-  async #runWorker(): Promise<void> {
+  #queue: Array<PromiseWithResolvers<IteratorResult<Promise<TOut>, void>>> = [];
+
+  async #queueHandleNext() {
+    const resolvable =
+      Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
+    this.#queue.push(resolvable);
+    void this.#handleNext()
+      .then(this.#onHandleNextResolved)
+      .catch(this.#onHandleNextRejected);
+    return resolvable.promise;
+  }
+
+  #onHandleNextResolved = (result: IteratorResult<Promise<TOut>, void>) => {
+    const resolvable = this.#queue.shift();
+    resolvable?.resolve(result);
+  };
+
+  #onHandleNextRejected = (error: any) => {
+    const resolvable = this.#queue.shift();
+    resolvable?.reject(error);
+    throw new Error(error);
+  };
+
+  async #handleNext(): Promise<IteratorResult<Promise<TOut>, void>> {
     while (true) {
-      this.#activeWorkers++;
-      while (true) {
-        if (this.#aborted || !this.#pendingToBeResolved.length) return;
-        if (this.#upstreamDone) {
-          this.#activeWorkers--;
-          return;
-        }
-        const next = await this.#getNext();
-        if (next.done) {
-          this.#upstreamDone = true;
-          break;
-        }
-        const mapped = await this.#onNext?.(next.value);
-        if (!mapped) continue;
-        this.#buffer.push(createBufferedProvider(mapped));
-        break;
+      const buffered = await this.#getNextFromBuffer();
+      if (buffered) return buffered;
+      const next = await this.#registerWork(this.#generator.next());
+      if (next.done) {
+        return this.#handleDone();
       }
-      this.#activeWorkers--;
-      if (!this.#resolving) void this.#runResolver();
+      const result = await this.#registerWork(this.#onNext(next.value));
+      if (!result) {
+        void this.#generator.return?.();
+        return this.#handleDone();
+      }
+      const provider = createBufferedProvider(result);
+      const first = await this.#registerWork(provider());
+      if (!first) continue;
+      this.#buffer.push(provider);
+      return first as IteratorResult<Promise<TOut>, void>;
     }
   }
 
-  async #runResolver() {
-    this.#resolving = true;
-    while (this.#pendingToBeResolved.length) {
-      if (this.#aborted) return;
-      const next = await this.#getNextFromBuffer();
-      if (!next) break;
-      if (this.#aborted) return;
-      this.#pendingToBeResolved.shift()!(next);
+  async #registerWork<T>(work: Promise<T> | T) {
+    const promise = Promise.race([this.#abortResolvable.promise, work]);
+    this.#pendingWork.add(promise);
+    try {
+      const result = await promise;
+      if (result === "ABORTED") {
+        throw new Error("Aborted");
+      }
+      return result;
+    } finally {
+      this.#pendingWork.delete(promise);
     }
-    this.#resolving = false;
   }
 
-  async #resolvePendingFromBuffer() {
-    const next = await this.#getNextFromBuffer();
-    if (!next) return;
-    if (this.#aborted) return;
-    this.#pendingToBeResolved.shift()!(next);
+  async #handleDone() {
+    if (this.#state === "running") {
+      this.#setState("done");
+      await Promise.all(this.#pendingWork);
+      const result = await this.#onDone?.();
+      if (result) {
+        const provider = createBufferedProvider(result);
+        if (provider) this.#buffer.push(provider);
+      }
+      this.#doneResolvable.resolve();
+    }
+    await this.#doneResolvable.promise;
+    const buffered = await this.#getNextFromBuffer();
+    return buffered ?? DONE;
   }
 
-  async #getNextFromBuffer(): Promise<
-    undefined | IteratorYieldResult<Promise<TOut>>
-  > {
+  #bufferIndex = 0;
+
+  async #getNextFromBuffer() {
     while (this.#buffer.length) {
-      const next = await this.#buffer[0]!();
+      const index = this.#bufferIndex++ % this.#buffer.length;
+      const getNext = this.#buffer[index]!;
+      const next = await Promise.race([
+        this.#abortResolvable.promise,
+        getNext(),
+      ]);
+      if (!next) {
+        this.#buffer.splice(this.#buffer.indexOf(getNext), 1);
+        continue;
+      }
       if (!next.done) return next as IteratorYieldResult<Promise<TOut>>;
-      this.#buffer.shift();
     }
-  }
-
-  #abort() {
-    if (this.#aborted) return;
-    this.#aborted = true;
-    this.#upstreamDone = true;
-    void this.#source.return?.();
-    while (this.#pendingToBeResolved.length) {
-      this.#pendingToBeResolved.shift()!(DONE);
-    }
-    this.#onNext = undefined;
-    this.#onDone = undefined;
   }
 }

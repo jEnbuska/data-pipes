@@ -183,7 +183,7 @@ describe("throttle", () => {
     const throttled = throttleParallel(apply, 2);
     const expectedOrder = [0, 600, 200, 1000, 200, 500];
     void throttled.onNext((value) => {
-      expect(value).toBe(expectedOrder.shift());
+      expect(value).toBe(expectedOrder.shift()!);
     });
     void throttled(1000).then((value) => expect(value).toBe(0)); //
     void throttled(0).then((value) => expect(value).toBe(0)); //
@@ -201,56 +201,60 @@ describe("throttle", () => {
     // 500* (100ms)
     await throttled.all();
     await sleep(0);
-    expect(expectedOrder).length(0);
+    expect(expectedOrder).toHaveLength(0);
   });
 
-  test("throttle 1", { timeout: 15_000 }, async () => {
-    const throttled = throttleParallel(apply, 1);
-    const start = Date.now();
-    const promises = await Promise.all([
-      throttled(1000),
-      throttled(0),
-      throttled(500),
-    ]);
-    expect(await throttled.previous()).toBe(1000);
-    for (const next of promises) {
-      expect(next).toBe(1000);
-      expect(Date.now() - start).toBeGreaterThanOrEqual(999);
-      expect(Date.now() - start).toBeLessThan(1100);
-    }
+  test(
+    "throttle 1",
+    async () => {
+      const throttled = throttleParallel(apply, 1);
+      const start = Date.now();
+      const promises = await Promise.all([
+        throttled(1000),
+        throttled(0),
+        throttled(500),
+      ]);
+      expect(await throttled.previous()).toBe(1000);
+      for (const next of promises) {
+        expect(next).toBe(1000);
+        expect(Date.now() - start).toBeGreaterThanOrEqual(999);
+        expect(Date.now() - start).toBeLessThan(1100);
+      }
 
-    await sleep(0);
-    expect(await throttled.previous()).toBe(0);
+      await sleep(0);
+      expect(await throttled.previous()).toBe(0);
 
-    // 500, 1500
-    const first = await throttled(1500); // 1000ms
-    expect(first).toBe(500); // 1500ms
-    expect(Date.now() - start).toBeGreaterThanOrEqual(1500);
-    expect(Date.now() - start).toBeLessThan(1600);
+      // 500, 1500
+      const first = await throttled(1500); // 1000ms
+      expect(first).toBe(500); // 1500ms
+      expect(Date.now() - start).toBeGreaterThanOrEqual(1500);
+      expect(Date.now() - start).toBeLessThan(1600);
 
-    await sleep();
-    // 1500, 2000
-    const second = await throttled(2000);
-    expect(second).toBe(1500);
-    expect(await throttled.previous()).toBe(1500);
-    expect(Date.now() - start).toBeGreaterThanOrEqual(3000);
-    expect(Date.now() - start).toBeLessThan(3100);
+      await sleep();
+      // 1500, 2000
+      const second = await throttled(2000);
+      expect(second).toBe(1500);
+      expect(await throttled.previous()).toBe(1500);
+      expect(Date.now() - start).toBeGreaterThanOrEqual(3000);
+      expect(Date.now() - start).toBeLessThan(3100);
 
-    // 2000, 3000
-    const third = await throttled(3000);
-    expect(third).toBe(2000);
-    expect(await throttled.previous()).toBe(2000);
-    expect(Date.now() - start).toBeGreaterThanOrEqual(5000);
-    expect(Date.now() - start).toBeLessThan(5100);
+      // 2000, 3000
+      const third = await throttled(3000);
+      expect(third).toBe(2000);
+      expect(await throttled.previous()).toBe(2000);
+      expect(Date.now() - start).toBeGreaterThanOrEqual(5000);
+      expect(Date.now() - start).toBeLessThan(5100);
 
-    const fourth = await throttled.race();
-    expect(fourth).toBe(3000);
-    expect(await throttled.previous()).toBe(3000);
-    expect(Date.now() - start).toBeGreaterThanOrEqual(8000);
-    expect(Date.now() - start).toBeLessThan(8100);
+      const fourth = await throttled.race();
+      expect(fourth).toBe(3000);
+      expect(await throttled.previous()).toBe(3000);
+      expect(Date.now() - start).toBeGreaterThanOrEqual(8000);
+      expect(Date.now() - start).toBeLessThan(8100);
 
-    expect(await throttled.race()).toBe(undefined);
-  });
+      expect(await throttled.race()).toBe(undefined);
+    },
+    { timeout: 15_000 },
+  );
 
   test("throttle 2", async () => {
     const arr: number[] = [];

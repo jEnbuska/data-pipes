@@ -1,11 +1,12 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types";
 
-export interface IYieldedSome<T, TAsync extends boolean> {
+export interface IYieldedSome<T, TFlow extends IYieldedFlow> {
   /**
    * Determines whether the provided predicate returns a truthy value
    * for **any** item produced by the generator.
@@ -32,7 +33,7 @@ export interface IYieldedSome<T, TAsync extends boolean> {
    */
   some(
     predicate: (next: T, index: number) => unknown,
-  ): ReturnValue<boolean, TAsync>;
+  ): ReturnValue<boolean, TFlow>;
 }
 export async function someAsync<T>(
   generator: IYieldedAsyncGenerator<T>,

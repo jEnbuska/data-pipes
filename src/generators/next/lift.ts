@@ -1,12 +1,13 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
 
-export interface IYieldedLift<T, TAsync extends boolean> {
+export interface IYieldedLift<T, TFlow extends IYieldedFlow> {
   /**
    * Accepts a custom generator function (“middleware”) that receives the
    * current generator and produces a new generator. This allows full control
@@ -55,9 +56,9 @@ export interface IYieldedLift<T, TAsync extends boolean> {
    */
   lift<TOut = never>(
     middleware: (
-      generator: IYieldedGenerator<T, TAsync>,
-    ) => IYieldedGenerator<TOut, TAsync>,
-  ): INextYielded<TOut, TAsync>;
+      generator: IYieldedGenerator<T, TFlow>,
+    ) => IYieldedGenerator<TOut, TFlow>,
+  ): INextYielded<TOut, TFlow>;
 }
 
 export function liftSync<T, TOut>(

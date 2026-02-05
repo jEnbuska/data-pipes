@@ -2,14 +2,14 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types.ts";
-import { throttle } from "../../utils/throttle.ts";
-import { createParallel } from "../createParallel.ts";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedBatch<T, TAsync extends boolean> {
+export interface IYieldedBatch<T, TFlow extends IYieldedFlow> {
   /**
    * Groups items produced by the generator into batches according to the
    * provided predicate, then feeds each batch as an array to the next
@@ -36,8 +36,8 @@ export interface IYieldedBatch<T, TAsync extends boolean> {
    * ```
    */
   batch(
-    predicate: (acc: T[], index: number) => ICallbackReturn<boolean, TAsync>,
-  ): INextYielded<T[], TAsync>;
+    predicate: (acc: T[], index: number) => ICallbackReturn<boolean, TFlow>,
+  ): INextYielded<T[], TFlow>;
 }
 
 export function* batchSync<T>(
@@ -76,17 +76,15 @@ export function batchParallel<T>(
   predicate: (batch: T[], index: number) => MaybeAsync<boolean>,
 ): IYieldedParallelGenerator<T[]> {
   let index = 0;
-  const lockedPredicate = throttle(1, async (next: Promise<T>) => {
-    const value = await next;
-    acc.push(value);
-    return predicate(acc, index++);
-  });
   let acc: T[] = [];
-  return createParallel<T, T[]>({
+  return ParallelGenerator.create<T, T[]>({
     generator,
     parallel,
+    onNextParallel: 1,
     async onNext(next) {
-      const match = await lockedPredicate(next);
+      const value = await next;
+      acc.push(value);
+      const match = predicate(acc, index++);
       if (match) return [];
       const payload = acc;
       acc = [];

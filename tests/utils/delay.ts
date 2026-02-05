@@ -1,4 +1,4 @@
-export async function delayValue<T>(value: T, ms: number): Promise<T> {
+export async function delay<T>(value: T, ms: number): Promise<T> {
   await new Promise((resolve) => {
     setTimeout(resolve, ms);
   });

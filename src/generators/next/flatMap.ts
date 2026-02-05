@@ -3,14 +3,15 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
 import { withIndex1 } from "../../utils/withIndex";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedFlatMap<T, TAsync extends boolean> {
+export interface IYieldedFlatMap<T, TFlow extends IYieldedFlow> {
   /**
    * Maps each item produced by the generator using the provided mapper function
    * and flattens the result one level before yielding items to the next operation.
@@ -41,10 +42,10 @@ export interface IYieldedFlatMap<T, TAsync extends boolean> {
       next: T,
       index: number,
     ) => ICallbackReturn<
-      readonly TOut[] | IYieldedIterable<TOut, TAsync> | TOut,
-      TAsync
+      readonly TOut[] | IYieldedIterable<TOut, TFlow> | TOut,
+      TFlow
     >,
-  ): INextYielded<TOut, TAsync>;
+  ): INextYielded<TOut, TFlow>;
 }
 
 export function* flatMapSync<T, TOut>(
@@ -52,7 +53,7 @@ export function* flatMapSync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => readonly TOut[] | IYieldedIterable<TOut, false> | TOut,
+  ) => readonly TOut[] | IYieldedIterable<TOut, "sync"> | TOut,
 ): IYieldedIterator<TOut> {
   const callback = withIndex1(flatMapper);
   for (const next of generator) {
@@ -70,7 +71,7 @@ export async function* flatMapAsync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "async"> | TOut>,
 ): IYieldedAsyncGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   for await (const next of generator) {
@@ -89,10 +90,10 @@ export function flatMapParallel<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, true> | TOut>,
+  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "parallel"> | TOut>,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(flatMapper);
-  return createParallel<T, TOut>({
+  return ParallelGenerator.create<T, TOut>({
     generator,
     parallel,
     async onNext(next) {

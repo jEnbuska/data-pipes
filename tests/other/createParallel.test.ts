@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
-import { createParallel } from "../../src/generators/createParallel.ts";
+import { ParallelGenerator } from "../../src/generators/ParallelGenerator.ts";
 import { ParallelYielded } from "../../src/generators/ParallelYielded.ts";
-import { delayValue } from "../utils/delayValue.ts";
+import { delay } from "../utils/delay.ts";
 import { MockIYieldedParallelGenerator } from "../utils/MockIYieldedParallelGenerator.ts";
 
 describe("YieldedParallelGenerator", () => {
   describe("handleNext YIELD", () => {
     test("empty generator, parallel 1", async () => {
-      const generator = createParallel({
+      const generator = ParallelGenerator.create({
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
         onNext() {
@@ -18,7 +18,7 @@ describe("YieldedParallelGenerator", () => {
       expect(result.done).toBe(true);
     });
     test("empty generator, parallel 3", async () => {
-      const generator = createParallel({
+      const generator = ParallelGenerator.create({
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
         onNext() {
@@ -30,7 +30,7 @@ describe("YieldedParallelGenerator", () => {
     });
 
     test("generator with one sync, parallel 1", async () => {
-      const generator = createParallel<number>({
+      const generator = ParallelGenerator.create<number>({
         generator: MockIYieldedParallelGenerator([1]),
         parallel: 1,
         onNext(next) {
@@ -46,7 +46,7 @@ describe("YieldedParallelGenerator", () => {
 
     test("generator with 5 sync, parallel 1", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
-      const generator = createParallel<number>({
+      const generator = ParallelGenerator.create<number>({
         generator: MockIYieldedParallelGenerator(values),
         parallel: 1,
         onNext(next) {
@@ -64,7 +64,7 @@ describe("YieldedParallelGenerator", () => {
 
     test("generator with 5 sync, parallel 5", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
-      const generator = createParallel<number>({
+      const generator = ParallelGenerator.create<number>({
         generator: MockIYieldedParallelGenerator(values),
         parallel: 5,
         onNext(next) {
@@ -88,7 +88,7 @@ describe("YieldedParallelGenerator", () => {
       [4, 200],
       [5, 400],
     ] as const;
-    const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
+    const input = inputTemplate.map(([v, ms]) => delay(v, ms));
 
     test("generator with 5 async, parallel 5", async () => {
       const inputTemplate = [
@@ -98,11 +98,11 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,
-        createParallel<number>({
+        ParallelGenerator.create<number>({
           generator: mock,
           parallel: 5,
           onNext(next) {
@@ -126,11 +126,11 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,
-        createParallel<number>({
+        ParallelGenerator.create<number>({
           generator: mock,
           parallel: 3,
           onNext(next) {
@@ -149,11 +149,11 @@ describe("YieldedParallelGenerator", () => {
         [4, 200],
         [5, 400],
       ] as const;
-      const input = inputTemplate.map(([v, ms]) => delayValue(v, ms));
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
       const mock = MockIYieldedParallelGenerator(input);
       const array = await new ParallelYielded(
         mock,
-        createParallel<number>({
+        ParallelGenerator.create<number>({
           generator: mock,
           parallel: 2,
           onNext(next) {

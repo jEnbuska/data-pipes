@@ -1,4 +1,4 @@
-import { ThrottleQueueItem } from "./types.ts";
+import type { ThrottleQueueItem } from "./types.ts";
 
 export function throttleParallel<TArgs extends any[], TReturn>(
   cb: (...args: TArgs) => Promise<TReturn>,

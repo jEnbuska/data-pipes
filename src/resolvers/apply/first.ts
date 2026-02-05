@@ -1,19 +1,20 @@
 import type {
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
 import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedFirst<T, TAsync extends boolean> {
+export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the first item produced by the generator.
    *
    * Iteration stops as soon as the first item is produced, so the generator
    * is **not fully consumed**.
    * If the generator produces no items, `undefined` is returned. */
-  first(): ReturnValue<T | undefined, TAsync>;
+  first(): ReturnValue<T | undefined, TFlow>;
 }
 
 export function firstSync<T>(generator: IYieldedIterator<T>) {

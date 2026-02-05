@@ -1,14 +1,15 @@
 import type {
   ICallbackReturn,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel";
+import { resolveParallel } from "../resolveParallel.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
-export interface IYieldedToSorted<T, TAsync extends boolean> {
+export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
   /**
    * Returns the items produced by the generator in sorted order as a new array.
    *
@@ -26,8 +27,8 @@ export interface IYieldedToSorted<T, TAsync extends boolean> {
    * - returns `0` to keep their relative order
    * */
   toSorted(
-    compare: (previous: T, next: T) => ICallbackReturn<number, TAsync>,
-  ): ReturnValue<T[], TAsync>;
+    compare: (previous: T, next: T) => ICallbackReturn<number, TFlow>,
+  ): ReturnValue<T[], TFlow>;
 }
 
 function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
@@ -36,7 +37,7 @@ function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
       return low;
     }
     const mid = Math.floor((low + high) / 2);
-    const diff = comparator(next, arr[mid]);
+    const diff = comparator(next, arr[mid]!);
     if (diff < 0) {
       return findIndex(next, low, mid - 1);
     }
@@ -106,7 +107,7 @@ export function createIndexFinderAsync<T>(
       return low;
     }
     const mid = Math.floor((low + high) / 2);
-    const diff = await comparator(next, arr[mid]);
+    const diff = await comparator(next, arr[mid]!);
     if (diff < 0) {
       return findIndexAsync(next, low, mid - 1);
     }

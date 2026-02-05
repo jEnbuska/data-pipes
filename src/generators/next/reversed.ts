@@ -1,12 +1,13 @@
 import type {
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { createParallel } from "../createParallel.ts";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedReverse<T, TAsync extends boolean> {
+export interface IYieldedReverse<T, TFlow extends IYieldedFlow> {
   /**
    * Yields the items produced by the generator in reverse order.
    *
@@ -25,7 +26,7 @@ export interface IYieldedReverse<T, TAsync extends boolean> {
    *   .toArray() satisfies string[] // ['c', 'b', 'a']
    * ```
    */
-  reversed(): INextYielded<T, TAsync>;
+  reversed(): INextYielded<T, TFlow>;
 }
 
 export function* reversedSync<T>(
@@ -53,7 +54,7 @@ export function reversedParallel<T>(
   parallel: number,
 ): IYieldedParallelGenerator<T> {
   const acc: Array<Promise<T>> = [];
-  return createParallel<T>({
+  return ParallelGenerator.create<T>({
     generator,
     parallel,
     onNext(next) {

@@ -2,13 +2,14 @@ import type {
   ICallbackReturn,
   INextYielded,
   IYieldedAsyncGenerator,
+  IYieldedFlow,
   IYieldedIterator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { createParallel } from "../createParallel";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
 
-export interface IYieldedTakeWhile<T, TAsync extends boolean> {
+export interface IYieldedTakeWhile<T, TFlow extends IYieldedFlow> {
   /**
    * Yields items produced by the generator **while the predicate returns `true`**
    * to the next operation in the pipeline.
@@ -30,8 +31,8 @@ export interface IYieldedTakeWhile<T, TAsync extends boolean> {
    * ```
    */
   takeWhile(
-    fn: (next: T) => ICallbackReturn<boolean, TAsync>,
-  ): INextYielded<T, TAsync>;
+    fn: (next: T) => ICallbackReturn<boolean, TFlow>,
+  ): INextYielded<T, TFlow>;
 }
 
 export function* takeWhileSync<T>(
@@ -59,7 +60,7 @@ export function takeWhileParallel<T>(
   parallel: number,
   predicate: (next: T) => MaybeAsync<boolean>,
 ): IYieldedParallelGenerator<T> {
-  return createParallel<T>({
+  return ParallelGenerator.create<T>({
     generator,
     parallel,
     async onNext(next) {
