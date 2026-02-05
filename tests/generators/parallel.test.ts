@@ -36,7 +36,7 @@ describe("parallel", () => {
     "Parallel to awaited",
     async () => {
       const tapped: number[] = [];
-      void (await Yielded.from([300, 200, 100, 0])
+      void ((await Yielded.from([300, 200, 100, 0])
         .tap((n) => console.log("tap (0)", n))
         .awaited()
         .tap((n) => console.log("tap (1)", n))
@@ -52,7 +52,7 @@ describe("parallel", () => {
           return sleep(400 - index * 50).then(() => it);
         })
         // .tap((value) => console.log("got", value))
-        .toArray()) satisfies number[];
+        .toArray()) satisfies number[]);
       console.log("tapped", tapped);
       expect(tapped).toStrictEqual([0, 100, 200, 300]);
     },
