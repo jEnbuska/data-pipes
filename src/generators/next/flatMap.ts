@@ -9,10 +9,10 @@ import type {
   MaybeAsync,
 } from "../../shared.types";
 import {
-  asyncIterableSourceToAsyncIterable,
-  isAsyncIterableSource,
-  isIterableSource,
-  iterableSourceToIterable,
+  asyncIterableProviderToAsyncIterable,
+  isAsyncIterableProvider,
+  isIterableProvider,
+  iterableProviderToIterable,
 } from "../../utils/iteration.ts";
 import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
@@ -64,8 +64,8 @@ export function* flatMapSync<T, TOut>(
   let index = 0;
   for (const next of generator) {
     const out = flatMapper(next, index++);
-    if (isIterableSource<TOut>(out)) {
-      yield* iterableSourceToIterable<TOut>(out);
+    if (isIterableProvider<TOut>(out)) {
+      yield* iterableProviderToIterable<TOut>(out);
     } else {
       yield out;
     }
@@ -84,10 +84,12 @@ export async function* flatMapAsync<T, TOut>(
   let index = 0;
   for await (const next of generator) {
     const out = await flatMapper(next, index++);
-    if (isIterableSource<TOut>(out)) {
-      yield* iterableSourceToIterable<TOut>(out);
-    } else if (isAsyncIterableSource<TOut>(out)) {
-      for await (const item of asyncIterableSourceToAsyncIterable<TOut>(out)) {
+    if (isIterableProvider<TOut>(out)) {
+      yield* iterableProviderToIterable<TOut>(out);
+    } else if (isAsyncIterableProvider<TOut>(out)) {
+      for await (const item of asyncIterableProviderToAsyncIterable<TOut>(
+        out,
+      )) {
         yield item;
       }
     } else {
@@ -112,7 +114,7 @@ export function flatMapParallel<T, TOut>(
     parallel,
     async onNext(next) {
       const res = await callback(next);
-      if (isAsyncIterableSource<TOut>(res)) return res;
+      if (isAsyncIterableProvider<TOut>(res)) return res;
       return [res];
     },
   });

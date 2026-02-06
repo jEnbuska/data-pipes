@@ -6,7 +6,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../shared.types.ts";
-import { parallelIterableSourceToAsyncIterable } from "../utils/iteration.ts";
+import { parallelIterableProviderToAsyncIterable } from "../utils/iteration.ts";
 import { throttle } from "../utils/throttle.ts";
 import { assertIsValidParallel } from "./parallelUtils.ts";
 
@@ -21,7 +21,7 @@ type BufferedProvider<TOut> = () => Promise<IteratorYieldResult<TOut>>;
 function createBufferedProvider<TOut>(
   value: Exclude<ParallelCallbackReturn<TOut>, void | null>,
 ): BufferedProvider<TOut> {
-  const iterator = parallelIterableSourceToAsyncIterable(value);
+  const iterator = parallelIterableProviderToAsyncIterable(value);
   return async () => {
     const next = await iterator.next();
     if (next.done) return undefined;

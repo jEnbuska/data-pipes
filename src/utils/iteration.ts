@@ -1,21 +1,21 @@
 import type { IYieldedIterableSource } from "../resolvers/resolver.types.ts";
 import type { MaybeAsync } from "../shared.types.ts";
 
-export function isAsyncIterableSource<T>(
+export function isAsyncIterableProvider<T>(
   value: unknown,
 ): value is IYieldedIterableSource<T, "async"> {
-  if (isIterableSource(value)) return true;
+  if (isIterableProvider(value)) return true;
   return (
     Boolean(value) &&
     typeof (value as AsyncIterable<any>)[Symbol.asyncIterator] === "function"
   );
 }
 
-export function asyncIterableSourceToAsyncIterable<T>(
+export function asyncIterableProviderToAsyncIterable<T>(
   value: IYieldedIterableSource<T, "async">,
 ): AsyncIterable<T> | Iterable<T> {
-  if (isIterableSource<T>(value)) {
-    return iterableSourceToIterable<T>(value);
+  if (isIterableProvider<T>(value)) {
+    return iterableProviderToIterable<T>(value);
   }
   if (
     typeof (value as AsyncIterable<any>)[Symbol.asyncIterator] === "function"
@@ -34,7 +34,7 @@ export function asyncIterableSourceToAsyncIterable<T>(
     },
   };
 }
-export function isIterableSource<T>(
+export function isIterableProvider<T>(
   value: unknown,
 ): value is IYieldedIterableSource<T, "sync"> {
   if (!value || typeof value !== "object") return false;
@@ -42,7 +42,7 @@ export function isIterableSource<T>(
   return typeof (value as Iterable<any>)[Symbol.iterator] === "function";
 }
 
-export function iterableSourceToIterable<T>(
+export function iterableProviderToIterable<T>(
   value: IYieldedIterableSource<T, "sync">,
 ): Iterable<T> {
   if (typeof (value as Iterable<any>)[Symbol.iterator] === "function") {
@@ -59,8 +59,8 @@ export function iterableSourceToIterable<T>(
   };
 }
 
-export function parallelIterableSourceToAsyncIterable<TOut>(
-  value: IYieldedIterableSource<TOut, "async">,
+export function parallelIterableProviderToAsyncIterable<TOut>(
+  value: IYieldedIterableSource<TOut, "parallel">,
 ): AsyncIterator<MaybeAsync<TOut>> | Iterator<MaybeAsync<TOut>> {
   if ("next" in value && typeof (value as any).next === "function") {
     return value as AsyncIterator<TOut> | Iterator<TOut>;
