@@ -46,10 +46,10 @@ export function throttle<TArgs extends any[], TReturn>(
       count() {
         return active;
       },
-      async all(): Promise<Array<Awaited<TReturn>>> {
+      async all() {
         while (true) {
-          const promise = await Promise.all(inFlight);
-          if (isIdle()) return promise;
+          await Promise.all(inFlight);
+          if (isIdle()) return;
         }
       },
       isIdle,

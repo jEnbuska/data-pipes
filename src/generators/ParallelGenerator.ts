@@ -1,5 +1,10 @@
 import { DONE } from "../constants.ts";
-import type { IYieldedParallelGenerator, MaybeAsync } from "../shared.types.ts";
+import type {
+  IYieldedFlow,
+  IYieldedGenerator,
+  IYieldedParallelGenerator,
+  MaybeAsync,
+} from "../shared.types.ts";
 import { throttle } from "../utils/throttle.ts";
 import { assertIsValidParallel } from "./parallelUtils.ts";
 
@@ -53,9 +58,10 @@ type ParallelGeneratorOnNext<T, TOut> = (
 type ParallelGeneratorOnDone<TOut> = () =>
   | Promise<ExpandResult<MaybeAsync<TOut>>>
   | ExpandResult<MaybeAsync<TOut>>;
+
 export type ParallelGeneratorArguments<T, TOut> = {
-  generator: IYieldedParallelGenerator<T>;
-  onNext: ParallelGeneratorOnNext<T, TOut>;
+  generator: IYieldedGenerator<T, IYieldedFlow>;
+  onNext?: ParallelGeneratorOnNext<T, TOut>;
   onDone?: ParallelGeneratorOnDone<TOut>;
   onNextParallel?: number;
   parallel: number;
@@ -84,16 +90,28 @@ export class ParallelGenerator<
   readonly #generator: IYieldedParallelGenerator<T>;
 
   static create<T, TOut = T>(
-    options: ParallelGeneratorArguments<T, TOut>,
+    options:
+      | ParallelGeneratorArguments<T, TOut>
+      | Omit<ParallelGeneratorArguments<T, TOut>, "onNext" | "onNextParallel">,
   ): IYieldedParallelGenerator<TOut> {
-    const { generator, parallel, onNextParallel, onNext, onDone } = options;
+    const {
+      generator,
+      parallel,
+      onNextParallel,
+      onNext = ParallelGenerator.#defaultOnNext,
+      onDone,
+    } = options as any;
     return new ParallelGenerator<T, TOut>(
       generator,
       parallel,
       onNext,
       onDone,
       onNextParallel,
-    ) as any;
+    );
+  }
+
+  static #defaultOnNext(value: Promise<unknown>) {
+    return [value];
   }
 
   private constructor(
@@ -104,7 +122,12 @@ export class ParallelGenerator<
     onNextParallel = parallel,
   ) {
     parallel = Math.floor(parallel);
+    onNextParallel = Math.floor(onNextParallel);
     assertIsValidParallel(parallel);
+    assertIsValidParallel(onNextParallel);
+    if (onNextParallel > parallel) {
+      throw new Error("onNextParallel cannot be greater than parallel");
+    }
     this.#generator = generator;
     this.#onNext = onNext;
     this.#onNext = throttle(onNextParallel, onNext);
@@ -142,7 +165,7 @@ export class ParallelGenerator<
         if (this.#state === "aborted") return;
         this.#state = state;
         this.#abortResolvable.reject(new Error("Aborted"));
-        void this.#generator.return();
+        void this.#generator.return?.();
         this.#buffer.length = 0;
         break;
       }
@@ -159,7 +182,6 @@ export class ParallelGenerator<
         case "done": {
           await this.#doneResolvable.promise;
           const buffered = await this.#getNextFromBuffer();
-          console.log("buffered", buffered);
           return buffered ?? DONE;
         }
         case "running": {
@@ -206,7 +228,7 @@ export class ParallelGenerator<
       if (next.done) {
         return this.#handleDone();
       }
-      const result = await this.#registerWork(this.#onNext(next.value));
+      const result = await this.#registerWork(this.#onNext?.(next.value));
       if (!result) {
         void this.#generator.return?.();
         return this.#handleDone();

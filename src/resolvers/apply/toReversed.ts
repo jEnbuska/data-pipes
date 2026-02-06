@@ -4,7 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedToReversed<T, TFlow extends IYieldedFlow> {
@@ -50,7 +50,7 @@ export function toReversedParallel<T>(
   parallel: number,
 ): Promise<T[]> {
   const arr: T[] = [];
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     parallel,
     generator,
     onNext(value) {

@@ -16,7 +16,7 @@ import { flatAsync } from "./next/flat.ts";
 import { flatMapAsync } from "./next/flatMap.ts";
 import { liftAsync } from "./next/lift.ts";
 import { mapAsync } from "./next/map.ts";
-import { generatorToParallel } from "./next/parallel.ts";
+import { parallel } from "./next/parallel.ts";
 import { reversedAsync } from "./next/reversed.ts";
 import { sortedAsync } from "./next/sorted.ts";
 import { takeAsync } from "./next/take.ts";
@@ -161,10 +161,10 @@ export class AsyncYielded<T>
     return this.#next(sortedAsync, ...args);
   }
 
-  parallel(parallelCount: number): IParallelYielded<T> {
-    return new ParallelYielded<T>(
+  parallel(parallelCount: number): IParallelYielded<Awaited<T>> {
+    return new ParallelYielded<Awaited<T>>(
       this.generator,
-      generatorToParallel(this.generator, parallelCount),
+      parallel(this.generator, parallelCount),
       parallelCount,
     );
   }

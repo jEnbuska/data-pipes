@@ -5,7 +5,8 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel.ts";
+import { throttle } from "../../utils/throttle.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
@@ -106,19 +107,23 @@ export function reduceParallel(
   let hasAcc = !!rest.length;
   if (hasAcc) acc = Promise.resolve(rest[0]);
   let index = 0;
-  return resolveParallel({
+  const handleReduce = throttle(1, async function handleReduce(value: unknown) {
+    if (!hasAcc) {
+      acc = value;
+      hasAcc = true;
+      return;
+    }
+    acc = await reducer(await acc, value, index++);
+  });
+  return ParallelGeneratorResolver.run({
     generator,
     parallel,
-    chokeOnNext: true,
+    onNextParallel: 1,
     async onNext(value) {
-      if (!hasAcc) {
-        acc = value;
-        hasAcc = true;
-        return;
-      }
-      acc = await reducer(await acc, value, index++);
+      void handleReduce(value);
     },
-    onDone(resolve) {
+    async onDone(resolve) {
+      await handleReduce.all();
       resolve(acc);
     },
   });

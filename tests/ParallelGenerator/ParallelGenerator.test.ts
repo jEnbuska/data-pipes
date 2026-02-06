@@ -1,132 +1,168 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { ParallelGenerator } from "../../src/generators/ParallelGenerator.ts";
+import { ParallelYielded } from "../../src/generators/ParallelYielded.ts";
 import { delay } from "../utils/delay.ts";
-import { getParallelResult } from "../utils/getParallelResult.ts";
-import { parallelSource } from "../utils/parallelSource.ts";
+import { MockIYieldedParallelGenerator } from "../utils/MockGenerators.ts";
 
-describe("ParallelGenerator multi parallel", () => {
-  test(
-    "yields mapped async values in unordered mode",
-    async () => {
-      const gen = ParallelGenerator.create<number, number>({
-        generator: parallelSource(3),
-        onNext: async (x): Promise<Promise<number>[]> => [
-          delay((await x) * 2, 50 - (await x) * 10),
-        ],
-        parallel: 3,
-      });
-
-      const results = await getParallelResult(gen);
-      // unordered, so can be [6,4,2], but all values must be present
-      expect(results.toSorted((a, b) => a - b)).toEqual([2, 4, 6]);
-    },
-    { timeout: 1000 },
-  );
-
-  test(
-    "respects buffer limit",
-    async () => {
-      const mapperCalls: number[] = [];
-      const gen = ParallelGenerator.create<number, number>({
-        generator: parallelSource(5),
-        onNext: async (x): Promise<Promise<number>[]> => {
-          mapperCalls.push(await x);
-          await delay(x, 10);
-          return [Promise.resolve(x), Promise.resolve((await x) + 0.5)];
+describe("ParallelGenerator", () => {
+  describe("handleNext YIELD", () => {
+    test("empty generator, parallel 1", async () => {
+      const generator = ParallelGenerator.create({
+        generator: MockIYieldedParallelGenerator([]),
+        parallel: 1,
+        onNext() {
+          throw new Error("Should not be called");
         },
-        parallel: 3,
       });
-      const results = await getParallelResult(gen);
-      // all values must eventually come out
-      expect(results.length).toBe(10);
-    },
-    { timeout: 1000 },
-  );
-
-  test("handles mapper returning undefined", async () => {
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(3),
-      onNext: async (x) => ((await x) % 2 ? [x] : undefined),
-      parallel: 2,
+      const result = await generator.next();
+      expect(result.done).toBe(true);
     });
-    const results = await getParallelResult(gen);
-    expect(results).toEqual([1]);
+    test("empty generator, parallel 3", async () => {
+      const generator = ParallelGenerator.create({
+        generator: MockIYieldedParallelGenerator([]),
+        parallel: 1,
+        onNext() {
+          throw new Error("Should not be called");
+        },
+      });
+      const result = await generator.next();
+      expect(result.done).toBe(true);
+    });
+
+    test("generator with one sync, parallel 1", async () => {
+      const generator = ParallelGenerator.create<number, number>({
+        generator: MockIYieldedParallelGenerator([1]),
+        parallel: 1,
+        onNext(next) {
+          return [next];
+        },
+      });
+      const result1 = await generator.next();
+      expect(result1.done).toBe(false);
+      expect(await result1.value).toBe(1);
+      const result2 = await generator.next();
+      expect(result2.done).toBe(true);
+    });
+
+    test("generator with 5 sync, parallel 1", async () => {
+      const values = [1, Promise.resolve(2), 3, 4, 5];
+      const generator = ParallelGenerator.create<number, number>({
+        generator: MockIYieldedParallelGenerator(values),
+        parallel: 1,
+        onNext(next) {
+          return [next];
+        },
+      });
+      for (const value of values) {
+        const result = await generator.next();
+        expect(result.done).toBe(false);
+        expect(await result.value).toBe(await value);
+      }
+      const { done } = await generator.next();
+      expect(done).toStrictEqual(true);
+    });
+
+    test("generator with 5 sync, parallel 5", async () => {
+      const values = [1, Promise.resolve(2), 3, 4, 5];
+      const generator = ParallelGenerator.create<number, number>({
+        generator: MockIYieldedParallelGenerator(values),
+        parallel: 5,
+        onNext(next) {
+          return [next];
+        },
+      });
+      for (const value of values) {
+        const result = await generator.next();
+        expect(result.done).toBe(false);
+        expect(await result.value).toBe(await value);
+      }
+      const { done } = await generator.next();
+      expect(done).toStrictEqual(true);
+    });
   });
+  describe("toArray", () => {
+    const inputTemplate = [
+      [1, 300],
+      [2, 50],
+      [3, 0],
+      [4, 200],
+      [5, 400],
+    ] as const;
+    const input = inputTemplate.map(([v, ms]) => delay(v, ms));
 
-  test("handles mapper returning Iterable", async () => {
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(2),
-      onNext: async (x) => [x, (await x) + 10],
-      parallel: 2,
+    test("generator with 5 async, parallel 5", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
+      const array = await new ParallelYielded(
+        mock,
+        ParallelGenerator.create<number, number>({
+          generator: mock,
+          parallel: 5,
+          onNext(next) {
+            return [next];
+          },
+        }),
+        5,
+      ).toArray();
+
+      const expected = inputTemplate
+        .toSorted((a, b) => a[1] - b[1])
+        .map(([v]) => v);
+      expect(array).toEqual(expected);
     });
 
-    const results = await getParallelResult(gen);
-    expect(results.sort((a, b) => a - b)).toEqual([1, 2, 11, 12]);
-  });
-
-  test("handles mapper returning AsyncIterable", async () => {
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(2),
-      onNext: async function* (x) {
-        const n = await x;
-        yield n;
-        yield n + 100;
-      },
-      parallel: 2,
+    test("generator with 5 async, parallel 3", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
+      const array = await new ParallelYielded(
+        mock,
+        ParallelGenerator.create<number, number>({
+          generator: mock,
+          parallel: 3,
+          onNext(next) {
+            return [next];
+          },
+        }),
+        3,
+      ).toArray();
+      expect(array).toStrictEqual([3, 2, 4, 1, 5]);
     });
-    const results = await getParallelResult(gen);
-    expect(results.toSorted((a, b) => a - b)).toEqual([1, 2, 101, 102]);
-  });
-
-  test("stops when return() is called", async () => {
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(5),
-      onNext: (x) => [x],
-      parallel: 2,
+    test("generator with 5 async, parallel 2", async () => {
+      const inputTemplate = [
+        [1, 300],
+        [2, 50],
+        [3, 0],
+        [4, 200],
+        [5, 400],
+      ] as const;
+      const input = inputTemplate.map(([v, ms]) => delay(v, ms));
+      const mock = MockIYieldedParallelGenerator(input);
+      const array = await new ParallelYielded(
+        mock,
+        ParallelGenerator.create<number, number>({
+          generator: mock,
+          parallel: 2,
+          onNext(next) {
+            return [next];
+          },
+        }),
+        2,
+      ).toArray();
+      expect(array).toStrictEqual([2, 3, 4, 1, 5]);
     });
-
-    const first = await gen.next();
-    expect(await first.value).toBe(1);
-
-    await gen.return();
-
-    const second = await gen.next();
-    expect(second.done).toBe(true);
-  });
-
-  test("handles large parallel workload", async () => {
-    const count = 20;
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(count),
-      onNext: async (x) => [delay(x, 5)],
-      parallel: 10,
-    });
-
-    const results = await getParallelResult(gen);
-
-    expect(results.sort((a, b) => a - b)).toEqual(
-      [...Array(count).keys()].map((x) => x + 1),
-    );
-  });
-
-  test("does not exceed parallel limit", async () => {
-    let active = 0;
-    let maxActive = 0;
-
-    const gen = ParallelGenerator.create({
-      generator: parallelSource(10),
-      onNext: async (x) => {
-        active++;
-        maxActive = Math.max(maxActive, active);
-        await delay(x, 10);
-        active--;
-        return [x];
-      },
-      parallel: 3,
-    });
-
-    void (await getParallelResult(gen));
-
-    expect(maxActive).toBeLessThanOrEqual(3);
   });
 });

@@ -6,7 +6,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
@@ -101,7 +101,7 @@ export function groupByParallel(
   groups: PropertyKey[] = [],
 ) {
   const record = createInitialGroups(groups);
-  return resolveParallel({
+  return ParallelGeneratorResolver.run<unknown, unknown>({
     generator,
     parallel,
     async onNext(value) {

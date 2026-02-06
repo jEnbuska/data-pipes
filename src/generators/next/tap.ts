@@ -5,7 +5,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { withIndex1 } from "../../utils/withIndex";
+import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
 export interface IYieldedTap<T, TFlow extends IYieldedFlow> {

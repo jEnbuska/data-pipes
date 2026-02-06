@@ -6,10 +6,10 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { memoize } from "../../utils/memoize";
-import { getPlaceholder, isPlaceholder } from "../../utils/placeholder";
-import { withIndex1 } from "../../utils/withIndex";
-import { resolveParallel } from "../resolveParallel.ts";
+import { memoize } from "../../utils/memoize.ts";
+import { getPlaceholder, isPlaceholder } from "../../utils/placeholder.ts";
+import { withIndex1 } from "../../utils/withIndex.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
@@ -89,7 +89,7 @@ export function maxByParallel<T>(
   };
   const getAccValue = memoize(callback);
   let index = 0;
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     generator,
     parallel,
     async onNext(value) {

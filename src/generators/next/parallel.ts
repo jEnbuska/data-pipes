@@ -1,16 +1,16 @@
-import { DONE } from "../../constants";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { throttleParallel } from "../../utils/throttleParallel.ts";
 import type { IParallelYielded } from "../../yielded.types.ts";
-import { mapParallel } from "./map.ts";
+import { ParallelGenerator } from "../ParallelGenerator.ts";
+import { parallelToAwaited } from "./awaited.ts";
 
 export type IYieldedParallel<T> = {
   /**
    * Enables parallel processing for the **next asynchronous operation**.
+   * NOTE. Parallelization adds some overhead and only truly benefits operations that involve independent asynchronous work,
    *
    * By default, items are processed sequentially (one at a time).
    * Calling `parallel(count)` configures the pipeline so that the
@@ -38,56 +38,26 @@ export type IYieldedParallel<T> = {
    *  .parallel(3)
    *  .toArray() // Promise<[300, 10, 100, 450, 550]>
    */
-  parallel(count: number): IParallelYielded<T>;
+  parallel(count: number): IParallelYielded<Awaited<T>>;
 };
 
-export function generatorToParallel<T>(
+export function parallel<T>(
   generator: (IYieldedAsyncGenerator<T> | IYieldedIterator<T>) & Disposable,
   parallel: number,
-): IYieldedParallelGenerator<T> {
-  let done = false;
-  function onDone() {
-    done = true;
-    return DONE;
-  }
-  const getNext = throttleParallel(async function (): Promise<
-    IteratorResult<Promise<T>, void>
-  > {
-    if (done) return DONE;
-    const next = await generator.next();
-    if (done) return DONE;
-    if (next.done) return onDone();
-    console.log("generatorToParallel", next.value);
-    return {
-      value: Promise.resolve(next.value),
-    };
-  }, parallel);
-
-  return {
-    async [Symbol.asyncDispose]() {
-      onDone();
-    },
-    async next(): Promise<IteratorResult<Promise<T>, void>> {
-      if (done) return DONE;
-      return getNext();
-    },
-
-    async return() {
-      void generator.return?.();
-      return onDone();
-    },
-
-    async throw(error) {
-      void generator.throw?.(error);
-      return onDone();
-    },
-  };
+): IYieldedParallelGenerator<Awaited<T>> {
+  return ParallelGenerator.create<T, Awaited<T>>({
+    parallel,
+    generator,
+  });
 }
 
-// change to number of parallel downstream
-export function parallelThrottleUpdate<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-): IYieldedParallelGenerator<T> {
-  return mapParallel(generator, parallel, (next) => next);
+export function parallelUpdate<T>(
+  generator: IYieldedParallelGenerator<T> & Disposable,
+  currentParallel: number,
+  nextParallel: number,
+): IYieldedParallelGenerator<Awaited<T>> {
+  return ParallelGenerator.create<T, Awaited<T>>({
+    parallel: nextParallel,
+    generator: parallelToAwaited(generator, currentParallel),
+  });
 }

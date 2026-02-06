@@ -1,5 +1,5 @@
 import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
-import { MockIYieldedParallelGenerator } from "./MockIYieldedParallelGenerator.ts";
+import { MockIYieldedParallelGenerator } from "./MockGenerators.ts";
 
 export function parallelSource(
   count: number,

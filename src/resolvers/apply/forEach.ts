@@ -3,7 +3,7 @@ import type {
   IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedForEach<T, TFlow extends IYieldedFlow> {
@@ -44,7 +44,7 @@ export function forEachParallel<T>(
   callback: (next: T, index: number) => unknown,
 ): Promise<void> {
   let index = 0;
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     generator,
     parallel,
     onNext(value) {

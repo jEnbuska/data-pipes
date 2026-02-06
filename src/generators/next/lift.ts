@@ -79,7 +79,6 @@ export async function* liftAsync<T, TOut>(
 
 export function liftParallel<T, TOut>(
   generator: IYieldedParallelGenerator<T> & Disposable,
-  parallel: number,
   middleware: (
     generator: IYieldedParallelGenerator<T>,
   ) => IYieldedParallelGenerator<TOut>,

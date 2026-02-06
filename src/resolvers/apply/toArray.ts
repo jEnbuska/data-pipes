@@ -3,7 +3,7 @@ import type {
   IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
 export interface IYieldedToArray<T, TFlow extends IYieldedFlow> {
@@ -31,7 +31,7 @@ export function toArrayParallel<T>(
   parallel: number,
 ): Promise<T[]> {
   const arr: T[] = [];
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     generator,
     parallel,
     onNext(value) {

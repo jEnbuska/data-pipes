@@ -6,7 +6,8 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { resolveParallel } from "../resolveParallel.ts";
+import { throttle } from "../../utils/throttle.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
@@ -80,15 +81,18 @@ export function toSortedParallel<T>(
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
-  return resolveParallel({
+  const handleSort = throttle(1, async function handleSort(value: T) {
+    const index = await findIndex(value);
+    arr.splice(index, 0, value);
+  });
+  return ParallelGeneratorResolver.run<T, T[]>({
     generator,
     parallel,
-    chokeOnNext: true,
-    async onNext(value) {
-      const index = await findIndex(value);
-      arr.splice(index, 0, value);
+    onNext(value) {
+      void handleSort(value);
     },
-    onDone(resolve) {
+    async onDone(resolve) {
+      await handleSort.all();
       resolve(arr);
     },
   });

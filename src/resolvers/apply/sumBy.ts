@@ -5,7 +5,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedSumBy<T, TFlow extends IYieldedFlow> {
@@ -51,7 +51,7 @@ export function sumByParallel<T>(
   mapper: (next: T) => MaybeAsync<number>,
 ): Promise<number> {
   let acc = 0;
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     generator,
     parallel,
     async onNext(value) {

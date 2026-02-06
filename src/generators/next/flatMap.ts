@@ -8,7 +8,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { withIndex1 } from "../../utils/withIndex";
+import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
 export interface IYieldedFlatMap<T, TFlow extends IYieldedFlow> {

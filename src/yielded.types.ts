@@ -27,7 +27,8 @@ export interface IYielded<T>
   extends
     IYieldedOperations<T, "sync">,
     IYieldedResolver<T>,
-    IYieldedAwaited<T> {}
+    IYieldedAwaited<T>,
+    IYieldedParallel<T> {}
 
 export interface IAsyncYielded<T>
   extends

@@ -3,7 +3,7 @@ import type {
   IYieldedFlow,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedToSet<T, TFlow extends IYieldedFlow> {
@@ -25,7 +25,7 @@ export function toSetParallel<T>(
   const set = new Set<T>();
   const add = set.add.bind(set);
 
-  return resolveParallel<T, Set<T>>({
+  return ParallelGeneratorResolver.run<T, Set<T>>({
     generator,
     parallel,
     onNext(value) {

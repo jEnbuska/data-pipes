@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { Yielded } from "../../src/index.ts";
 import { createTestSets } from "../utils/createTestSets.ts";
 import { simpleMock } from "../utils/simpleMock.ts";

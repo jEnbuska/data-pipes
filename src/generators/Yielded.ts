@@ -1,7 +1,11 @@
 import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
 import { YieldedResolver } from "../resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "../shared.types.ts";
-import type { IAsyncYielded, IYielded } from "../yielded.types.ts";
+import type {
+  IAsyncYielded,
+  IParallelYielded,
+  IYielded,
+} from "../yielded.types.ts";
 import { AsyncYielded } from "./AsyncYielded.ts";
 import { syncToAwaited } from "./next/awaited.ts";
 import { batchSync } from "./next/batch.ts";
@@ -10,12 +14,14 @@ import { dropLastSync } from "./next/dropLast.ts";
 import { flatSync } from "./next/flat.ts";
 import { flatMapSync } from "./next/flatMap.ts";
 import { liftSync } from "./next/lift.ts";
+import { parallel } from "./next/parallel.ts";
 import { reversedSync } from "./next/reversed.ts";
 import { sortedSync } from "./next/sorted.ts";
 import { takeSync } from "./next/take.ts";
 import { takeLastSync } from "./next/takeLast.ts";
 import { takeWhileSync } from "./next/takeWhile.ts";
 import { tapSync } from "./next/tap.ts";
+import { ParallelYielded } from "./ParallelYielded.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
@@ -164,7 +170,10 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   }
 
   awaited(): IAsyncYielded<Awaited<T>> {
-    return new AsyncYielded(this.generator, syncToAwaited(this.generator));
+    return new AsyncYielded<Awaited<T>>(
+      this.generator,
+      syncToAwaited(this.generator),
+    );
   }
 
   reversed() {
@@ -173,5 +182,13 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
 
   sorted(...args: Parameters<IYielded<T>["sorted"]>) {
     return this.#next(sortedSync, ...args);
+  }
+
+  parallel(count: number): IParallelYielded<Awaited<T>> {
+    return new ParallelYielded<Awaited<T>>(
+      this.generator,
+      parallel(this.generator, count),
+      count,
+    );
   }
 }

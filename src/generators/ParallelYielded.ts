@@ -18,7 +18,7 @@ import { flatParallel } from "./next/flat.ts";
 import { flatMapParallel } from "./next/flatMap.ts";
 import { liftParallel } from "./next/lift.ts";
 import { mapParallel } from "./next/map.ts";
-import { parallelThrottleUpdate } from "./next/parallel.ts";
+import { parallelUpdate } from "./next/parallel.ts";
 import { reversedParallel } from "./next/reversed.ts";
 import { sortedParallel } from "./next/sorted.ts";
 import { takeParallel } from "./next/take.ts";
@@ -132,16 +132,8 @@ export class ParallelYielded<T>
   lift<TOut>(middleware: any): IParallelYielded<TOut> {
     return new ParallelYielded<TOut>(
       this.generator,
-      liftParallel(this.generator, this._parallel, middleware),
+      liftParallel(this.generator, middleware),
       this._parallel,
-    ) as any;
-  }
-
-  parallel(parallel: number): IParallelYielded<T> {
-    return new ParallelYielded<T>(
-      this.generator,
-      parallelThrottleUpdate(this.generator, this._parallel),
-      parallel,
     );
   }
 
@@ -149,6 +141,14 @@ export class ParallelYielded<T>
     return new AsyncYielded<Awaited<T>>(
       this.generator,
       parallelToAwaited(this.generator, this._parallel),
+    );
+  }
+
+  parallel(count: number): IParallelYielded<Awaited<T>> {
+    return new ParallelYielded(
+      this.generator,
+      parallelUpdate(this.generator, this._parallel, count),
+      count,
     );
   }
 }

@@ -4,7 +4,7 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types.ts";
-import { resolveParallel } from "../resolveParallel.ts";
+import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types.ts";
 
 export interface IYieldedLast<T, TFlow extends IYieldedFlow> {
@@ -47,7 +47,7 @@ export function lastParallel<T>(
   parallel: number,
 ): Promise<T | undefined> {
   let last: T | undefined;
-  return resolveParallel({
+  return ParallelGeneratorResolver.run({
     parallel,
     generator,
     onNext(value) {

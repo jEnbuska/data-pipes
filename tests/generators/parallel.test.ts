@@ -1,61 +1,86 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { Yielded } from "../../src/index.ts";
-import { sleep } from "../utils/sleep.ts";
+import { delay } from "../utils/delay.ts";
 
 describe("parallel", () => {
-  test(
-    "Parallel with empty list",
-    async () => {
-      const result = (await Yielded.from([] as number[])
-        .awaited()
-        .parallel(2)
-        .toArray()) satisfies number[];
-      expect(result).toStrictEqual([]);
-    },
-    { timeout: 100 },
-  );
-  test("Parallel with all at once", async () => {
-    const result = await (Yielded.from([500, 404, 100, 300, 200])
+  test("Parallel 2, 0 values", async () => {
+    const result = (await Yielded.from([] as number[])
+      .parallel(2)
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([]);
+  });
+
+  test("Parallel to awaited", async () => {
+    const result = (await Yielded.from([120, 250, 50, 50, 50] as number[])
+      .parallel(3)
+      .map((it) => delay(it, it))
       .awaited()
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([50, 50, 120, 50, 250]);
+  });
+
+  test("Parallel awaited to parallel", async () => {
+    const result = (await Yielded.from([120, 250, 50, 50, 50] as number[])
+      .parallel(3)
+      .map((it) => delay(it, it))
+      .awaited()
+      .parallel(3)
+      .map((it) => delay(it, it))
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([50, 50, 50, 120, 250]);
+  });
+
+  test("Parallel to parallel", async () => {
+    const result = (await Yielded.from([120, 250, 50, 50, 50] as number[])
+      .parallel(3)
+      .map((it) => delay(it, it))
+      .parallel(3)
+      .map((it) => delay(it, it))
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([50, 50, 50, 120, 250]);
+  });
+  test("Parallel 5, 5 values", async () => {
+    const result = await (Yielded.from([500, 404, 100, 300, 200])
+      .map((it) => delay(it, it))
       .parallel(5)
-      .map((it) => sleep(it).then(() => it))
       .toArray() satisfies Promise<number[]>);
     expect(result).toStrictEqual([100, 200, 300, 404, 500]);
   });
 
-  test("Parallel with 3 parallel count", async () => {
+  test("Parallel 3, 5 values", async () => {
     const result = (await Yielded.from([550, 450, 300, 10, 100])
-      .awaited()
       .parallel(3)
-      .map(async (it) => sleep(it).then(() => it))
+      .map((it) => delay(it, it))
+      // 550 (0),   450(0),     300(0)    -> 300
+      // 550 (250), 450 (150),  10 (10)   -> 10
+      // 550 (240), 450 (140),  100 (100) -> 100
+      // 550 (140), 450 (40)              -> 450
+      // 550 (100)                        -> 550
+      // [300, 10, 100, 450, 550]
+
       .toArray()) satisfies number[];
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
 
-  test.only(
-    "Parallel to awaited",
-    async () => {
-      const tapped: number[] = [];
-      void ((await Yielded.from([300, 200, 100, 0])
-        .tap((n) => console.log("tap (0)", n))
+  test("Parallel 2, 5 values", async () => {
+    const result = (await Yielded.from([550, 450, 300, 10, 50])
+      .parallel(2)
+      .map((it) => delay(it, it))
+      .toArray()) satisfies number[];
+    expect(result).toStrictEqual([450, 550, 10, 50, 300]);
+  });
+
+  describe("Parallel to awaited", () => {
+    test("Parallel 3, 5 values to awaited", async () => {
+      const result = (await Yielded.from([300, 10, 100, 450, 550])
+        .parallel(3)
         .awaited()
-        .tap((n) => console.log("tap (1)", n))
-        .parallel(5)
-        .tap((n) => console.log("tap (2)", n))
-        .map(async (it) => sleep(it).then(() => it))
-        .tap((n) => console.log("tap (3)", n))
-        .tap((n) => {
-          tapped.push(n);
-        })
-        .parallel(1)
-        .map(async (it, index) => {
-          return sleep(400 - index * 50).then(() => it);
-        })
-        // .tap((value) => console.log("got", value))
-        .toArray()) satisfies number[]);
-      console.log("tapped", tapped);
-      expect(tapped).toStrictEqual([0, 100, 200, 300]);
-    },
-    { timeout: 4000 },
-  );
+        .map((it) => delay(it, it))
+        .toArray()) satisfies number[];
+      expect(result).toStrictEqual([300, 10, 100, 450, 550]);
+    });
+  });
+
+  // parallel to awaited
+  // parallel count update
 });

@@ -17,13 +17,12 @@
     "validate": "tsc --noEmit",
     "validate:watch": "tsc --watch",
     "build": "bun build ./src --outdir ./dist",
-    "test": "bun test",
-    "test:watch": "bun test --watch",
+    "test": "vitest test",
+    "test:watch": "vitest --watch",
     "lint": "eslint --ext .ts --max-warnings 0 ./src",
     "lint:fix": "eslint --fix --ext .ts ./src",
     "prettier": "prettier --check ./src",
-    "prettier:write": "prettier --write ./src",
-    "temp": "tsc -p tsconfig.json src/temp.ts"
+    "prettier:write": "prettier --write ./src"
   },
   "devDependencies": {
     "@tsconfig/node24": "^24.0.4",
@@ -37,6 +36,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

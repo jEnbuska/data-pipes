@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { throttle } from "../../src/utils/throttle.ts";
 import { delay } from "../utils/delay.ts";
 
