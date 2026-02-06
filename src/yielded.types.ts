@@ -8,6 +8,7 @@ import type { IYieldedFlat } from "./generators/next/flat.ts";
 import type { IYieldedFlatMap } from "./generators/next/flatMap.ts";
 import type { IYieldedLift } from "./generators/next/lift.ts";
 import type { IYieldedMap } from "./generators/next/map.ts";
+import type { IYieldedMapPairwise } from "./generators/next/mapPairwise.ts";
 import type { IYieldedParallel } from "./generators/next/parallel.ts";
 import type { IYieldedReverse } from "./generators/next/reversed.ts";
 import type { IYieldedSorted } from "./generators/next/sorted.ts";
@@ -60,4 +61,5 @@ export interface IYieldedOperations<T, TFlow extends IYieldedFlow>
     IYieldedFlat<T, TFlow>,
     IYieldedLift<T, TFlow>,
     IYieldedTap<T, TFlow>,
-    IYieldedToSet<T, TFlow> {}
+    IYieldedToSet<T, TFlow>,
+    IYieldedMapPairwise<T, TFlow> {}

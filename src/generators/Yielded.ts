@@ -14,6 +14,7 @@ import { dropLastSync } from "./next/dropLast.ts";
 import { flatSync } from "./next/flat.ts";
 import { flatMapSync } from "./next/flatMap.ts";
 import { liftSync } from "./next/lift.ts";
+import { mapPairwiseSync } from "./next/mapPairwise.ts";
 import { parallel } from "./next/parallel.ts";
 import { reversedSync } from "./next/reversed.ts";
 import { sortedSync } from "./next/sorted.ts";
@@ -190,5 +191,9 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
       parallel(this.generator, count),
       count,
     );
+  }
+
+  mapPairwise<TOut>(mapper: (previous: T, next: T) => TOut) {
+    return this.#next(mapPairwiseSync, mapper);
   }
 }

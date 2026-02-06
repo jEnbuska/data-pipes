@@ -18,6 +18,7 @@ import { flatParallel } from "./next/flat.ts";
 import { flatMapParallel } from "./next/flatMap.ts";
 import { liftParallel } from "./next/lift.ts";
 import { mapParallel } from "./next/map.ts";
+import { mapPairwiseParallel } from "./next/mapPairwise.ts";
 import { parallelUpdate } from "./next/parallel.ts";
 import { reversedParallel } from "./next/reversed.ts";
 import { sortedParallel } from "./next/sorted.ts";
@@ -150,5 +151,9 @@ export class ParallelYielded<T>
       parallelUpdate(this.generator, this._parallel, count),
       count,
     );
+  }
+
+  mapPairwise<TOut>(mapper: (previous: T, next: T) => MaybeAsync<TOut>) {
+    return this.#next(mapPairwiseParallel, mapper);
   }
 }

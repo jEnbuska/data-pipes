@@ -24,6 +24,7 @@ import { takeLastAsync } from "./next/takeLast.ts";
 import { takeWhileAsync } from "./next/takeWhile.ts";
 import { tapAsync } from "./next/tap.ts";
 import { ParallelYielded } from "./ParallelYielded.ts";
+import { mapPairwiseAsync } from "./next/mapPairwise.ts";
 
 export class AsyncYielded<T>
   extends AsyncYieldedResolver<T>
@@ -169,5 +170,9 @@ export class AsyncYielded<T>
       parallel(this.generator, parallelCount),
       parallelCount,
     );
+  }
+
+  mapPairwise<TOut>(mapper: (previous: T, next: T) => MaybeAsync<TOut>) {
+    return this.#next(mapPairwiseAsync, mapper);
   }
 }
