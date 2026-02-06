@@ -15,12 +15,12 @@ export function MockIYieldedParallelGenerator<T>([...values]: Array<
       async [Symbol.asyncDispose]() {
         disposed = true;
       },
-      async next(): Promise<IteratorResult<Promise<T>, void>> {
+      async next(): Promise<IteratorResult<T, void>> {
         if (disposed || !values.length) {
           return { done: true, value: undefined } as const;
         }
-        const value = values.shift()!;
-        return { value: Promise.resolve(value), done: false };
+        const value = await values.shift()!;
+        return { value, done: false };
       },
 
       async return() {
@@ -55,14 +55,16 @@ export function MockDelayedValuesGenerator<T>(
       async [Symbol.asyncDispose]() {
         disposed = true;
       },
-      async next(): Promise<IteratorResult<Promise<T>, void>> {
+      async next(): Promise<IteratorResult<T, void>> {
         if (disposed || !values.length) {
           return { done: true, value: undefined } as const;
         }
-        const [delayMs, value] = values.shift()!;
-        const result = { value: delay(value, delayMs), done: false as const };
+        const [delayMs, next] = values.shift()!;
+
+        const promise = delay(next, delayMs);
         void utils.advanceTimersToNextTimerAsync();
-        return result;
+        const value = await promise;
+        return { value, done: false as const };
       },
 
       async return() {

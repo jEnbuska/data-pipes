@@ -7,6 +7,7 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types.ts";
+import { throttle } from "../../utils/throttle.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
 export interface IYieldedBatch<T, TFlow extends IYieldedFlow> {
@@ -80,16 +81,14 @@ export function batchParallel<T>(
   return ParallelGenerator.create<T, T[]>({
     generator,
     parallel,
-    onNextParallel: 1,
-    async onNext(next) {
-      const value = await next;
-      acc.push(value);
-      const match = predicate(acc, index++);
-      if (match) return [];
+    onNext: throttle(1, async function onNext(next) {
+      acc.push(next);
+      const match = await predicate(acc, index++);
+      if (match) return;
       const payload = acc;
       acc = [];
       return [payload];
-    },
+    }),
     onDone() {
       if (acc.length) return [acc];
     },

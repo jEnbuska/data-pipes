@@ -1,6 +1,5 @@
 import { assertIsValidParallel } from "../generators/parallelUtils.ts";
 import type { IYieldedParallelGenerator } from "../shared.types.ts";
-import { throttle } from "../utils/throttle.ts";
 
 type ResolveCallback<TReturn> = PromiseWithResolvers<TReturn>["resolve"];
 
@@ -16,7 +15,6 @@ type OnDepleted<TReturn> = (resolve: ResolveCallback<TReturn>) => unknown;
 type ParallelGeneratorResolversArguments<T, TReturn> = {
   generator: IYieldedParallelGenerator<T>;
   parallel: number;
-  onNextParallel?: number;
   onNext?: OnNext<T, TReturn>;
   onDepleted?: OnDepleted<TReturn>;
   onDone?: OnDone<TReturn>;
@@ -55,18 +53,12 @@ export class ParallelGeneratorResolver<T, TReturn> {
     onNext?: OnNext<T, TReturn>,
     onDone?: OnDone<TReturn>,
     onDepleted?: OnDepleted<TReturn>,
-    onNextParallel = parallel,
   ) {
     parallel = Math.floor(parallel);
-    onNextParallel = Math.floor(onNextParallel);
     assertIsValidParallel(parallel);
-    assertIsValidParallel(onNextParallel);
-    if (onNextParallel > parallel) {
-      throw new Error("onNextParallel cannot be greater than parallel");
-    }
     this.#parallel = parallel;
     this.#generator = generator;
-    if (onNext) this.#onNext = throttle(onNextParallel, onNext);
+    this.#onNext = onNext;
     this.#onDone = onDone;
     this.#onDepleted = onDepleted;
   }
@@ -92,15 +84,13 @@ export class ParallelGeneratorResolver<T, TReturn> {
   static run<T = unknown, TReturn = unknown>(
     options: ParallelGeneratorResolversArguments<T, TReturn>,
   ) {
-    const { generator, parallel, onNextParallel, onNext, onDone, onDepleted } =
-      options;
+    const { generator, parallel, onNext, onDone, onDepleted } = options;
     const resolver = new ParallelGeneratorResolver<T, TReturn>(
       generator,
       parallel,
       onNext,
       onDone,
       onDepleted,
-      onNextParallel,
     );
     return Object.assign(resolver.run(), {
       [Symbol.dispose]() {
@@ -134,14 +124,13 @@ export class ParallelGeneratorResolver<T, TReturn> {
     return this.#resolvable.promise;
   }
 
-  #handleNext = async (result: IteratorResult<Promise<T>, void>) => {
+  #handleNext = async (result: IteratorResult<T, void>) => {
     try {
       if (result.done) {
         this.#state = "depleted";
         this.#onDepleted?.(this.#resolve);
       } else {
-        const value = await result.value;
-        this.#onNext?.(value, this.#resolve);
+        this.#onNext?.(result.value, this.#resolve);
       }
       this.#running--;
       this.#onNextResolvable.resolve();

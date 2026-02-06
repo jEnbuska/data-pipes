@@ -10,13 +10,11 @@ export type IYieldedAsyncGenerator<TOut = unknown> = AsyncGenerator<
   void
 >;
 
-export interface IYieldedParallelGenerator<
-  TOut = unknown,
-> extends AsyncDisposable {
-  next(_?: undefined): Promise<IteratorResult<Promise<TOut>, void>>;
-  return(value?: undefined): Promise<IteratorReturnResult<void | undefined>>;
-  throw(e: any): Promise<IteratorReturnResult<void | undefined>>;
-}
+export type IYieldedParallelGenerator<TOut = unknown> = AsyncGenerator<
+  TOut,
+  undefined | void,
+  void
+>;
 
 export type IYieldedIterator<TOut = unknown> = IteratorObject<
   TOut,

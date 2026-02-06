@@ -56,6 +56,13 @@ export class ParallelYieldedResolver<T> implements IParallelYieldedResolver<T> {
     });
   }
 
+  async *[Symbol.asyncIterator]() {
+    using generator = this.generator;
+    for await (const next of generator) {
+      yield next;
+    }
+  }
+
   async #apply<TReturn, TArgs extends any[]>(
     cb: (
       generator: IYieldedParallelGenerator<T>,

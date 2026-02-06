@@ -1,69 +1,46 @@
 import { DONE } from "../constants.ts";
+import type { IYieldedIterableSource } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedFlow,
   IYieldedGenerator,
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../shared.types.ts";
+import { parallelIterableSourceToAsyncIterable } from "../utils/iteration.ts";
 import { throttle } from "../utils/throttle.ts";
 import { assertIsValidParallel } from "./parallelUtils.ts";
 
-type ExpandResult<R> =
-  | undefined
-  | Iterable<MaybeAsync<R>, undefined | void, undefined | void>
-  | Iterator<MaybeAsync<R>, undefined | void, undefined | void>
-  | AsyncIterable<MaybeAsync<R>, undefined | void, undefined | void>
-  | AsyncIterator<MaybeAsync<R>, undefined | void, undefined | void>;
+type ParallelCallbackReturn<TOut> = void | null | IYieldedIterableSource<
+  TOut,
+  "parallel"
+>;
 
 type ParallelGeneratorState = "running" | "done" | "aborted";
 
-function getIterator<TOut>(
-  value: Exclude<ExpandResult<TOut>, undefined>,
-): AsyncIterator<MaybeAsync<TOut>> | Iterator<MaybeAsync<TOut>> {
-  if ("next" in value && typeof (value as any).next === "function") {
-    return value as AsyncIterator<TOut> | Iterator<TOut>;
-  }
-  if (
-    typeof (value as AsyncIterable<TOut>)[Symbol.asyncIterator] === "function"
-  ) {
-    return (value as any)[Symbol.asyncIterator]() as AsyncIterator<TOut>;
-  }
-
-  if (typeof (value as Iterable<TOut>)[Symbol.iterator] === "function") {
-    return (value as any)[Symbol.iterator]() as Iterator<TOut>;
-  }
-
-  if (typeof (value as any).next === "function") {
-    return value as AsyncIterator<TOut> | Iterator<TOut>;
-  }
-  throw new Error("Invalid ExpandResult");
-}
-
 type BufferedProvider<TOut> = () => Promise<IteratorYieldResult<TOut>>;
 function createBufferedProvider<TOut>(
-  value: Exclude<ExpandResult<TOut>, undefined | void>,
+  value: Exclude<ParallelCallbackReturn<TOut>, void | null>,
 ): BufferedProvider<TOut> {
-  const iterator = getIterator(value);
+  const iterator = parallelIterableSourceToAsyncIterable(value);
   return async () => {
     const next = await iterator.next();
     if (next.done) return undefined;
-    next.value = Promise.resolve(next.value);
+    next.value = await next.value;
     return next as any;
   };
 }
 
 type ParallelGeneratorOnNext<T, TOut> = (
-  value: Promise<T>,
-) => Promise<ExpandResult<MaybeAsync<TOut>>> | ExpandResult<MaybeAsync<TOut>>;
-type ParallelGeneratorOnDone<TOut> = () =>
-  | Promise<ExpandResult<MaybeAsync<TOut>>>
-  | ExpandResult<MaybeAsync<TOut>>;
+  value: T,
+) => MaybeAsync<ParallelCallbackReturn<TOut>>;
+type ParallelGeneratorOnDone<TOut> = () => MaybeAsync<
+  void | undefined | ParallelCallbackReturn<TOut>
+>;
 
 export type ParallelGeneratorArguments<T, TOut> = {
   generator: IYieldedGenerator<T, IYieldedFlow>;
   onNext?: ParallelGeneratorOnNext<T, TOut>;
   onDone?: ParallelGeneratorOnDone<TOut>;
-  onNextParallel?: number;
   parallel: number;
 };
 
@@ -73,9 +50,9 @@ export class ParallelGenerator<
 > implements IYieldedParallelGenerator<TOut> {
   #state: ParallelGeneratorState = "running";
 
-  #onNext: ParallelGeneratorArguments<T, TOut>["onNext"];
+  #onNext: ParallelGeneratorOnNext<T, TOut>;
 
-  #onDone?: ParallelGeneratorArguments<T, TOut>["onDone"];
+  #onDone?: ParallelGeneratorOnDone<TOut>;
 
   #pendingWork = new Set<any>();
 
@@ -92,22 +69,15 @@ export class ParallelGenerator<
   static create<T, TOut = T>(
     options:
       | ParallelGeneratorArguments<T, TOut>
-      | Omit<ParallelGeneratorArguments<T, TOut>, "onNext" | "onNextParallel">,
+      | Omit<ParallelGeneratorArguments<T, TOut>, "onNext">,
   ): IYieldedParallelGenerator<TOut> {
     const {
       generator,
       parallel,
-      onNextParallel,
       onNext = ParallelGenerator.#defaultOnNext,
       onDone,
     } = options as any;
-    return new ParallelGenerator<T, TOut>(
-      generator,
-      parallel,
-      onNext,
-      onDone,
-      onNextParallel,
-    );
+    return new ParallelGenerator<T, TOut>(generator, parallel, onNext, onDone);
   }
 
   static #defaultOnNext(value: Promise<unknown>) {
@@ -119,18 +89,11 @@ export class ParallelGenerator<
     parallel: number,
     onNext: ParallelGeneratorOnNext<T, TOut>,
     onDone?: ParallelGeneratorOnDone<TOut>,
-    onNextParallel = parallel,
   ) {
     parallel = Math.floor(parallel);
-    onNextParallel = Math.floor(onNextParallel);
     assertIsValidParallel(parallel);
-    assertIsValidParallel(onNextParallel);
-    if (onNextParallel > parallel) {
-      throw new Error("onNextParallel cannot be greater than parallel");
-    }
     this.#generator = generator;
     this.#onNext = onNext;
-    this.#onNext = throttle(onNextParallel, onNext);
     this.#onDone = onDone;
     this.#parallel = parallel;
 
@@ -138,6 +101,10 @@ export class ParallelGenerator<
   }
 
   // ---------------- AsyncGenerator ----------------
+
+  [Symbol.asyncIterator]() {
+    return this;
+  }
 
   async [Symbol.asyncDispose]() {
     this.#setState("aborted");
@@ -174,7 +141,7 @@ export class ParallelGenerator<
     }
   }
 
-  async next(): Promise<IteratorResult<Promise<TOut>, void>> {
+  async next(): Promise<IteratorResult<TOut, void>> {
     try {
       switch (this.#state) {
         case "aborted":
@@ -197,11 +164,10 @@ export class ParallelGenerator<
 
   // ---------------- Internal ----------------
 
-  #queue: Array<PromiseWithResolvers<IteratorResult<Promise<TOut>, void>>> = [];
+  #queue: Array<PromiseWithResolvers<IteratorResult<TOut, void>>> = [];
 
   async #queueHandleNext() {
-    const resolvable =
-      Promise.withResolvers<IteratorResult<Promise<TOut>, void>>();
+    const resolvable = Promise.withResolvers<IteratorResult<TOut, void>>();
     this.#queue.push(resolvable);
     void this.#handleNext()
       .then(this.#onHandleNextResolved)
@@ -209,7 +175,7 @@ export class ParallelGenerator<
     return resolvable.promise;
   }
 
-  #onHandleNextResolved = (result: IteratorResult<Promise<TOut>, void>) => {
+  #onHandleNextResolved = (result: IteratorResult<TOut, void>) => {
     const resolvable = this.#queue.shift();
     resolvable?.resolve(result);
   };
@@ -220,7 +186,7 @@ export class ParallelGenerator<
     throw new Error(error);
   };
 
-  async #handleNext(): Promise<IteratorResult<Promise<TOut>, void>> {
+  async #handleNext(): Promise<IteratorResult<TOut, void>> {
     while (true) {
       const buffered = await this.#getNextFromBuffer();
       if (buffered) return buffered;
@@ -229,15 +195,16 @@ export class ParallelGenerator<
         return this.#handleDone();
       }
       const result = await this.#registerWork(this.#onNext?.(next.value));
-      if (!result) {
+      if (result === null) {
         void this.#generator.return?.();
         return this.#handleDone();
       }
+      if (!result) continue;
       const provider = createBufferedProvider(result);
       const first = await this.#registerWork(provider());
       if (!first) continue;
       this.#buffer.push(provider);
-      return first as IteratorResult<Promise<TOut>, void>;
+      return first;
     }
   }
 
@@ -258,7 +225,7 @@ export class ParallelGenerator<
   async #handleDone() {
     if (this.#state === "running") {
       this.#setState("done");
-      await Promise.all(this.#pendingWork);
+      while (this.#pendingWork.size) await Promise.all(this.#pendingWork);
       const result = await this.#onDone?.();
       if (result) {
         const provider = createBufferedProvider(result);
@@ -285,7 +252,7 @@ export class ParallelGenerator<
         this.#buffer.splice(this.#buffer.indexOf(getNext), 1);
         continue;
       }
-      if (!next.done) return next as IteratorYieldResult<Promise<TOut>>;
+      if (!next.done) return next as IteratorYieldResult<TOut>;
     }
   }
 }

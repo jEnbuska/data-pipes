@@ -1,5 +1,5 @@
 import { AsyncYieldedResolver } from "../resolvers/AsyncYieldedResolver.ts";
-import type { IYieldedIterable } from "../resolvers/resolver.types";
+import type { IYieldedIterableSource } from "../resolvers/resolver.types";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
@@ -111,7 +111,9 @@ export class AsyncYielded<T>
     callback: (
       value: T,
       index: number,
-    ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "async"> | TOut>,
+    ) => MaybeAsync<
+      readonly TOut[] | IYieldedIterableSource<TOut, "async"> | TOut
+    >,
   ) {
     return this.#next(flatMapAsync, callback);
   }

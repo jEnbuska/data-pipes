@@ -64,7 +64,8 @@ export function takeWhileParallel<T>(
     generator,
     parallel,
     async onNext(next) {
-      if (await next.then(predicate)) return [next];
+      if (await predicate(next)) return [next];
+      return null;
     },
   });
 }

@@ -1,4 +1,4 @@
-import type { IYieldedIterable } from "../../resolvers/resolver.types";
+import type { IYieldedIterableSource } from "../../resolvers/resolver.types";
 import type {
   ICallbackReturn,
   INextYielded,
@@ -8,6 +8,12 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
+import {
+  asyncIterableSourceToAsyncIterable,
+  isAsyncIterableSource,
+  isIterableSource,
+  iterableSourceToIterable,
+} from "../../utils/iteration.ts";
 import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
@@ -42,7 +48,7 @@ export interface IYieldedFlatMap<T, TFlow extends IYieldedFlow> {
       next: T,
       index: number,
     ) => ICallbackReturn<
-      readonly TOut[] | IYieldedIterable<TOut, TFlow> | TOut,
+      readonly TOut[] | IYieldedIterableSource<TOut, TFlow> | TOut,
       TFlow
     >,
   ): INextYielded<TOut, TFlow>;
@@ -53,15 +59,15 @@ export function* flatMapSync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => readonly TOut[] | IYieldedIterable<TOut, "sync"> | TOut,
+  ) => readonly TOut[] | IYieldedIterableSource<TOut, "sync"> | TOut,
 ): IYieldedIterator<TOut> {
-  const callback = withIndex1(flatMapper);
+  let index = 0;
   for (const next of generator) {
-    const out: any = callback(next);
-    if (out?.[Symbol.iterator]) {
-      yield* out as TOut[];
+    const out = flatMapper(next, index++);
+    if (isIterableSource<TOut>(out)) {
+      yield* iterableSourceToIterable<TOut>(out);
     } else {
-      yield out as TOut;
+      yield out;
     }
   }
 }
@@ -71,15 +77,21 @@ export async function* flatMapAsync<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "async"> | TOut>,
+  ) => MaybeAsync<
+    readonly TOut[] | IYieldedIterableSource<TOut, "async"> | TOut
+  >,
 ): IYieldedAsyncGenerator<TOut> {
-  const callback = withIndex1(flatMapper);
+  let index = 0;
   for await (const next of generator) {
-    const out: any = await callback(next);
-    if (out?.[Symbol.iterator]) {
-      yield* out as TOut[];
+    const out = await flatMapper(next, index++);
+    if (isIterableSource<TOut>(out)) {
+      yield* iterableSourceToIterable<TOut>(out);
+    } else if (isAsyncIterableSource<TOut>(out)) {
+      for await (const item of asyncIterableSourceToAsyncIterable<TOut>(out)) {
+        yield item;
+      }
     } else {
-      yield out as TOut;
+      yield out;
     }
   }
 }
@@ -90,16 +102,18 @@ export function flatMapParallel<T, TOut>(
   flatMapper: (
     next: T,
     index: number,
-  ) => MaybeAsync<readonly TOut[] | IYieldedIterable<TOut, "parallel"> | TOut>,
+  ) => MaybeAsync<
+    readonly TOut[] | IYieldedIterableSource<TOut, "parallel"> | TOut
+  >,
 ): IYieldedParallelGenerator<TOut> {
   const callback = withIndex1(flatMapper);
   return ParallelGenerator.create<T, TOut>({
     generator,
     parallel,
     async onNext(next) {
-      const res = await next.then(callback);
-      if (Array.isArray(res)) return res as any; // TODO
-      return [res] as any;
+      const res = await callback(next);
+      if (isAsyncIterableSource<TOut>(res)) return res;
+      return [res];
     },
   });
 }

@@ -107,23 +107,18 @@ export function reduceParallel(
   let hasAcc = !!rest.length;
   if (hasAcc) acc = Promise.resolve(rest[0]);
   let index = 0;
-  const handleReduce = throttle(1, async function handleReduce(value: unknown) {
-    if (!hasAcc) {
-      acc = value;
-      hasAcc = true;
-      return;
-    }
-    acc = await reducer(await acc, value, index++);
-  });
   return ParallelGeneratorResolver.run({
     generator,
     parallel,
-    onNextParallel: 1,
-    async onNext(value) {
-      void handleReduce(value);
-    },
+    onNext: throttle(1, async function onNext(value) {
+      if (!hasAcc) {
+        acc = value;
+        hasAcc = true;
+        return;
+      }
+      acc = await reducer(await acc, value, index++);
+    }),
     async onDone(resolve) {
-      await handleReduce.all();
       resolve(acc);
     },
   });

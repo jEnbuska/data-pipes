@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
+import { Yielded } from "../../src";
 import { createTestSets } from "../utils/createTestSets.ts";
+import { delay } from "../utils/delay.ts";
 
 describe("maxBy", () => {
   const numbers = [2, 1, 3, 5, 4];
@@ -62,5 +64,14 @@ describe("maxBy", () => {
     expect(
       await (fromEmptyAsync.maxBy(modulo4) satisfies Promise<number | void>),
     ).toStrictEqual(undefined);
+  });
+
+  test("Parallel", async () => {
+    expect(
+      await (Yielded.from([5, 1, 300, 3])
+        .parallel(2)
+        .map((it) => delay(it, it))
+        .maxBy((it) => it) satisfies Promise<number | void>),
+    ).toStrictEqual(300);
   });
 });

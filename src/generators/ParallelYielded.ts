@@ -1,5 +1,5 @@
 import { ParallelYieldedResolver } from "../resolvers/ParallelYieldedResolver.ts";
-import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
+import type { IYieldedIterableSource } from "../resolvers/resolver.types.ts";
 import type {
   IYieldedAsyncGenerator,
   IYieldedIterator,
@@ -84,7 +84,7 @@ export class ParallelYielded<T>
       value: T,
       index: number,
     ) => MaybeAsync<
-      readonly TOut[] | IYieldedIterable<TOut, "parallel"> | TOut
+      readonly TOut[] | IYieldedIterableSource<TOut, "parallel"> | TOut
     >,
   ) {
     return this.#next(flatMapParallel, callback);

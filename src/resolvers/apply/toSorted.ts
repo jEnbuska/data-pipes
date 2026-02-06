@@ -46,6 +46,27 @@ function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
   };
 }
 
+export function createIndexFinderAsync<T>(
+  arr: T[],
+  comparator: (a: T, b: T) => MaybeAsync<number>,
+) {
+  return async function findIndexAsync(
+    next: T,
+    low = 0,
+    high = arr.length - 1,
+  ) {
+    if (low > high) {
+      return low;
+    }
+    const mid = Math.floor((low + high) / 2);
+    const diff = await comparator(next, arr[mid]!);
+    if (diff < 0) {
+      return findIndexAsync(next, low, mid - 1);
+    }
+    return findIndexAsync(next, mid + 1, high);
+  };
+}
+
 export function toSortedSync<T>(
   generator: IYieldedIterator<T>,
   compareFn: (a: T, b: T) => number,
@@ -88,33 +109,11 @@ export function toSortedParallel<T>(
   return ParallelGeneratorResolver.run<T, T[]>({
     generator,
     parallel,
-    onNext(value) {
-      void handleSort(value);
+    async onNext(value) {
+      await handleSort(value);
     },
     async onDone(resolve) {
-      await handleSort.all();
       resolve(arr);
     },
   });
-}
-
-export function createIndexFinderAsync<T>(
-  arr: T[],
-  comparator: (a: T, b: T) => MaybeAsync<number>,
-) {
-  return async function findIndexAsync(
-    next: T,
-    low = 0,
-    high = arr.length - 1,
-  ) {
-    if (low > high) {
-      return low;
-    }
-    const mid = Math.floor((low + high) / 2);
-    const diff = await comparator(next, arr[mid]!);
-    if (diff < 0) {
-      return findIndexAsync(next, low, mid - 1);
-    }
-    return findIndexAsync(next, mid + 1, high);
-  };
 }

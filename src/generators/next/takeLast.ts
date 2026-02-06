@@ -62,17 +62,18 @@ export function takeLastParallel<T>(
   parallel: number,
   count: number,
 ): IYieldedParallelGenerator<T> {
-  const acc: Array<Promise<T>> = [];
+  const acc: Array<T> = [];
   return ParallelGenerator.create<T>({
     generator,
     parallel,
     onNext(next) {
       acc.push(next);
-      if (acc.length <= count) return [];
+      if (acc.length <= count) return;
       return [acc.shift()!];
     },
     onDone() {
-      if (!acc.length) return acc;
+      if (!acc.length) return;
+      return acc;
     },
   });
 }

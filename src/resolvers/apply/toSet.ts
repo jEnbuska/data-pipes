@@ -23,13 +23,12 @@ export function toSetParallel<T>(
   parallel: number,
 ): Promise<Set<T>> {
   const set = new Set<T>();
-  const add = set.add.bind(set);
 
   return ParallelGeneratorResolver.run<T, Set<T>>({
     generator,
     parallel,
     onNext(value) {
-      add(value);
+      set.add(value);
     },
     onDone(resolve) {
       resolve(set);

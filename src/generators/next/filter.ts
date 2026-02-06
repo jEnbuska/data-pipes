@@ -76,8 +76,8 @@ export function filterParallel(
     generator,
     parallel,
     async onNext(next) {
-      const match = await next.then(callback);
-      if (!match) return [];
+      const match = await callback(next);
+      if (!match) return;
       return [next];
     },
   });

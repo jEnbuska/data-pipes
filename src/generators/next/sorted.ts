@@ -70,12 +70,11 @@ export function sortedParallel<T = never>(
   return ParallelGenerator.create<T, T>({
     generator,
     parallel,
-    onNext(next) {
-      void next.then(lockedUpdate);
-      return [];
+    async onNext(next) {
+      await lockedUpdate(next);
+      return;
     },
     async onDone() {
-      await lockedUpdate.all();
       return arr;
     },
   });

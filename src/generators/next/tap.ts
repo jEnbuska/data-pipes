@@ -65,7 +65,7 @@ export function tapParallel<T>(
     generator,
     parallel,
     onNext(value) {
-      void value.then(callback);
+      void callback(value);
       return [value];
     },
   });

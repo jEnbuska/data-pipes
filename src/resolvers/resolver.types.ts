@@ -1,4 +1,4 @@
-import type { IYieldedFlow } from "../shared.types.ts";
+import type { IYieldedFlow, MaybeAsync } from "../shared.types.ts";
 import type { IYieldedConsume } from "./apply/consume.ts";
 import type { IYieldedCount } from "./apply/count.ts";
 import type { IYieldedEvery } from "./apply/every.ts";
@@ -40,14 +40,18 @@ interface ISharedYieldedResolver<T, TFlow extends IYieldedFlow>
     IYieldedConsume<TFlow>,
     IYieldedForEach<T, TFlow> {}
 
-export type IYieldedIterable<
+export type IYieldedIterableSource<
   T,
   TFlow extends IYieldedFlow,
 > = TFlow extends "sync"
-  ? Iterable<T, void | undefined, void | undefined>
+  ?
+      | Iterable<T, void | undefined, void | undefined>
+      | Iterator<T, undefined | void, undefined | void>
   :
-      | AsyncIterable<T, void | undefined, void | undefined>
-      | Iterable<T, void | undefined, void | undefined>;
+      | Iterable<MaybeAsync<T>, undefined | void, undefined | void>
+      | Iterator<MaybeAsync<T>, undefined | void, undefined | void>
+      | AsyncIterable<MaybeAsync<T>, void | undefined, void | undefined>
+      | AsyncIterator<MaybeAsync<T>, void | undefined, void | undefined>;
 
 export interface IAsyncYieldedResolver<T> extends ISharedYieldedResolver<
   T,
@@ -59,7 +63,9 @@ export interface IAsyncYieldedResolver<T> extends ISharedYieldedResolver<
 export interface IParallelYieldedResolver<T> extends ISharedYieldedResolver<
   T,
   "parallel"
-> {}
+> {
+  [Symbol.asyncIterator](): AsyncGenerator<T>;
+}
 
 export interface IYieldedResolver<T> extends ISharedYieldedResolver<T, "sync"> {
   [Symbol.iterator](): Generator<T>;

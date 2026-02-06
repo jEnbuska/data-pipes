@@ -99,7 +99,6 @@ export function minByParallel<T>(
         index++;
       }
       const numb = await callback(value, index++);
-
       if (numb < acc.value) {
         acc = { value: numb, item: value };
       }

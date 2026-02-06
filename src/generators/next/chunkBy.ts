@@ -81,12 +81,6 @@ export function chunkByParallel<T, TIdentifier = any>(
 ): IYieldedParallelGenerator<T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
-  const pending = new Set<Promise<void>>();
-  async function storePending(promise: Promise<void>) {
-    pending.add(promise);
-    await promise;
-    pending.delete(promise);
-  }
   async function stash(next: T) {
     const key = await keySelector(next);
     if (!indexMap.has(key)) {
@@ -99,13 +93,11 @@ export function chunkByParallel<T, TIdentifier = any>(
   return ParallelGenerator.create<T, T[]>({
     generator,
     parallel,
-    onNext(next) {
-      void storePending(next.then(stash));
-      return [];
+    async onNext(next) {
+      await stash(next);
     },
-    async onDone() {
-      await Promise.all(pending);
-      if (acc.length) return [acc.shift()!];
+    onDone() {
+      if (acc.length) return acc;
     },
   });
 }

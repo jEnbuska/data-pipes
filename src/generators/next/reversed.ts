@@ -53,13 +53,12 @@ export function reversedParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
 ): IYieldedParallelGenerator<T> {
-  const acc: Array<Promise<T>> = [];
-  return ParallelGenerator.create<T>({
+  const acc: Array<T> = [];
+  return ParallelGenerator.create<T, T>({
     generator,
     parallel,
     onNext(next) {
       acc.unshift(next);
-      return [];
     },
     onDone() {
       return acc;

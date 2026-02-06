@@ -45,8 +45,8 @@ export function mapParallel<T, TOut>(
   return ParallelGenerator.create<T, TOut>({
     generator,
     parallel,
-    onNext(next) {
-      return [next.then(callback)];
+    async onNext(next) {
+      return [await callback(next)];
     },
   });
 }

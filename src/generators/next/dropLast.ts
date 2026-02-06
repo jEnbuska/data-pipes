@@ -76,7 +76,7 @@ export function dropLastParallel<T>(
   parallel: number,
   count: number,
 ): IYieldedParallelGenerator<T> {
-  const buffer: Array<Promise<T>> = [];
+  const buffer: Array<T> = [];
   let skipped = 0;
   return ParallelGenerator.create<T>({
     generator,
@@ -85,7 +85,7 @@ export function dropLastParallel<T>(
       buffer.push(next);
       if (skipped < count) {
         skipped++;
-        return [];
+        return;
       }
       return [buffer.shift()!];
     },

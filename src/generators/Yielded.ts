@@ -1,4 +1,4 @@
-import type { IYieldedIterable } from "../resolvers/resolver.types.ts";
+import type { IYieldedIterableSource } from "../resolvers/resolver.types.ts";
 import { YieldedResolver } from "../resolvers/YieldedResolver.ts";
 import type { IYieldedGenerator, IYieldedIterator } from "../shared.types.ts";
 import type {
@@ -136,7 +136,7 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     flatMapper: (
       next: T,
       index: number,
-    ) => readonly TOut[] | IYieldedIterable<TOut, "sync"> | TOut,
+    ) => readonly TOut[] | IYieldedIterableSource<TOut, "sync"> | TOut,
   ) {
     return this.#next(flatMapSync, flatMapper);
   }

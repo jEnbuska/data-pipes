@@ -32,20 +32,19 @@ describe("sorted", () => {
     expect(
       await (Yielded.from<number>([500, 30, 100, 50])
         .map((value) => sleep(value).then(() => value))
-        .awaited()
         .parallel(3)
         .sorted((a, z) => a - z)
         .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([30, 50, 100, 500]);
   });
 
-  test("sort resolver parallel all", async () => {
+  test.only("sort resolver parallel all", async () => {
     const result = await (Yielded.from<number>([500, 30, 100, 50])
       .map((value) => sleep(value).then(() => value))
-      .awaited()
       .parallel(10)
       .sorted((a, z) => a - z)
       .toArray() satisfies Promise<number[]>);
+
     expect(result).toStrictEqual([30, 50, 100, 500]);
   });
 });
