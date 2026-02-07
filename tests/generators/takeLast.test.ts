@@ -17,7 +17,13 @@ describe("takeLast", () => {
   });
 
   test("take last when count negative ", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(-1).toArray()).toStrictEqual([]);
+    expect(() => Yielded.from([1, 2, 3]).takeLast(-1)).toThrow(RangeError);
+    expect(() => Yielded.from([1, 2, 3]).awaited().takeLast(-1)).toThrow(
+      RangeError,
+    );
+    expect(() => Yielded.from([1, 2, 3]).parallel(2).takeLast(-1)).toThrow(
+      RangeError,
+    );
   });
 
   test("take last when count less than array length ", () => {
@@ -40,10 +46,6 @@ describe("takeLast", () => {
     expect(Yielded.from([1, 2, 3]).takeLast(5).toArray()).toStrictEqual([
       1, 2, 3,
     ]);
-  });
-
-  test("take last when count negative ", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(-1).toArray()).toStrictEqual([]);
   });
 
   test("take last when count less than array length ", () => {

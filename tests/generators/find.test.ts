@@ -36,7 +36,6 @@ describe("find", () => {
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -48,9 +47,6 @@ describe("find", () => {
   function find2(value: number) {
     return value === 2;
   }
-  test("from single", () => {
-    expect(fromSingle.find(find2) satisfies void | number).toBe(undefined);
-  });
 
   test("from resolved promises", async () => {
     expect(

@@ -1,11 +1,12 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedEvery<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/every}
+   *
    * Determines whether the provided predicate returns a truthy value
    * for **all** items produced by the generator.
    *
@@ -48,14 +49,10 @@ export async function everyAsync<T>(
 }
 
 export function everyParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   predicate: (value: T, index: number) => unknown,
-): Promise<boolean> {
+): ParallelGeneratorCallbackArgs<T, boolean> {
   let index = 0;
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     async onNext(value, resolve) {
       const match = await predicate(value, index++);
       if (!match) resolve(false);
@@ -63,5 +60,5 @@ export function everyParallel<T>(
     onDone(resolve) {
       resolve(true);
     },
-  });
+  };
 }

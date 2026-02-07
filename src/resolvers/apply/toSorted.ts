@@ -1,10 +1,9 @@
 import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import { throttle } from "../../general/utils/parallel.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
@@ -93,24 +92,20 @@ export async function toSortedAsync<T>(
 }
 
 export function toSortedParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   compareFn: (a: T, b: T) => IMaybeAsync<number>,
-): Promise<T[]> {
+): ParallelGeneratorCallbackArgs<T, T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
   const handleSort = throttle(1, async function handleSort(value: T) {
     const index = await findIndex(value);
     arr.splice(index, 0, value);
   });
-  return ParallelGeneratorResolver.run<T, T[]>({
-    generator,
-    parallel,
+  return {
     async onNext(value) {
       await handleSort(value);
     },
     async onDone(resolve) {
       resolve(arr);
     },
-  });
+  };
 }

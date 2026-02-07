@@ -1,5 +1,9 @@
 import { AsyncYielded } from "../async/AsyncYielded.ts";
-import type { IAsyncYielded } from "../async/types.ts";
+import type {
+  IAsyncYielded,
+  IAsyncYieldedSource,
+  IYieldedSource,
+} from "../async/types.ts";
 import type { IYieldedIterableSource } from "../general/types.ts";
 import { syncToAwaited } from "../generators/apply/awaited.ts";
 import { batchSync } from "../generators/apply/batch.ts";
@@ -12,15 +16,16 @@ import { mapPairwiseSync } from "../generators/apply/mapPairwise.ts";
 import { parallel } from "../generators/apply/parallel.ts";
 import { reversedSync } from "../generators/apply/reversed.ts";
 import { sortedSync } from "../generators/apply/sorted.ts";
-import { takeSync } from "../generators/apply/take.ts";
 import { takeLastSync } from "../generators/apply/takeLast.ts";
 import { takeWhileSync } from "../generators/apply/takeWhile.ts";
 import { tapSync } from "../generators/apply/tap.ts";
+import { assertNotNegative } from "../generators/apply/utils/take.ts";
 import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
 import type { IYieldedGenerator } from "../generators/types.ts";
 import { ParallelYielded } from "../parallel/ParallelYielded.ts";
 import type { IParallelYielded } from "../parallel/types.ts";
 import { YieldedResolver } from "../resolvers/sync/YieldedResolver.ts";
+import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IYielded } from "./types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
@@ -31,63 +36,130 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     super(parent, generator);
   }
 
-  /** Creates Yielded from a callback that returns an Iterable
-   * @example (with generator function)
-   * Yielded.from(function *(){
+  static #extractIterable(source: any): any {
+    if (typeof source === "function") {
+      source = source();
+    }
+    if (source[Symbol.iterator]) {
+      return source;
+    }
+    if (source[Symbol.asyncIterator]) {
+      return source;
+    }
+    if (source && source instanceof Promise) {
+      return (async function* () {
+        const result = await source;
+        if (Array.isArray(result)) yield* result;
+        else yield result;
+      })();
+    }
+    return [source];
+  }
+
+  /** Creates Yielded from a generator function
+   * @example
+   * Yielded.from<number>(function *(){
    *   yield 1;
    *   yield 2;
    *   yield 3;
    * })
    * */
   static from<T>(
-    generatorFunction: () => Iterable<T, unknown, unknown>,
+    generatorFunction: () =>
+      | Iterable<T, unknown, unknown>
+      | Generator<T, unknown, unknown>,
   ): IYielded<T>;
 
+  /** Creates AsyncYielded from a generator function
+   * @example
+   * Yielded.from<number>(async function *(){
+   *   yield 1;
+   *   yield Promise.resolve(2);
+   *   yield* Promise.resolve();
+   * })
+   * */
   static from<T>(
     asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
   ): IAsyncYielded<T>;
 
-  static from<T>(
-    asyncFunction: Promise<T[]> | Promise<T> | (() => Promise<T[] | T>),
-  ): IAsyncYielded<T>;
+  /** Creates AsyncYielded from a Promise of an array
+   * @example
+   * Yielded<number>.from(Promise.resolve([1,2,3]))
+   */
+  static from<T>(promise: Promise<T[]>): IAsyncYielded<T>;
 
-  /** Creates Yielded from an Iterable
-   * @example from array
-   * Yielded.from([1,2,3])
+  /** Creates AsyncYielded from a Promise
+   * @example
+   * Yielded<number>.from(Promise.resolve(1))
+   */
+  static from<T>(promise: Promise<T>): IAsyncYielded<T>;
+
+  /** Creates Yielded from any Iterable (Array, Set, Generator, ...)
    *
-   * @example from generator
-   * Yielded.from(generatorFunction())
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/from}
+   *
+   * @example
+   * Yielded<number>.from([1,2,3])
    * */
   static from<T>(iterable: Iterable<T, unknown, unknown>): IYielded<T>;
 
-  /** Creates Yielded from something else than and Iterable or callback returning Iterable
-   * @example from something else
-   * Yielded.from(data)
+  /** Creates AsyncYielded from any AsyncIterable
+   * @example
+   * Yielded.from(asyncGeneratorFunction())
    * */
-  static from<T>(data: T): IYielded<T>;
+  static from<T>(
+    asyncIterable:
+      | AsyncIterable<T, unknown, unknown>
+      | AsyncGenerator<T, unknown, unknown>,
+  ): IAsyncYielded<T>;
 
   static from(source: any) {
-    if (typeof source === "function") {
-      source = source();
-    }
-    if (source?.[Symbol.iterator]) {
-      return new Yielded<any>(
+    const iterable: any = Yielded.#extractIterable(source);
+    if (iterable[Symbol.asyncIterator]) {
+      return new AsyncYielded<unknown>(
         undefined,
-        source[Symbol.iterator]() as IYieldedSyncGenerator<any>,
-      ) as IYielded<any>;
+        iterable[Symbol.asyncIterator](),
+      ) as any;
     }
-    if (source?.[Symbol.asyncIterator]) {
+    return new Yielded<unknown>(undefined, iterable[Symbol.iterator]()) as any;
+  }
+
+  static concat<T>(...sources: Array<IYieldedSource<T>>): IYielded<T>;
+
+  static concat<T>(...sources: Array<IAsyncYieldedSource<T>>): IAsyncYielded<T>;
+
+  static concat<T>(
+    ...sources: Array<IYieldedSource<T> | IAsyncYieldedSource<T>>
+  ): IAsyncYielded<T>;
+
+  static concat(...sources: Array<any>): any {
+    const iterables = sources.map(Yielded.#extractIterable);
+    const isAsync = iterables.some(
+      (source: any) => !!source?.[Symbol.asyncIterator],
+    );
+    if (isAsync) {
       return AsyncYielded.from(
-        source as AsyncGenerator<any, unknown, unknown>,
-      ) as IAsyncYielded<any>;
-    }
-    if (source && source instanceof Promise) {
-      return AsyncYielded.from(source) as IAsyncYielded<any>;
+        (async function* () {
+          for (const iterable of iterables) {
+            if (iterable?.[Symbol.asyncIterator]) {
+              for await (const next of iterable) yield next;
+            } else if (iterable?.[Symbol.iterator]) {
+              yield* iterable;
+            } else {
+              yield iterable;
+            }
+          }
+        })(),
+      );
     }
     return new Yielded<any>(
       undefined,
-      Iterator.from([source]),
-    ) as IYielded<any>;
+      (function* () {
+        for (const iterable of iterables) {
+          yield* iterable;
+        }
+      })(),
+    );
   }
 
   #next<TNext, TArgs extends any[]>(
@@ -118,12 +190,9 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return new Yielded(this.generator, this.generator.drop(...args));
   }
 
-  batch(...args: Parameters<IYielded<T>["batch"]>) {
-    return this.#next(batchSync, ...args);
-  }
-
-  chunkBy(...args: Parameters<IYielded<T>["chunkBy"]>) {
-    return this.#next(chunkBySync, ...args);
+  take(...args: Parameters<IYielded<T>["take"]>) {
+    this.generator.take(...args);
+    return new Yielded(this.generator, this.generator.take(...args));
   }
 
   flat<Depth extends number = 1>(
@@ -149,16 +218,14 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     return this.#next(liftSync, middleware);
   }
 
-  dropLast(...args: Parameters<IYielded<T>["dropLast"]>) {
-    return this.#next(dropLastSync, ...args);
+  dropLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(dropLastSync, count);
   }
 
-  take(...args: Parameters<IYielded<T>["take"]>) {
-    return this.#next(takeSync, ...args);
-  }
-
-  takeLast(...args: Parameters<IYielded<T>["takeLast"]>) {
-    return this.#next(takeLastSync, ...args);
+  takeLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(takeLastSync, count);
   }
 
   takeWhile(...args: Parameters<IYielded<T>["takeWhile"]>) {
@@ -194,5 +261,17 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
 
   mapPairwise<TOut>(mapper: (previous: T, next: T) => TOut) {
     return this.#next(mapPairwiseSync, mapper);
+  }
+
+  batch(...args: Parameters<IYielded<T>["batch"]>) {
+    return this.#next(batchSync, ...args);
+  }
+
+  chunkBy(...args: Parameters<IYielded<T>["chunkBy"]>) {
+    return this.#next(chunkBySync, ...args);
+  }
+
+  withSignal(signal?: AbortSignal): ISharedYieldedResolver<T, "sync"> {
+    return new YieldedResolver<T>(this.parent, this.generator, signal);
   }
 }

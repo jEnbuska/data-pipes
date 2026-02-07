@@ -15,9 +15,13 @@ type ParallelGeneratorResolversArguments<T, TReturn> = {
   parallel: number;
   onNext?: OnNext<T, TReturn>;
   onDone?: OnDone<TReturn>;
-  debugName?: string;
-  onDispose?: () => unknown;
+  signal: AbortSignal | undefined;
 };
+
+export type ParallelGeneratorCallbackArgs<T, TReturn> = Pick<
+  ParallelGeneratorResolversArguments<T, TReturn>,
+  "onNext" | "onDone"
+>;
 
 type ParallelGeneratorResolverState =
   | "running"
@@ -47,6 +51,7 @@ export class ParallelGeneratorResolver<T, TReturn> {
     parallel: number,
     onNext?: OnNext<T, TReturn>,
     onDone?: OnDone<TReturn>,
+    signal?: AbortSignal,
   ) {
     parallel = Math.floor(parallel);
     assertIsValidParallel(parallel);
@@ -54,6 +59,10 @@ export class ParallelGeneratorResolver<T, TReturn> {
     this.#generator = generator;
     this.#onNext = onNext;
     this.#onDone = onDone;
+    signal?.addEventListener("abort", () => {
+      onDone?.(this.#resolve);
+      this.#state = "resolved";
+    });
   }
 
   #reject(error: any) {
@@ -77,12 +86,13 @@ export class ParallelGeneratorResolver<T, TReturn> {
   static run<T = unknown, TReturn = unknown>(
     options: ParallelGeneratorResolversArguments<T, TReturn>,
   ) {
-    const { generator, parallel, onNext, onDone } = options;
+    const { generator, parallel, onNext, onDone, signal } = options;
     const resolver = new ParallelGeneratorResolver<T, TReturn>(
       generator,
       parallel,
       onNext,
       onDone,
+      signal,
     );
     return Object.assign(resolver.run(), {
       [Symbol.dispose]() {

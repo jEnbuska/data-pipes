@@ -17,7 +17,6 @@ describe("flatMap", () => {
   const expected = [[1, 2], 3, [4, 5]] satisfies Array<number | number[]>;
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -25,13 +24,6 @@ describe("flatMap", () => {
     fromEmpty,
     fromEmptyAsync,
   } = createTestSets(numbers);
-  test("from single", () => {
-    expect(
-      fromSingle.flatMap((next) => next).toArray() satisfies Array<
-        number | number[]
-      >,
-    ).toEqual(expected[0] as any);
-  });
 
   test("from resolved promises", async () => {
     expect(

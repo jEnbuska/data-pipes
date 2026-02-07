@@ -1,7 +1,5 @@
 import type { IMaybeAsync } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
-import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import { consumeAsync } from "../apply/consume.ts";
 import { countAsync } from "../apply/count.ts";
 import { everyAsync } from "../apply/every.ts";
@@ -20,29 +18,19 @@ import { toReversedAsync } from "../apply/toReversed.ts";
 import { toSetAsync } from "../apply/toSet.ts";
 import { toSortedAsync } from "../apply/toSorted.ts";
 import type { IYieldedResolver } from "../sync/types.ts";
+import { YieldedDisposableResolver } from "../YieldedDisposableGenerator.ts";
 import type { IAsyncYieldedResolver } from "./types.ts";
 
-export class AsyncYieldedResolver<T> implements IAsyncYieldedResolver<T> {
-  protected readonly generator: Disposable & IYieldedAsyncGenerator<T>;
-
+export class AsyncYieldedResolver<T>
+  extends YieldedDisposableResolver<IYieldedAsyncGenerator<T>>
+  implements IAsyncYieldedResolver<T>
+{
   protected constructor(
-    parent:
-      | undefined
-      | (Disposable &
-          (
-            | IYieldedAsyncGenerator
-            | IYieldedSyncGenerator
-            | IYieldedParallelGenerator
-          )),
+    parent: undefined | Disposable,
     generator: IYieldedAsyncGenerator<T>,
+    signal?: AbortSignal,
   ) {
-    this.generator = Object.assign(generator, {
-      [Symbol.dispose]() {
-        if (generator === parent) return;
-        void generator.return?.(undefined);
-        void parent?.[Symbol.dispose]();
-      },
-    });
+    super(parent, generator, signal);
   }
 
   async *[Symbol.asyncIterator]() {

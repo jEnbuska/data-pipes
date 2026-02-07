@@ -1,9 +1,8 @@
 import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 import { memoize } from "./utils/memoize.ts";
 import { getPlaceholder, isPlaceholder } from "./utils/placeholder.ts";
@@ -73,19 +72,15 @@ export async function minByAsync<T>(
 }
 
 export function minByParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): Promise<T | undefined> {
+): ParallelGeneratorCallbackArgs<T, T | undefined> {
   let acc: { item: T | symbol; value: number | symbol } = {
     item: getPlaceholder(),
     value: getPlaceholder(),
   };
   let index = 0;
   const getAccValue = memoize(callback);
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     async onNext(value) {
       if (isPlaceholder(acc.item)) {
         acc.item = value;
@@ -104,5 +99,5 @@ export function minByParallel<T>(
       if (isPlaceholder(acc.item)) return resolve(undefined);
       resolve(acc.item);
     },
-  });
+  };
 }

@@ -1,7 +1,6 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToSet<T, TFlow extends IYieldedFlow> {
@@ -16,20 +15,15 @@ export async function toSetAsync<T>(
   return set;
 }
 
-export function toSetParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-): Promise<Set<T>> {
+export function toSetParallel<T>(): ParallelGeneratorCallbackArgs<T, Set<T>> {
   const set = new Set<T>();
 
-  return ParallelGeneratorResolver.run<T, Set<T>>({
-    generator,
-    parallel,
+  return {
     onNext(value) {
       set.add(value);
     },
     onDone(resolve) {
       resolve(set);
     },
-  });
+  };
 }

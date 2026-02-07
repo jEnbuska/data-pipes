@@ -7,3 +7,21 @@ export interface IAsyncYielded<T>
     IYieldedOperations<T, "async">,
     IAsyncYieldedResolver<T>,
     IYieldedParallel<T> {}
+
+export type IAsyncYieldedSource<T> =
+  | AsyncIterable<T, unknown, unknown>
+  | AsyncGenerator<T, unknown, unknown>
+  | (() =>
+      | AsyncIterable<T, unknown, unknown>
+      | AsyncGenerator<T, unknown, unknown>)
+  | Promise<T[]>;
+
+export type IYieldedSource<T> =
+  T extends IAsyncYieldedSource<T>
+    ? never
+    :
+        | Iterable<T>
+        | Generator<T, unknown, unknown>
+        | (() =>
+            | Iterable<T, unknown, unknown>
+            | Generator<T, unknown, unknown>);

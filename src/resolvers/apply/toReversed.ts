@@ -1,8 +1,7 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToReversed<T, TFlow extends IYieldedFlow> {
@@ -43,19 +42,14 @@ export async function toReversedAsync<T>(
   return arr;
 }
 
-export function toReversedParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-): Promise<T[]> {
+export function toReversedParallel<T>(): ParallelGeneratorCallbackArgs<T, T[]> {
   const arr: T[] = [];
-  return ParallelGeneratorResolver.run({
-    parallel,
-    generator,
+  return {
     onNext(value) {
       arr.unshift(value);
     },
     onDone(resolve) {
       resolve(arr);
     },
-  });
+  };
 }

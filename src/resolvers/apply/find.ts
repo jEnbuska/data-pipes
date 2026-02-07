@@ -1,12 +1,13 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedFind<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/find}
+   *
    * Returns the first item in the generator that satisfies the provided predicate.
    *
    * Iterates through the generator until `predicate` returns a truthy value
@@ -53,24 +54,16 @@ export async function findAsync(
 }
 
 export function findParallel<T, TOut extends T = T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   predicate: (value: T, index: number) => value is TOut,
-): Promise<TOut>;
+): ParallelGeneratorCallbackArgs<T, TOut | undefined>;
 export function findParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   predicate: (value: T, index: number) => unknown,
-): Promise<T>;
+): ParallelGeneratorCallbackArgs<T, T | undefined>;
 export function findParallel(
-  generator: IYieldedParallelGenerator,
-  parallel: number,
   predicate: (value: unknown, index: number) => unknown,
-): Promise<unknown> {
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
   let index = 0;
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     async onNext(value, resolve) {
       const match = await predicate(value, index++);
       if (!match) return;
@@ -79,5 +72,5 @@ export function findParallel(
     onDone(resolve) {
       resolve(undefined);
     },
-  });
+  };
 }

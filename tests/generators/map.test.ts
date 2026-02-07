@@ -4,7 +4,6 @@ import { createTestSets } from "../utils/createTestSets.ts";
 describe("map", () => {
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -20,12 +19,6 @@ describe("map", () => {
         number[]
       >),
     ).toStrictEqual(expected);
-  });
-
-  test("from single", () => {
-    expect(fromSingle.map(modulo4).first() satisfies number | void).toEqual(
-      expected[0],
-    );
   });
 
   test("from async generator", async () => {

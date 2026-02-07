@@ -1,11 +1,12 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedForEach<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/forEach}   *
+   *
    * Invokes the provided callback for each item produced by the generator.
    *
    * Iterates through all items, calling `cb` with the current item and its
@@ -39,19 +40,15 @@ export async function forEachAsync<T>(
 }
 
 export function forEachParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   callback: (next: T, index: number) => unknown,
-): Promise<void> {
+): ParallelGeneratorCallbackArgs<T, void> {
   let index = 0;
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     onNext(value) {
       callback(value, index++);
     },
     onDone(resolve) {
       resolve(undefined);
     },
-  });
+  };
 }

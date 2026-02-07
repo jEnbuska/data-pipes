@@ -140,7 +140,6 @@ describe("flat", () => {
   const numbers = [[[1, 2]], [], [3, [4, 5]]];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -148,9 +147,6 @@ describe("flat", () => {
     fromEmpty,
     fromEmptyAsync,
   } = createTestSets(numbers);
-  test("from single", () => {
-    expect(fromSingle.flat(5).toArray() satisfies number[]).toEqual([1, 2]);
-  });
 
   test("from resolved promises", async () => {
     expect(

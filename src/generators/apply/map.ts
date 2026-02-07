@@ -10,6 +10,8 @@ import type { ICallbackReturn } from "../types.ts";
 
 export interface IYieldedMap<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/map}
+   *
    * Maps each item produced by the generator using the provided transform
    * function and yields the transformed item to the next operation.
    *

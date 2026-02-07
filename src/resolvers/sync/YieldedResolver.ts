@@ -9,22 +9,19 @@ import { minBySync } from "../apply/minBy.ts";
 import { sumBySync } from "../apply/sumBy.ts";
 import { toReversedSync } from "../apply/toReversed.ts";
 import { toSortedSync } from "../apply/toSorted.ts";
+import { YieldedDisposableResolver } from "../YieldedDisposableGenerator.ts";
 import type { IYieldedResolver } from "./types.ts";
 
-export class YieldedResolver<T> implements IYieldedResolver<T> {
-  protected readonly generator: Disposable & IYieldedSyncGenerator<T>;
-
+export class YieldedResolver<T>
+  extends YieldedDisposableResolver<IYieldedSyncGenerator<T>>
+  implements IYieldedResolver<T>, Iterable<T>
+{
   protected constructor(
-    parent: undefined | (IYieldedSyncGenerator & Disposable),
+    parent: undefined | Disposable,
     generator: IYieldedSyncGenerator<T>,
+    signal?: AbortSignal,
   ) {
-    this.generator = Object.assign(generator, {
-      [Symbol.dispose]() {
-        // void generator.return?.(undefined);
-        if (generator === parent) return;
-        void parent?.[Symbol.dispose]();
-      },
-    });
+    super(parent, generator, signal);
   }
 
   *[Symbol.iterator]() {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { Yielded } from "../../src";
 
 describe("take", () => {
   test("take 1", () => {
@@ -20,6 +20,12 @@ describe("take", () => {
   });
 
   test("take negative", () => {
-    expect(Yielded.from([1, 2, 3]).take(-1).toArray()).toStrictEqual([]);
+    expect(() => Yielded.from([1, 2, 3]).take(-1)).toThrow(RangeError);
+    expect(() => Yielded.from([1, 2, 3]).awaited().take(-1)).toThrow(
+      RangeError,
+    );
+    expect(() => Yielded.from([1, 2, 3]).parallel(2).take(-1)).toThrow(
+      RangeError,
+    );
   });
 });

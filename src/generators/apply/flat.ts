@@ -6,6 +6,8 @@ import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedFlat<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat}
+   *
    * Returns a new sequence where all sub-array elements are recursively
    * concatenated into it up to the specified depth.
    *

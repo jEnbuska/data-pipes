@@ -6,6 +6,8 @@ import type { ICallbackReturn } from "../types.ts";
 
 export interface IYieldedFilter<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/filter}
+   *
    * Filters items produced by the generator using the provided predicate
    * and yields only the items that pass the predicate to the next operation.
    *

@@ -44,12 +44,14 @@ export async function* syncToAwaited<T>(
 export async function* parallelToAwaited<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
+  signal: AbortSignal | undefined,
 ): IYieldedAsyncGenerator<Awaited<T>> {
   let done = false;
   const buffer: T[] = [];
   let resolvable = Promise.withResolvers<void>();
   using _ = ParallelGeneratorResolver.run<T, void>({
     generator,
+    signal,
     parallel,
     onNext(value) {
       buffer.push(value);

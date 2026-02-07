@@ -13,16 +13,6 @@ describe("lift", () => {
     expect(array).toStrictEqual([2, 4, 6]);
   });
 
-  test("lift single", () => {
-    const array = Yielded.from(1)
-      .lift(function* multiplyByTwo(generator) {
-        for (const next of generator) {
-          yield next * 2;
-        }
-      })
-      .toArray() satisfies number[];
-    expect(array).toStrictEqual([2]);
-  });
   test("lift filter", () => {
     const array = Yielded.from([-2, 1, 2, -3, 4])
       .lift(function* filterNegatives(generator) {

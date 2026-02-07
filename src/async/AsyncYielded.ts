@@ -16,12 +16,14 @@ import { takeAsync } from "../generators/apply/take.ts";
 import { takeLastAsync } from "../generators/apply/takeLast.ts";
 import { takeWhileAsync } from "../generators/apply/takeWhile.ts";
 import { tapAsync } from "../generators/apply/tap.ts";
+import { assertNotNegative } from "../generators/apply/utils/take.ts";
 import type { IYieldedAsyncGenerator } from "../generators/async/types.ts";
 import type { IYieldedParallelGenerator } from "../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
 import { ParallelYielded } from "../parallel/ParallelYielded.ts";
 import type { IParallelYielded } from "../parallel/types.ts";
 import { AsyncYieldedResolver } from "../resolvers/async/AsyncYieldedResolver.ts";
+import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IAsyncYielded } from "./types.ts";
 
 export class AsyncYielded<T>
@@ -128,22 +130,23 @@ export class AsyncYielded<T>
   }
 
   drop(count: number) {
-    if (count < 0) {
-      throw new RangeError(`RangeError: ${count} must be positive`);
-    }
+    assertNotNegative(count);
     return this.#next(dropAsync, count);
   }
 
-  dropLast(...args: Parameters<IAsyncYielded<T>["dropLast"]>) {
-    return this.#next(dropLastAsync, ...args);
+  dropLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(dropLastAsync, count);
   }
 
-  take(...args: Parameters<IAsyncYielded<T>["take"]>) {
-    return this.#next(takeAsync, ...args);
+  take(count: number) {
+    assertNotNegative(count);
+    return this.#next(takeAsync, count);
   }
 
-  takeLast(...args: Parameters<IAsyncYielded<T>["takeLast"]>) {
-    return this.#next(takeLastAsync, ...args);
+  takeLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(takeLastAsync, count);
   }
 
   takeWhile(...args: Parameters<IAsyncYielded<T>["takeWhile"]>) {
@@ -172,5 +175,9 @@ export class AsyncYielded<T>
 
   mapPairwise<TOut>(mapper: (previous: T, next: T) => IMaybeAsync<TOut>) {
     return this.#next(mapPairwiseAsync, mapper);
+  }
+
+  withSignal(signal?: AbortSignal): ISharedYieldedResolver<T, "async"> {
+    return new AsyncYieldedResolver<T>(this.parent, this.generator, signal);
   }
 }

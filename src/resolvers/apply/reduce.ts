@@ -1,13 +1,14 @@
 import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import { throttle } from "../../general/utils/parallel.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/reduce}
+   *
    * Reduces the items produced by the generator into a single value.
    *
    * Iterates through all items in the generator, passing each item and
@@ -84,29 +85,21 @@ export async function reduceAsync(
 }
 
 export function reduceParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   reducer: (acc: T, next: T, index: number) => IMaybeAsync<T>,
-): Promise<T>;
+): ParallelGeneratorCallbackArgs<T, T>;
 export function reduceParallel<T, TOut>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   reducer: (acc: TOut, next: T, index: number) => IMaybeAsync<TOut>,
   initialValue: IMaybeAsync<TOut>,
-): Promise<TOut>;
+): ParallelGeneratorCallbackArgs<T, TOut>;
 export function reduceParallel(
-  generator: IYieldedParallelGenerator,
-  parallel: number,
   reducer: (acc: unknown, next: unknown, index: number) => unknown,
   ...rest: [unknown] | []
-): Promise<unknown> {
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
   let acc: undefined | Promise<unknown> | unknown;
   let hasAcc = !!rest.length;
   if (hasAcc) acc = Promise.resolve(rest[0]);
   let index = 0;
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     onNext: throttle(1, async function onNext(value) {
       if (!hasAcc) {
         acc = value;
@@ -118,5 +111,5 @@ export function reduceParallel(
     async onDone(resolve) {
       resolve(acc);
     },
-  });
+  };
 }

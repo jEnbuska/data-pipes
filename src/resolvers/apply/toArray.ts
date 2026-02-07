@@ -1,11 +1,12 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToArray<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/toArray}
+   *
    * Collects all items produced by the generator and returns them
    * as a new array.
    *
@@ -24,19 +25,14 @@ export async function toArrayAsync<T>(
   return arr;
 }
 
-export function toArrayParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-): Promise<T[]> {
+export function toArrayParallel<T>(): ParallelGeneratorCallbackArgs<T, T[]> {
   const arr: T[] = [];
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     onNext(value) {
       arr.push(value);
     },
     onDone(resolve) {
       resolve(arr);
     },
-  });
+  };
 }

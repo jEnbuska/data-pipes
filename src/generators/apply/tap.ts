@@ -46,7 +46,7 @@ export async function* tapAsync<T>(
 ): IYieldedAsyncGenerator<T> {
   let index = 0;
   for await (const next of generator) {
-    consumer(next, index++);
+    await consumer(next, index++);
     yield next;
   }
 }
@@ -60,8 +60,8 @@ export function tapParallel<T>(
   return ParallelGenerator.create({
     generator,
     parallel,
-    onNext(value) {
-      void consumer(value, index++);
+    async onNext(value) {
+      await consumer(value, index++);
       return [value];
     },
   });

@@ -7,7 +7,6 @@ describe("maxBy", () => {
   const numbers = [2, 1, 3, 5, 4];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -23,10 +22,6 @@ describe("maxBy", () => {
         number | void
       >),
     ).toStrictEqual(3);
-  });
-
-  test("from single", () => {
-    expect(fromSingle.map(modulo4).first()).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {

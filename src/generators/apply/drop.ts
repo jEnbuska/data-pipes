@@ -5,6 +5,8 @@ import type { IYieldedParallelGenerator } from "../parallel/types.ts";
 
 export interface IYieldedDrop<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/drop}
+   *
    * Skips the first `count` items produced by the generator, then yields
    * the remaining items to the next operation in the pipeline.
    *

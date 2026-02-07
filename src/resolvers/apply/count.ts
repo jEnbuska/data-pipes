@@ -1,8 +1,7 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedCount<TFlow extends IYieldedFlow> {
@@ -40,19 +39,17 @@ export async function countAsync(
   return acc;
 }
 
-export function countParallel(
-  generator: IYieldedParallelGenerator,
-  parallel: number,
-): Promise<number> {
+export function countParallel(): ParallelGeneratorCallbackArgs<
+  unknown,
+  number
+> {
   let count = 0;
-  return ParallelGeneratorResolver.run({
-    generator,
-    parallel,
+  return {
     async onNext() {
       count++;
     },
     onDone(resolve) {
       resolve(count);
     },
-  });
+  };
 }

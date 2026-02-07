@@ -1,8 +1,7 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
-import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedLast<T, TFlow extends IYieldedFlow> {
@@ -40,19 +39,17 @@ export async function lastAsync<T>(
   return last;
 }
 
-export function lastParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-): Promise<T | undefined> {
+export function lastParallel<T>(): ParallelGeneratorCallbackArgs<
+  T,
+  T | undefined
+> {
   let last: T | undefined;
-  return ParallelGeneratorResolver.run({
-    parallel,
-    generator,
+  return {
     onNext(value) {
       last = value;
     },
     onDone(resolve) {
       resolve(last);
     },
-  });
+  };
 }

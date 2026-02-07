@@ -19,10 +19,12 @@ import { takeParallel } from "../generators/apply/take.ts";
 import { takeLastParallel } from "../generators/apply/takeLast.ts";
 import { takeWhileParallel } from "../generators/apply/takeWhile.ts";
 import { tapParallel } from "../generators/apply/tap.ts";
+import { assertNotNegative } from "../generators/apply/utils/take.ts";
 import type { IYieldedAsyncGenerator } from "../generators/async/types.ts";
 import type { IYieldedParallelGenerator } from "../generators/parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
 import { ParallelYieldedResolver } from "../resolvers/parallel/ParallelYieldedResolver.ts";
+import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IParallelYielded } from "./types.ts";
 
 export class ParallelYielded<T>
@@ -94,22 +96,23 @@ export class ParallelYielded<T>
   }
 
   drop(count: number) {
-    if (count < 0) {
-      throw new RangeError(`RangeError: ${count} must be positive`);
-    }
+    assertNotNegative(count);
     return this.#next(dropParallel, count);
   }
 
-  dropLast(...args: Parameters<IParallelYielded<T>["dropLast"]>) {
-    return this.#next(dropLastParallel, ...args);
+  dropLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(dropLastParallel, count);
   }
 
-  take(...args: Parameters<IParallelYielded<T>["take"]>) {
-    return this.#next(takeParallel, ...args);
+  take(count: number) {
+    assertNotNegative(count);
+    return this.#next(takeParallel, count);
   }
 
-  takeLast(...args: Parameters<IParallelYielded<T>["takeLast"]>) {
-    return this.#next(takeLastParallel, ...args);
+  takeLast(count: number) {
+    assertNotNegative(count);
+    return this.#next(takeLastParallel, count);
   }
 
   takeWhile(...args: Parameters<IParallelYielded<T>["takeWhile"]>) {
@@ -153,5 +156,14 @@ export class ParallelYielded<T>
 
   mapPairwise<TOut>(mapper: (previous: T, next: T) => IMaybeAsync<TOut>) {
     return this.#next(mapPairwiseParallel, mapper);
+  }
+
+  withSignal(signal?: AbortSignal): ISharedYieldedResolver<T, "parallel"> {
+    return new ParallelYieldedResolver<T>(
+      this.parent,
+      this.generator,
+      this._parallel,
+      signal,
+    );
   }
 }

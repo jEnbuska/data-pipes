@@ -5,7 +5,6 @@ describe("minBy", () => {
   const numbers = [2, 1, 3, 5, 4];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -21,10 +20,6 @@ describe("minBy", () => {
         number | void
       >),
     ).toBe(4);
-  });
-
-  test("from single", () => {
-    expect(fromSingle.first() satisfies number | undefined).toEqual(numbers[0]);
   });
 
   test("from async generator", async () => {

@@ -2,10 +2,11 @@ import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
 import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
 import type { IYieldedParallelGenerator } from "../parallel/types.ts";
-import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedTake<T, TFlow extends IYieldedFlow> {
   /**
+   * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/take}
+   *
    * Yields only the first `count` items produced by the generator to the
    * next operation in the pipeline, then stops the generator.
    *
@@ -35,17 +36,6 @@ export interface IYieldedTake<T, TFlow extends IYieldedFlow> {
    * ```
    */
   take(count: number): INextYielded<T, TFlow>;
-}
-
-export function* takeSync<T>(
-  generator: IYieldedSyncGenerator<T>,
-  count: number,
-): IYieldedSyncGenerator<T> {
-  if (count <= 0) return;
-  for (const next of generator) {
-    yield next;
-    if (!--count) return;
-  }
 }
 
 export async function* takeAsync<T>(

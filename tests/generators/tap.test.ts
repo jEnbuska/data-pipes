@@ -4,16 +4,6 @@ import { createTestSets } from "../utils/createTestSets.ts";
 import { simpleMock } from "../utils/simpleMock.ts";
 
 describe("tap", () => {
-  test("chainable single value", () => {
-    let called = 0;
-    const callback = (n: number) => {
-      called++;
-      expect(n).toBe(1);
-    };
-    Yielded.from(1).tap(callback).consume();
-    expect(called).toBe(1);
-  });
-
   test("with multiple", () => {
     const args = [1, 2];
     let called = 0;
@@ -26,7 +16,6 @@ describe("tap", () => {
   const numbers = [1, 2];
   const {
     fromResolvedPromises,
-    fromSingle,
     fromAsyncGenerator,
     fromGenerator,
     fromPromises,
@@ -34,11 +23,6 @@ describe("tap", () => {
     fromEmpty,
     fromEmptyAsync,
   } = createTestSets(numbers);
-  test("from single", () => {
-    const callback = simpleMock(numbers);
-    fromSingle.tap(callback).consume() satisfies void;
-    expect(callback.getCalled()).toBe(1);
-  });
 
   test("from resolved promises", async () => {
     const args = [1, 2];

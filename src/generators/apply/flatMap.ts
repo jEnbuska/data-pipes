@@ -18,6 +18,10 @@ import {
 
 export interface IYieldedFlatMap<T, TFlow extends IYieldedFlow> {
   /**
+   * See Iterator API {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Iterator/flatMap}
+   *
+   * See Array API {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap}
+   *
    * Maps each item produced by the generator using the provided mapper function
    * and flattens the result one level before yielding items to the next operation.
    *
