@@ -1,7 +1,6 @@
 import type { IYieldedFlow } from "../general/types.ts";
 import type { IYieldedToSet } from "../resolvers/apply/toSet.ts";
 import type { ISharedYieldedResolver } from "../resolvers/types.ts";
-import { Yielded } from "../sync/Yielded.ts";
 import type { IYieldedBatch } from "./apply/batch.ts";
 import type { IYieldedChunkBy } from "./apply/chunkBy.ts";
 import type { IYieldedDrop } from "./apply/drop.ts";
@@ -56,62 +55,4 @@ export interface IYieldedOperations<T, TFlow extends IYieldedFlow>
     IYieldedToSet<T, TFlow>,
     IYieldedMapPairwise<T, TFlow> {
   withSignal(signal?: AbortSignal): ISharedYieldedResolver<T, TFlow>;
-}
-
-type Customer = any;
-type CustomerSortKey = any;
-type SortDirection = any;
-function getContractors(orgId: string) {
-  return Promise.resolve([{ id: "1" }, { id: "2" }, { id: "3" }]);
-}
-
-function getContractorCustomers(contractorId: string) {
-  return [
-    { name: "Customer A", isActive: true },
-    { name: "Customer B", isActive: false },
-  ];
-}
-
-function mergeWith(b: any) {
-  return (a: any) => ({ ...a, ...b });
-}
-
-function createComparator(args: any) {
-  return (a: any, b: any) => 0;
-}
-
-type GetOrganizationCustomersListResponse = {
-  organizationId: string;
-  page: number;
-  pageSize: number;
-  sortBy: CustomerSortKey[];
-  sortDirection: SortDirection;
-  locale: string;
-  signal?: AbortSignal;
-};
-async function getOrganizationCustomers(
-  args: GetOrganizationCustomersListResponse,
-): Promise<Customer[]> {
-  const {
-    organizationId,
-    page,
-    pageSize,
-    sortBy,
-    sortDirection,
-    locale,
-    signal,
-  } = args;
-  const contractors = await getContractors(organizationId);
-  return Yielded.from(contractors)
-    .parallel(5)
-    .flatMap(async ({ id }) => {
-      const customers = getContractorCustomers(id);
-      return customers.map(mergeWith({ contactorId: id }));
-    })
-    .filter((customer) => customer.isActive)
-    .sorted(createComparator({ locale, sortBy, sortDirection }))
-    .drop(page * pageSize)
-    .take(pageSize)
-    .withSignal(signal)
-    .toArray();
 }
