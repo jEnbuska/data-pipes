@@ -17,10 +17,10 @@ const getPageOfCustomers = async (
 ) => {
   const { page, pageSize, sortBy, sortDirection, signal, } = pagination;
   return Yielded.from(getContractors(organizationId))
+      // Allow up to 5 concurrent calls to getContractorCustomers
     .parallel(5)
-    // Allow up to 5 concurrent calls to getContractorCustomers
     .flatMap(async (contractor) => {
-      const customers = await getContractorCustomers(contractor.id);
+      const customers = await getContractorCustomers(contractor.id, { signal });
       return customers.map(assignWith({ contactorId: contractor.id }));
     })
     // Back to 1 concurrency for the rest of the pipeline
