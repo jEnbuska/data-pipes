@@ -5,7 +5,7 @@ import { delay } from "../utils/delay.ts";
 import { MockIYieldedParallelGenerator } from "../utils/MockGenerators.ts";
 
 describe("ParallelGenerator", () => {
-  describe("handleNext YIELD", () => {
+  describe("handleNext", () => {
     test("empty generator, parallel 1", async () => {
       const generator = ParallelGenerator.create({
         generator: MockIYieldedParallelGenerator([]),
