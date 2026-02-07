@@ -65,7 +65,7 @@ export function takeWhileParallel<T>(
     parallel,
     async onNext(next) {
       if (await predicate(next)) return [next];
-      return null;
+      return "STOP";
     },
   });
 }

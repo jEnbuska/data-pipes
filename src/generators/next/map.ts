@@ -6,7 +6,6 @@ import type {
   IYieldedParallelGenerator,
   MaybeAsync,
 } from "../../shared.types";
-import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
 export interface IYieldedMap<T, TFlow extends IYieldedFlow> {
@@ -41,12 +40,12 @@ export function mapParallel<T, TOut>(
   parallel: number,
   mapper: (next: T, index: number) => MaybeAsync<TOut>,
 ): IYieldedParallelGenerator<TOut> {
-  const callback = withIndex1(mapper);
+  let index = 0;
   return ParallelGenerator.create<T, TOut>({
     generator,
     parallel,
     async onNext(next) {
-      return [await callback(next)];
+      return [await mapper(next, index++)];
     },
   });
 }

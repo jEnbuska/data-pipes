@@ -1,5 +1,5 @@
 import type { IYieldedIterableSource } from "../resolvers/resolver.types.ts";
-import type { MaybeAsync } from "../shared.types.ts";
+import type { IYieldedGenerator, MaybeAsync } from "../shared.types.ts";
 
 export function isAsyncIterableProvider<T>(
   value: unknown,
@@ -11,16 +11,28 @@ export function isAsyncIterableProvider<T>(
   );
 }
 
+function isAsyncIterable<T>(value: unknown): value is AsyncIterable<T> {
+  return (
+    Boolean(value) &&
+    typeof (value as AsyncIterable<any>)[Symbol.asyncIterator] === "function"
+  );
+}
+
+function isIterable<T>(value: unknown): value is Iterable<T> {
+  return (
+    Boolean(value) &&
+    typeof (value as Iterable<any>)[Symbol.iterator] === "function"
+  );
+}
+
 export function asyncIterableProviderToAsyncIterable<T>(
   value: IYieldedIterableSource<T, "async">,
 ): AsyncIterable<T> | Iterable<T> {
-  if (isIterableProvider<T>(value)) {
-    return iterableProviderToIterable<T>(value);
+  if (isAsyncIterable<T>(value)) {
+    return value;
   }
-  if (
-    typeof (value as AsyncIterable<any>)[Symbol.asyncIterator] === "function"
-  ) {
-    return value as AsyncIterable<T>;
+  if (isIterable<T>(value)) {
+    return value;
   }
   const disposed = false;
   return {
@@ -59,7 +71,7 @@ export function iterableProviderToIterable<T>(
   };
 }
 
-export function parallelIterableProviderToAsyncIterable<TOut>(
+function parallelIterableProviderToAsyncIterable<TOut>(
   value: IYieldedIterableSource<TOut, "parallel">,
 ): AsyncIterator<MaybeAsync<TOut>> | Iterator<MaybeAsync<TOut>> {
   if ("next" in value && typeof (value as any).next === "function") {
@@ -73,5 +85,38 @@ export function parallelIterableProviderToAsyncIterable<TOut>(
   if (typeof (value as Iterable<TOut>)[Symbol.iterator] === "function") {
     return (value as any)[Symbol.iterator]() as Iterator<TOut>;
   }
-  throw new Error("Invalid ExpandResult");
+  throw new Error("Invalid IYieldedIterableSource parallel source");
+}
+
+export class ParallelBufferGenerator<T> implements IYieldedGenerator<
+  T,
+  "async"
+> {
+  #iterator: AsyncIterator<MaybeAsync<T>> | Iterator<MaybeAsync<T>>;
+
+  constructor(source: IYieldedIterableSource<T, "parallel">) {
+    this.#iterator = parallelIterableProviderToAsyncIterable(source);
+  }
+
+  [Symbol.asyncIterator]() {
+    return this;
+  }
+
+  async [Symbol.asyncDispose]() {}
+
+  async return(): Promise<IteratorResult<T, undefined | void>> {
+    return { done: true, value: undefined };
+  }
+
+  async throw(): Promise<IteratorResult<T, undefined | void>> {
+    return { done: true, value: undefined };
+  }
+
+  async next(): Promise<IteratorResult<T, void | undefined>> {
+    const result = await this.#iterator.next();
+    if (result.done) {
+      return result;
+    }
+    return { done: false, value: await result.value };
+  }
 }

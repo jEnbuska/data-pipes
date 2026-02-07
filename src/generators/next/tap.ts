@@ -5,7 +5,6 @@ import type {
   IYieldedIterator,
   IYieldedParallelGenerator,
 } from "../../shared.types";
-import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGenerator } from "../ParallelGenerator.ts";
 
 export interface IYieldedTap<T, TFlow extends IYieldedFlow> {
@@ -60,12 +59,12 @@ export function tapParallel<T>(
   parallel: number,
   consumer: (next: T, index: number) => unknown,
 ): IYieldedParallelGenerator<T> {
-  const callback = withIndex1(consumer);
+  let index = 0;
   return ParallelGenerator.create({
     generator,
     parallel,
     onNext(value) {
-      void callback(value);
+      void consumer(value, index++);
       return [value];
     },
   });

@@ -103,9 +103,38 @@ describe("flatMap", () => {
       .flatMap(function* (n) {
         if (n % 2) return yield* new Set([n, n * 10]);
         yield n;
+        yield* [n + 1];
       })
-      .toArray() satisfies number[]; // [1, 10, 2, 3, 30]
+      .toArray() satisfies number[];
 
-    expect(result).toStrictEqual([1, 10, 2, 3, 30]);
+    expect(result).toStrictEqual([1, 10, 2, 3, 3, 30]);
+  });
+
+  test("from async iterable", async () => {
+    const result = (await Yielded.from([1, 2, 3])
+      .awaited()
+      .flatMap(async function* (n) {
+        if (n % 2) return yield* new Set([n, n * 10]);
+        yield n;
+        yield Promise.resolve(n + 1);
+        yield* [n + 2, Promise.resolve(n + 3)];
+      })
+      .toArray()) satisfies number[];
+
+    expect(result).toStrictEqual([1, 10, 2, 3, 4, 5, 3, 30]);
+  });
+
+  test("from parallel iterable", async () => {
+    const result = (await Yielded.from([1, 2, 3])
+      .parallel(3)
+      .flatMap(async function* (n) {
+        if (n % 2) return yield* new Set([n, n * 10]);
+        yield n;
+        yield Promise.resolve(n + 1);
+        yield* [n + 2, Promise.resolve(n + 3)];
+      })
+      .toArray()) satisfies number[];
+
+    expect(result.sort()).toStrictEqual([1, 10, 2, 3, 4, 5, 3, 30].sort());
   });
 });

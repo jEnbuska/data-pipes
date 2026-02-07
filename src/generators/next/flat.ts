@@ -37,18 +37,22 @@ export interface IYieldedFlat<T, TFlow extends IYieldedFlow> {
   ): INextYielded<FlatArray<T[], Depth>, TFlow>;
 }
 
+function nextToFlat<T, const Depth extends number = 1>(
+  next: T,
+  depth: Depth,
+): Array<FlatArray<T[], Depth>> {
+  if (!Array.isArray(next) || depth <= 0) {
+    return [next] as any;
+  }
+  return next.flat(depth - 1) as any;
+}
+
 export function* flatSync<T, const Depth extends number = 1>(
   generator: IYieldedIterator<T>,
   depth?: Depth,
 ): IYieldedIterator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
-  for (const next of generator) {
-    if (!Array.isArray(next) || depth <= 0) {
-      yield next as any;
-      continue;
-    }
-    yield* next.flat(depth - 1) as any;
-  }
+  for (const next of generator) yield* nextToFlat(next, depth);
 }
 
 export async function* flatAsync<T, const Depth extends number = 1>(
@@ -56,13 +60,7 @@ export async function* flatAsync<T, const Depth extends number = 1>(
   depth?: Depth,
 ): IYieldedAsyncGenerator<FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
-  for await (const next of generator) {
-    if (!Array.isArray(next) || depth <= 0) {
-      yield next as any;
-      continue;
-    }
-    yield* next.flat(depth - 1) as any;
-  }
+  for await (const next of generator) yield* nextToFlat(next, depth);
 }
 
 export function flatParallel<T, const Depth extends number = 1>(
@@ -74,12 +72,6 @@ export function flatParallel<T, const Depth extends number = 1>(
   return ParallelGenerator.create<T, FlatArray<T[], Depth>>({
     generator,
     parallel,
-    async onNext(next) {
-      const value = await next;
-      if (!Array.isArray(value) || depth <= 0) {
-        return [next];
-      }
-      return value.flat(depth - 1) as any;
-    },
+    onNext: (next) => nextToFlat(next, depth),
   });
 }

@@ -8,7 +8,6 @@ import type {
 } from "../../shared.types";
 import { memoize } from "../../utils/memoize.ts";
 import { getPlaceholder, isPlaceholder } from "../../utils/placeholder.ts";
-import { withIndex1 } from "../../utils/withIndex.ts";
 import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
 import type { ReturnValue } from "../resolver.types";
 
@@ -42,15 +41,15 @@ export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
 
 export function maxBySync<T>(
   generator: IYieldedIterator<T>,
-  getValue: (next: T, index: number) => number,
+  callback: (next: T, index: number) => number,
 ): T | undefined {
   const next = generator.next();
-  const callback = withIndex1(getValue);
+  let index = 0;
   if (next.done) return;
   let current = next.value;
-  let currentMax = callback(current);
+  let currentMax = callback(current, index++);
   for (const next of generator) {
-    const value = callback(next);
+    const value = callback(next, index++);
     if (value > currentMax) {
       current = next;
       currentMax = value;
@@ -61,15 +60,15 @@ export function maxBySync<T>(
 
 export async function maxByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  getValue: (next: T, index: number) => MaybeAsync<number>,
+  callback: (next: T, index: number) => MaybeAsync<number>,
 ): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;
-  const callback = withIndex1(getValue);
+  let index = 0;
   let acc = next.value;
-  let max = await callback(acc);
+  let max = await callback(acc, index++);
   for await (const next of generator) {
-    const numb = await callback(next);
+    const numb = await callback(next, index++);
     if (numb > max) {
       acc = next;
       max = numb;
