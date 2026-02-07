@@ -1,11 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedConsume<TFlow extends IYieldedFlow> {
   /**
@@ -20,10 +18,10 @@ export interface IYieldedConsume<TFlow extends IYieldedFlow> {
    *   .tap(n => console.log(n)) // logs 1, 2, 3
    *   .consume() satisfies void;
    *  */
-  consume(): ReturnValue<void, TFlow>;
+  consume(): IResolverReturn<void, TFlow>;
 }
 
-export function consumeSync(generator: IYieldedIterator) {
+export function consumeSync(generator: IYieldedSyncGenerator) {
   for (const _ of generator) {
     /* Do nothing */
   }

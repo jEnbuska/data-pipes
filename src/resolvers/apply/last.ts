@@ -1,11 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedLast<T, TFlow extends IYieldedFlow> {
   /**
@@ -25,10 +23,10 @@ export interface IYieldedLast<T, TFlow extends IYieldedFlow> {
    *   .last() satisfies number | undefined // undefined
    * ```
    */
-  last(): ReturnValue<T | undefined, TFlow>;
+  last(): IResolverReturn<T | undefined, TFlow>;
 }
 
-export function lastSync<T>(generator: IYieldedIterator<T>) {
+export function lastSync<T>(generator: IYieldedSyncGenerator<T>) {
   let last: undefined | T;
   for (const next of generator) last = next;
   return last;

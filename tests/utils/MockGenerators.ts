@@ -1,5 +1,5 @@
 import type { VitestUtils } from "vitest";
-import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
+import type { IYieldedParallelGenerator } from "../../src/generators/parallel/types.ts";
 import { delay } from "./delay.ts";
 
 export function MockIYieldedParallelGenerator<T>([...values]: Array<

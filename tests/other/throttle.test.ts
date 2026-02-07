@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { throttle } from "../../src/utils/throttle.ts";
+import { throttle } from "../../src/general/utils/parallel.ts";
 import { delay } from "../utils/delay.ts";
 
 describe("throttle", () => {

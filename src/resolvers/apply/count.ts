@@ -1,11 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedCount<TFlow extends IYieldedFlow> {
   /**
@@ -22,13 +20,13 @@ export interface IYieldedCount<TFlow extends IYieldedFlow> {
    * Yielded.from([]).count() satisfies number // 0
    * ```
    */
-  count(): ReturnValue<number, TFlow>;
+  count(): IResolverReturn<number, TFlow>;
 }
 
 function counter(_acc: unknown, _next: unknown, index: number) {
   return index + 1;
 }
-export function countSync(generator: IYieldedIterator<any>): number {
+export function countSync(generator: IYieldedSyncGenerator<any>): number {
   return generator.reduce(counter, 0);
 }
 

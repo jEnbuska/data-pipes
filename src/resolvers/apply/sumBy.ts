@@ -1,12 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-  MaybeAsync,
-} from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedSumBy<T, TFlow extends IYieldedFlow> {
   /**
@@ -24,11 +21,11 @@ export interface IYieldedSumBy<T, TFlow extends IYieldedFlow> {
    * Yielded.from([] as number[])
    * .sumBy(n => n) satisfies number | undefined // 0
    */
-  sumBy(fn: (next: T) => number): ReturnValue<number, TFlow>;
+  sumBy(fn: (next: T) => number): IResolverReturn<number, TFlow>;
 }
 
 export function sumBySync<T>(
-  generator: IYieldedIterator<T>,
+  generator: IYieldedSyncGenerator<T>,
   mapper: (next: T) => number,
 ): number {
   return generator.reduce((acc, next) => mapper(next) + acc, 0);
@@ -36,7 +33,7 @@ export function sumBySync<T>(
 
 export async function sumByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  mapper: (next: T) => MaybeAsync<number>,
+  mapper: (next: T) => IMaybeAsync<number>,
 ): Promise<number> {
   let acc = 0;
   for await (const next of generator) {
@@ -48,7 +45,7 @@ export async function sumByAsync<T>(
 export function sumByParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  mapper: (next: T) => MaybeAsync<number>,
+  mapper: (next: T) => IMaybeAsync<number>,
 ): Promise<number> {
   let acc = 0;
   return ParallelGeneratorResolver.run({

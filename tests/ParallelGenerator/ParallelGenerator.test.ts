@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { ParallelGenerator } from "../../src/generators/ParallelGenerator.ts";
-import { ParallelYielded } from "../../src/generators/ParallelYielded.ts";
+import { ParallelGenerator } from "../../src/generators/parallel/ParallelGenerator.ts";
+import { ParallelYielded } from "../../src/parallel/ParallelYielded.ts";
 import { delay } from "../utils/delay.ts";
 import { MockIYieldedParallelGenerator } from "../utils/MockGenerators.ts";
 

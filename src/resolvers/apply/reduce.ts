@@ -1,13 +1,10 @@
-import type {
-  ICallbackReturn,
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedParallelGenerator,
-  MaybeAsync,
-} from "../../shared.types";
-import { throttle } from "../../utils/throttle.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
+import { throttle } from "../../general/utils/parallel.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { ICallbackReturn } from "../../generators/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   /**
@@ -51,20 +48,20 @@ export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
       index: number,
     ) => ICallbackReturn<TOut, TFlow>,
     initialValue: TFlow extends "sync" ? TOut : Promise<TOut> | TOut,
-  ): ReturnValue<TOut, TFlow>;
+  ): IResolverReturn<TOut, TFlow>;
   reduce(
     reducer: (acc: T, next: T, index: number) => ICallbackReturn<T, TFlow>,
-  ): ReturnValue<T | undefined, TFlow>;
+  ): IResolverReturn<T | undefined, TFlow>;
 }
 
 export async function reduceAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  reducer: (acc: T, next: T, index: number) => MaybeAsync<T>,
+  reducer: (acc: T, next: T, index: number) => IMaybeAsync<T>,
 ): Promise<T>;
 export async function reduceAsync<T, TOut>(
   generator: IYieldedAsyncGenerator<T>,
-  reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
-  initialValue: MaybeAsync<TOut>,
+  reducer: (acc: TOut, next: T, index: number) => IMaybeAsync<TOut>,
+  initialValue: IMaybeAsync<TOut>,
 ): Promise<TOut>;
 export async function reduceAsync(
   generator: IYieldedAsyncGenerator,
@@ -89,13 +86,13 @@ export async function reduceAsync(
 export function reduceParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  reducer: (acc: T, next: T, index: number) => MaybeAsync<T>,
+  reducer: (acc: T, next: T, index: number) => IMaybeAsync<T>,
 ): Promise<T>;
 export function reduceParallel<T, TOut>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  reducer: (acc: TOut, next: T, index: number) => MaybeAsync<TOut>,
-  initialValue: MaybeAsync<TOut>,
+  reducer: (acc: TOut, next: T, index: number) => IMaybeAsync<TOut>,
+  initialValue: IMaybeAsync<TOut>,
 ): Promise<TOut>;
 export function reduceParallel(
   generator: IYieldedParallelGenerator,

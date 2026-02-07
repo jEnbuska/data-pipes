@@ -1,14 +1,11 @@
-import type {
-  ICallbackReturn,
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-  MaybeAsync,
-} from "../../shared.types";
-import { throttle } from "../../utils/throttle.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
+import { throttle } from "../../general/utils/parallel.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import type { ICallbackReturn } from "../../generators/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
   /**
@@ -29,7 +26,7 @@ export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
    * */
   toSorted(
     compare: (previous: T, next: T) => ICallbackReturn<number, TFlow>,
-  ): ReturnValue<T[], TFlow>;
+  ): IResolverReturn<T[], TFlow>;
 }
 
 function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
@@ -48,7 +45,7 @@ function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
 
 export function createIndexFinderAsync<T>(
   arr: T[],
-  comparator: (a: T, b: T) => MaybeAsync<number>,
+  comparator: (a: T, b: T) => IMaybeAsync<number>,
 ) {
   return async function findIndexAsync(
     next: T,
@@ -68,7 +65,7 @@ export function createIndexFinderAsync<T>(
 }
 
 export function toSortedSync<T>(
-  generator: IYieldedIterator<T>,
+  generator: IYieldedSyncGenerator<T>,
   compareFn: (a: T, b: T) => number,
 ): T[] {
   const arr: T[] = [];
@@ -81,7 +78,7 @@ export function toSortedSync<T>(
 
 export async function toSortedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => MaybeAsync<number>,
+  compareFn: (a: T, b: T) => IMaybeAsync<number>,
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
@@ -98,7 +95,7 @@ export async function toSortedAsync<T>(
 export function toSortedParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  compareFn: (a: T, b: T) => MaybeAsync<number>,
+  compareFn: (a: T, b: T) => IMaybeAsync<number>,
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);

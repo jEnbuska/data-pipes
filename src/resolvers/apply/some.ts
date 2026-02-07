@@ -1,10 +1,8 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedParallelGenerator,
-} from "../../shared.types";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedSome<T, TFlow extends IYieldedFlow> {
   /**
@@ -33,7 +31,7 @@ export interface IYieldedSome<T, TFlow extends IYieldedFlow> {
    */
   some(
     predicate: (next: T, index: number) => unknown,
-  ): ReturnValue<boolean, TFlow>;
+  ): IResolverReturn<boolean, TFlow>;
 }
 export async function someAsync<T>(
   generator: IYieldedAsyncGenerator<T>,

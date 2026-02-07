@@ -1,5 +1,5 @@
 import { describe, expect, test, vi } from "vitest";
-import { ParallelGeneratorResolver } from "../../src/resolvers/ParallelGeneratorResolver.ts";
+import { ParallelGeneratorResolver } from "../../src/resolvers/parallel/ParallelGeneratorResolver.ts";
 import {
   MockDelayedValuesGenerator,
   MockIYieldedParallelGenerator,

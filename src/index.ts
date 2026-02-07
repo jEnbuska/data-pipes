@@ -1,3 +1,5 @@
-export { Yielded } from "./generators/Yielded.ts";
+export { Yielded } from "./sync/Yielded.ts";
 
-export type { IAsyncYielded, IYielded } from "./yielded.types";
+export type { IYielded } from "./sync/types.ts";
+export type { IAsyncYielded } from "./async/types.ts";
+export type { IParallelYielded } from "./parallel/types.ts";

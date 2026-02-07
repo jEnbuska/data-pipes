@@ -1,11 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-} from "../../shared.types";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToReversed<T, TFlow extends IYieldedFlow> {
   /**
@@ -24,10 +22,10 @@ export interface IYieldedToReversed<T, TFlow extends IYieldedFlow> {
    *   .toReversed() satisfies number[] // [3,2,1]
    * ```
    **/
-  toReversed(): ReturnValue<T[], TFlow>;
+  toReversed(): IResolverReturn<T[], TFlow>;
 }
 
-export function toReversedSync<T>(generator: IYieldedIterator<T>): T[] {
+export function toReversedSync<T>(generator: IYieldedSyncGenerator<T>): T[] {
   const arr: T[] = [];
   for (const next of generator) {
     arr.unshift(next);

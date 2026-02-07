@@ -1,13 +1,10 @@
-import type {
-  ICallbackReturn,
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-  MaybeAsync,
-} from "../../shared.types";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import type { ICallbackReturn } from "../../generators/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
   /**
@@ -42,18 +39,24 @@ export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
     keySelector: (next: T) => ICallbackReturn<TKey, TFlow>,
     groups: TGroups[],
-  ): ReturnValue<
+  ): IResolverReturn<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>,
     TFlow
   >;
   groupBy<TKey extends PropertyKey>(
     keySelector: (next: T) => ICallbackReturn<TKey, TFlow>,
     groups?: undefined,
-  ): ReturnValue<Partial<Record<TKey, T[]>>, TFlow>;
+  ): IResolverReturn<Partial<Record<TKey, T[]>>, TFlow>;
+}
+
+function createInitialGroups(
+  groups: undefined | PropertyKey[] = [],
+): Partial<Record<PropertyKey, any>> {
+  return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }
 
 export function groupBySync<T, TKey extends PropertyKey>(
-  generator: IYieldedIterator<T>,
+  generator: IYieldedSyncGenerator<T>,
   keySelector: (next: T) => TKey,
   groups?: undefined,
 ): Partial<Record<TKey, T[]>>;
@@ -62,12 +65,12 @@ export function groupBySync<
   TKey extends PropertyKey,
   TGroups extends PropertyKey,
 >(
-  generator: IYieldedIterator<T>,
+  generator: IYieldedSyncGenerator<T>,
   keySelector: (next: T) => TKey,
   groups: TGroups[],
 ): Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>;
 export function groupBySync(
-  generator: IYieldedIterator,
+  generator: IYieldedSyncGenerator,
   keySelector: (next: unknown) => PropertyKey,
   groups: undefined | PropertyKey[],
 ): Partial<Record<PropertyKey, unknown[]>> {
@@ -82,7 +85,7 @@ export function groupBySync(
 
 export async function groupByAsync(
   generator: IYieldedAsyncGenerator,
-  keySelector: (next: unknown) => MaybeAsync<PropertyKey>,
+  keySelector: (next: unknown) => IMaybeAsync<PropertyKey>,
   groups: PropertyKey[] = [],
 ): Promise<unknown> {
   const record = createInitialGroups(groups);
@@ -95,9 +98,9 @@ export async function groupByAsync(
 }
 
 export function groupByParallel(
-  generator: IYieldedParallelGenerator<unknown>,
+  generator: IYieldedParallelGenerator,
   parallel: number,
-  keySelector: (next: unknown) => MaybeAsync<PropertyKey>,
+  keySelector: (next: unknown) => IMaybeAsync<PropertyKey>,
   groups: PropertyKey[] = [],
 ) {
   const record = createInitialGroups(groups);
@@ -115,10 +118,4 @@ export function groupByParallel(
       resolve(record);
     },
   });
-}
-
-function createInitialGroups(
-  groups: undefined | PropertyKey[] = [],
-): Partial<Record<PropertyKey, any>> {
-  return Object.fromEntries(groups.map((key) => [key, [] as any[]]));
 }

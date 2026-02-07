@@ -1,4 +1,4 @@
-import type { IYieldedParallelGenerator } from "../../src/shared.types.ts";
+import type { IYieldedParallelGenerator } from "../../src/generators/parallel/types.ts";
 import { MockIYieldedParallelGenerator } from "./MockGenerators.ts";
 
 export function parallelSource(

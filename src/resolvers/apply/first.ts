@@ -1,11 +1,9 @@
-import type {
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-} from "../../shared.types.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types.ts";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
   /**
@@ -14,10 +12,10 @@ export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
    * Iteration stops as soon as the first item is produced, so the generator
    * is **not fully consumed**.
    * If the generator produces no items, `undefined` is returned. */
-  first(): ReturnValue<T | undefined, TFlow>;
+  first(): IResolverReturn<T | undefined, TFlow>;
 }
 
-export function firstSync<T>(generator: IYieldedIterator<T>) {
+export function firstSync<T>(generator: IYieldedSyncGenerator<T>) {
   const next = generator.next();
   if (next.done) return undefined;
   return next.value;

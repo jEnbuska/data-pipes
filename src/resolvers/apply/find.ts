@@ -1,11 +1,9 @@
-import type {
-  ICallbackReturn,
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedParallelGenerator,
-} from "../../shared.types";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { ICallbackReturn } from "../../generators/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedFind<T, TFlow extends IYieldedFlow> {
   /**
@@ -29,10 +27,10 @@ export interface IYieldedFind<T, TFlow extends IYieldedFlow> {
    */
   find<TOut extends T>(
     predicate: (next: T) => next is TOut,
-  ): ReturnValue<TOut | undefined, TFlow>;
+  ): IResolverReturn<TOut | undefined, TFlow>;
   find(
     predicate: (next: T) => ICallbackReturn<unknown, TFlow>,
-  ): ReturnValue<T | undefined, TFlow>;
+  ): IResolverReturn<T | undefined, TFlow>;
 }
 
 export function findAsync<T, TOut extends T = T>(
@@ -65,7 +63,7 @@ export function findParallel<T>(
   predicate: (value: T, index: number) => unknown,
 ): Promise<T>;
 export function findParallel(
-  generator: IYieldedParallelGenerator<unknown>,
+  generator: IYieldedParallelGenerator,
   parallel: number,
   predicate: (value: unknown, index: number) => unknown,
 ): Promise<unknown> {

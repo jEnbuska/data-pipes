@@ -1,15 +1,12 @@
-import type {
-  ICallbackReturn,
-  IYieldedAsyncGenerator,
-  IYieldedFlow,
-  IYieldedIterator,
-  IYieldedParallelGenerator,
-  MaybeAsync,
-} from "../../shared.types";
-import { memoize } from "../../utils/memoize.ts";
-import { getPlaceholder, isPlaceholder } from "../../utils/placeholder.ts";
-import { ParallelGeneratorResolver } from "../ParallelGeneratorResolver.ts";
-import type { ReturnValue } from "../resolver.types";
+import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
+import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import type { ICallbackReturn } from "../../generators/types.ts";
+import { ParallelGeneratorResolver } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IResolverReturn } from "../types.ts";
+import { memoize } from "./utils/memoize.ts";
+import { getPlaceholder, isPlaceholder } from "./utils/placeholder.ts";
 
 export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
   /**
@@ -36,11 +33,11 @@ export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
    */
   maxBy(
     selector: (next: T) => ICallbackReturn<number, TFlow>,
-  ): ReturnValue<T | undefined, TFlow>;
+  ): IResolverReturn<T | undefined, TFlow>;
 }
 
 export function maxBySync<T>(
-  generator: IYieldedIterator<T>,
+  generator: IYieldedSyncGenerator<T>,
   callback: (next: T, index: number) => number,
 ): T | undefined {
   const next = generator.next();
@@ -60,7 +57,7 @@ export function maxBySync<T>(
 
 export async function maxByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  callback: (next: T, index: number) => MaybeAsync<number>,
+  callback: (next: T, index: number) => IMaybeAsync<number>,
 ): Promise<T | undefined> {
   const next = await generator.next();
   if (next.done) return;
@@ -80,7 +77,7 @@ export async function maxByAsync<T>(
 export function maxByParallel<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  callback: (next: T, index: number) => MaybeAsync<number>,
+  callback: (next: T, index: number) => IMaybeAsync<number>,
 ): Promise<T | undefined> {
   let acc: { item: T | symbol; value: number | symbol } = {
     item: getPlaceholder(),
