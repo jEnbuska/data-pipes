@@ -5,6 +5,7 @@ import {
 } from "../../general/utils/parallel.ts";
 import { ParallelBufferGenerator } from "../../resolvers/parallel/ParallelBufferGenerator.ts";
 import type { IYieldedGenerator } from "../types.ts";
+import { ParallelAbortError } from "./ParallelAbortError.ts";
 import type {
   IYieldedParallelGenerator,
   ParallelGeneratorOnDone,
@@ -28,7 +29,7 @@ export class ParallelGenerator<
 
   #pendingWork = new Set<any>();
 
-  #abortResolvable = Promise.withResolvers<never>();
+  #abortResolvable = Promise.withResolvers<ParallelAbortError>();
 
   #doneResolvable: PromiseWithResolvers<void> & { resolved?: boolean } =
     Promise.withResolvers<void>();
@@ -108,8 +109,11 @@ export class ParallelGenerator<
       case "aborted": {
         if (this.#state === "aborted") return;
         this.#state = state;
-        this.#abortResolvable.reject(new Error("Aborted"));
+        this.#abortResolvable.resolve(new ParallelAbortError("Aborted"));
         void this.#generator.return?.();
+        for (const next of this.#queue) {
+          next.resolve(returnResult);
+        }
         this.#buffer.length = 0;
         break;
       }
@@ -130,9 +134,12 @@ export class ParallelGenerator<
           return this.#queueHandleNext();
         }
       }
-    } catch (error) {
-      if (this.#state === "aborted") return returnResult;
+    } catch (error: any) {
       this.#setState("aborted");
+      for (const next of this.#queue) {
+        next.resolve(returnResult);
+      }
+      if (error instanceof ParallelAbortError) return returnResult;
       throw error;
     }
   }
@@ -155,17 +162,16 @@ export class ParallelGenerator<
     resolvable?.resolve(result);
   };
 
-  #onHandleNextRejected = (error: any) => {
+  #onHandleNextRejected = () => {
     if (this.#state === "aborted") return;
     this.#setState("aborted");
-    const resolvable = this.#queue.shift();
-    resolvable?.reject(error);
   };
 
   async #handleNext(): Promise<IteratorResult<TOut, void>> {
     while (true) {
       const buffered = await this.#getNextFromBuffer();
       if (buffered) return buffered;
+      if (this.#state !== "running") return this.#handleDone();
       const next = await this.#registerWork(this.#generator.next());
       if (next.done) {
         return this.#handleDone();
@@ -184,11 +190,13 @@ export class ParallelGenerator<
     }
   }
 
-  async #registerWork<T>(work: Promise<T> | T) {
+  async #registerWork<T>(work: Promise<T> | T): Promise<T> {
     const promise = Promise.race([this.#abortResolvable.promise, work]);
     this.#pendingWork.add(promise);
     try {
-      return await promise;
+      const result = await promise;
+      if (result instanceof ParallelAbortError) throw result;
+      return result;
     } finally {
       this.#pendingWork.delete(promise);
     }

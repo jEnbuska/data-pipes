@@ -26,9 +26,11 @@ describe("lift", () => {
   });
 
   test("lift aggregate", () => {
-    const text = Yielded.from(function* () {
-      yield* ["a", "b", "c"];
-    })
+    const text = Yielded.from(
+      (function* () {
+        yield* ["a", "b", "c"];
+      })(),
+    )
       .lift(function* joinStrings(generator) {
         const acc: string[] = [];
         for (const next of generator) {
@@ -41,11 +43,13 @@ describe("lift", () => {
   });
 
   test("lift async", async () => {
-    const text = (await Yielded.from(async function* () {
-      yield "a";
-      yield "b";
-      yield "c";
-    })
+    const text = (await Yielded.from(
+      (async function* () {
+        yield "a";
+        yield "b";
+        yield "c";
+      })(),
+    )
       .lift(async function* joinStrings(generator) {
         const acc: string[] = [];
         for await (const next of generator) {

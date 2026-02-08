@@ -24,11 +24,13 @@ describe("consume", () => {
 
   test("chainable async to consume", async () => {
     const consumed: number[] = [];
-    await Yielded.from(async function* () {
-      for (const value of numbers) {
-        yield value;
-      }
-    })
+    await Yielded.from(
+      (async function* () {
+        for (const value of numbers) {
+          yield value;
+        }
+      })(),
+    )
       .tap((value) => consumed.push(value satisfies number))
       .consume();
     expect(consumed).toStrictEqual(numbers);

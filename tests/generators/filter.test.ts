@@ -17,25 +17,15 @@ describe("filter", () => {
   }
   const {
     fromResolvedPromises,
-    fromAsyncGenerator,
-    fromGenerator,
+
     fromPromises,
     fromArray,
-    fromEmpty,
-    fromEmptyAsync,
+    empty,
   } = createTestSets(numbers);
 
   test("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises.filter(module2).toArray() satisfies Promise<
-        number[]
-      >),
-    ).toStrictEqual([1, 3]);
-  });
-
-  test("from async generator", async () => {
-    expect(
-      await (fromAsyncGenerator.filter(module2).toArray() satisfies Promise<
         number[]
       >),
     ).toStrictEqual([1, 3]);
@@ -50,12 +40,6 @@ describe("filter", () => {
     ).toStrictEqual([1, 3]);
   });
 
-  test("from generator", async () => {
-    expect(
-      fromGenerator.filter(module2).toArray() satisfies number[],
-    ).toStrictEqual([1, 3]);
-  });
-
   test("from array", () => {
     expect(
       fromArray.filter(module2).toArray() satisfies number[],
@@ -63,16 +47,8 @@ describe("filter", () => {
   });
 
   test("from empty", () => {
-    expect(
-      fromEmpty.filter(module2).toArray() satisfies number[],
-    ).toStrictEqual([]);
-  });
-
-  test("from empty async", async () => {
-    expect(
-      await (fromEmptyAsync.filter(module2).toArray() satisfies Promise<
-        number[]
-      >),
-    ).toStrictEqual([]);
+    expect(empty.filter(module2).toArray() satisfies number[]).toStrictEqual(
+      [],
+    );
   });
 });

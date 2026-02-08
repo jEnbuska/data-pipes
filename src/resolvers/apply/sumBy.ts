@@ -47,7 +47,8 @@ export function sumByParallel<T>(
   let acc = 0;
   return {
     async onNext(value) {
-      acc += await mapper(value);
+      const numb = await mapper(value);
+      acc += numb;
     },
     onDone(resolve) {
       resolve(acc);

@@ -36,12 +36,10 @@ describe("find", () => {
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
-    fromAsyncGenerator,
-    fromGenerator,
+
     fromPromises,
     fromArray,
-    fromEmpty,
-    fromEmptyAsync,
+    empty,
   } = createTestSets(numbers);
 
   function find2(value: number) {
@@ -54,12 +52,6 @@ describe("find", () => {
     ).toBe(2);
   });
 
-  test("from async generator", async () => {
-    expect(
-      await (fromAsyncGenerator.find(find2) satisfies Promise<number | void>),
-    ).toBe(2);
-  });
-
   test("from promises", async () => {
     expect(
       await (fromPromises.awaited().find(find2) satisfies Promise<
@@ -67,22 +59,11 @@ describe("find", () => {
       >),
     ).toBe(2);
   });
-
-  test("from generator", async () => {
-    expect(fromGenerator.find(find2) satisfies number | void).toBe(2);
-  });
-
   test("from array", () => {
     expect(fromArray.find(find2) satisfies number | void).toBe(2);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.find(find2) satisfies number | void).toBe(undefined);
-  });
-
-  test("from empty async", async () => {
-    expect(
-      await (fromEmptyAsync.find(find2) satisfies Promise<void | number>),
-    ).toBe(undefined);
+    expect(empty.find(find2) satisfies number | void).toBe(undefined);
   });
 });

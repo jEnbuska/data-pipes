@@ -37,9 +37,6 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   }
 
   static #extractIterable(source: any): any {
-    if (typeof source === "function") {
-      source = source();
-    }
     if (source[Symbol.iterator]) {
       return source;
     }
@@ -55,32 +52,6 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
     }
     return [source];
   }
-
-  /** Creates Yielded from a generator function
-   * @example
-   * Yielded.from<number>(function *(){
-   *   yield 1;
-   *   yield 2;
-   *   yield 3;
-   * })
-   * */
-  static from<T>(
-    generatorFunction: () =>
-      | Iterable<T, unknown, unknown>
-      | Generator<T, unknown, unknown>,
-  ): IYielded<T>;
-
-  /** Creates AsyncYielded from a generator function
-   * @example
-   * Yielded.from<number>(async function *(){
-   *   yield 1;
-   *   yield Promise.resolve(2);
-   *   yield* Promise.resolve();
-   * })
-   * */
-  static from<T>(
-    asyncGeneratorFunction: () => AsyncGenerator<T, unknown, unknown>,
-  ): IAsyncYielded<T>;
 
   /** Creates AsyncYielded from a Promise of an array
    * @example

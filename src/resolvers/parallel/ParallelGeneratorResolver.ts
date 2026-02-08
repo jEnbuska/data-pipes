@@ -44,6 +44,8 @@ export class ParallelGeneratorResolver<T, TReturn> {
 
   #state: ParallelGeneratorResolverState = "running";
 
+  #signal?: AbortSignal;
+
   #running = 0;
 
   private constructor(
@@ -59,16 +61,22 @@ export class ParallelGeneratorResolver<T, TReturn> {
     this.#generator = generator;
     this.#onNext = onNext;
     this.#onDone = onDone;
+    this.#signal = signal;
+
     signal?.addEventListener("abort", () => {
       onDone?.(this.#resolve);
       this.#state = "resolved";
     });
+    if (this.#signal?.aborted) {
+      this.#state = "depleted";
+    }
   }
 
   #reject(error: any) {
     if (this.#state !== "running" && this.#state !== "depleted") return;
     this.#state = "rejected";
-    void this.#generator.throw(error);
+    void this.#generator.return();
+    this.#onNextResolvable.resolve();
     this.#resolvable.reject(error);
   }
 
@@ -76,7 +84,7 @@ export class ParallelGeneratorResolver<T, TReturn> {
     if (this.#state !== "running" && this.#state !== "depleted") return;
     this.#state = "resolved";
     void this.#generator.return();
-    this.#resolvable.resolve(await value);
+    this.#resolvable.resolve(value);
   };
 
   protected dispose() {
@@ -131,7 +139,7 @@ export class ParallelGeneratorResolver<T, TReturn> {
       if (result.done) {
         this.#state = "depleted";
       } else {
-        this.#onNext?.(result.value, this.#resolve);
+        await this.#onNext?.(result.value, this.#resolve);
       }
       this.#running--;
       this.#onNextResolvable.resolve();

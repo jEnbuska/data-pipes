@@ -86,8 +86,5 @@ export function dropLastParallel<T>(
       }
       return [buffer.shift()!];
     },
-    onDone() {
-      return buffer;
-    },
   });
 }

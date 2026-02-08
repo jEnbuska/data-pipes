@@ -14,17 +14,18 @@ import type { IYieldedSome } from "./apply/some.ts";
 import type { IYieldedSumBy } from "./apply/sumBy.ts";
 import type { IYieldedToArray } from "./apply/toArray.ts";
 import type { IYieldedToReversed } from "./apply/toReversed.ts";
+import type { IYieldedToSet } from "./apply/toSet.ts";
 import type { IYieldedToSorted } from "./apply/toSorted.ts";
 
 export interface ISharedYieldedResolver<T, TFlow extends IYieldedFlow>
   extends
-    IYieldedReduce<T, TFlow>,
+    IYieldedReduce<T, TFlow>, //
     IYieldedFind<T, TFlow>,
     IYieldedMaxBy<T, TFlow>,
     IYieldedSome<T, TFlow>,
     IYieldedEvery<T, TFlow>,
     IYieldedMinBy<T, TFlow>,
-    IYieldedGroupBy<T, TFlow>,
+    IYieldedGroupBy<T, TFlow>, //
     IYieldedCount<TFlow>,
     IYieldedSumBy<T, TFlow>,
     IYieldedToSorted<T, TFlow>,
@@ -33,7 +34,8 @@ export interface ISharedYieldedResolver<T, TFlow extends IYieldedFlow>
     IYieldedFirst<T, TFlow>,
     IYieldedLast<T, TFlow>,
     IYieldedConsume<TFlow>,
-    IYieldedForEach<T, TFlow> {}
+    IYieldedForEach<T, TFlow>,
+    IYieldedToSet<T, TFlow> {}
 
 /** If 'sync' then T otherwise Promise<T> */
 export type IResolverReturn<

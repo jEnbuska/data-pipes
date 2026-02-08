@@ -1,29 +1,36 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("sorted", () => {
-  test("sort numbers", () => {
-    expect(
-      Yielded.from([3, 1, 2])
-        .sorted((a, z) => a - z)
-        .toArray(),
-    ).toStrictEqual([1, 2, 3]);
+  describe("sort numbers", () => {
+    createTestSets([3, 1, 2]).orderedModes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.sorted((a, z) => a - z).toArray()) satisfies number[],
+        ).toStrictEqual([1, 2, 3]);
+      });
+    });
   });
 
-  test("sort empty", () => {
-    expect(
-      Yielded.from<number>([])
-        .sorted((a, z) => a - z)
-        .toArray(),
-    ).toStrictEqual([]);
+  describe("sort strings", () => {
+    createTestSets(["d", "x", "a"]).orderedModes.forEach(
+      ({ mode, yielded }) => {
+        test(mode, async () => {
+          expect(
+            (await yielded.sorted().toArray()) satisfies string[],
+          ).toStrictEqual(["a", "d", "x"]);
+        });
+      },
+    );
   });
-  test("sort resolver", async () => {
-    expect(
-      await (Yielded.from<number>([2, 1, 3])
-        .map((value) => Promise.resolve(value))
-        .awaited()
-        .sorted((a, z) => a - z)
-        .toArray() satisfies Promise<number[]>),
-    ).toStrictEqual([1, 2, 3]);
+
+  describe("sort empty", () => {
+    createTestSets<number>([]).orderedModes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.sorted((a, z) => a - z).toArray()) satisfies number[],
+        ).toStrictEqual([]);
+      });
+    });
   });
 });

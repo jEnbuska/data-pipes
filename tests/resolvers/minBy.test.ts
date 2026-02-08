@@ -5,26 +5,17 @@ describe("minBy", () => {
   const numbers = [2, 1, 3, 5, 4];
   const {
     fromResolvedPromises,
-    fromAsyncGenerator,
-    fromGenerator,
+
     fromPromises,
     fromArray,
-    fromEmpty,
-    fromEmptyAsync,
+    empty,
+    modes,
   } = createTestSets(numbers);
   const modulo4 = (n: number) => n % 4;
 
   test("from resolved promises", async () => {
     expect(
       await (fromResolvedPromises.minBy(modulo4) satisfies Promise<
-        number | void
-      >),
-    ).toBe(4);
-  });
-
-  test("from async generator", async () => {
-    expect(
-      await (fromAsyncGenerator.minBy(modulo4) satisfies Promise<
         number | void
       >),
     ).toBe(4);
@@ -37,21 +28,18 @@ describe("minBy", () => {
     expect(await first).toBe(4);
   });
 
-  test("from generator", async () => {
-    expect(fromGenerator.minBy(modulo4) satisfies number | void).toBe(4);
-  });
-
   test("from array", () => {
     expect(fromArray.minBy(modulo4) satisfies number | void).toBe(4);
   });
 
   test("from empty", () => {
-    expect(fromEmpty.minBy(modulo4) satisfies number | void).toBe(undefined);
+    expect(empty.minBy(modulo4) satisfies number | void).toBe(undefined);
   });
 
-  test("from empty async", async () => {
-    expect(
-      await (fromEmptyAsync.minBy(modulo4) satisfies Promise<number | void>),
-    ).toBe(undefined);
+  modes.forEach(({ mode, yielded }) => {
+    test(mode, async () => {
+      const min = (await yielded.minBy(modulo4)) satisfies number | undefined;
+      expect(min).toBe(4);
+    });
   });
 });

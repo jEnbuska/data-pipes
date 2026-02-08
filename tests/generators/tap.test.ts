@@ -16,12 +16,10 @@ describe("tap", () => {
   const numbers = [1, 2];
   const {
     fromResolvedPromises,
-    fromAsyncGenerator,
-    fromGenerator,
+
     fromPromises,
     fromArray,
-    fromEmpty,
-    fromEmptyAsync,
+    empty,
   } = createTestSets(numbers);
 
   test("from resolved promises", async () => {
@@ -31,14 +29,6 @@ describe("tap", () => {
     await (fromResolvedPromises
       .tap(callback)
       .consume() satisfies Promise<void>);
-
-    expect(callback.getCalled()).toBe(2);
-  });
-
-  test("from async generator", async () => {
-    const callback = simpleMock(numbers);
-
-    await (fromAsyncGenerator.tap(callback).consume() satisfies Promise<void>);
     expect(callback.getCalled()).toBe(2);
   });
 
@@ -48,10 +38,14 @@ describe("tap", () => {
     expect(callback.getCalled()).toBe(2);
   });
 
-  test("from generator", async () => {
-    const callback = simpleMock(numbers);
-    fromGenerator.tap(callback).consume() satisfies void;
-    expect(callback.getCalled()).toBe(2);
+  describe("from array", () => {
+    createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const callback = simpleMock(numbers);
+        (await yielded.tap(callback).consume()) satisfies void;
+        expect(callback.getCalled()).toBe(2);
+      });
+    });
   });
 
   test("from array", () => {
@@ -62,13 +56,7 @@ describe("tap", () => {
 
   test("from empty", () => {
     const callback = simpleMock(numbers);
-    fromEmpty.tap(callback).consume() satisfies void;
-    expect(callback.getCalled()).toBe(0);
-  });
-
-  test("from empty async", async () => {
-    const callback = simpleMock(numbers);
-    await (fromEmptyAsync.tap(callback).consume() satisfies Promise<void>);
+    empty.tap(callback).consume() satisfies void;
     expect(callback.getCalled()).toBe(0);
   });
 });

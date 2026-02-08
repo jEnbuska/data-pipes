@@ -50,7 +50,7 @@ export class YieldedResolver<T>
     initialValue: TOut,
   ): TOut;
 
-  reduce(reducer: (acc: T, next: T, index: number) => T): T | undefined;
+  reduce(reducer: (acc: T, next: T, index: number) => T): T;
 
   reduce(...args: Parameters<IYieldedResolver<T>["reduce"]>) {
     using generator = this.generator;

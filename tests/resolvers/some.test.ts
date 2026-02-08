@@ -1,22 +1,28 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("some", () => {
-  test("has some", () => {
-    expect(
-      Yielded.from([false, true, false]).some(Boolean) satisfies boolean,
-    ).toBe(true);
+  describe("has some", () => {
+    createTestSets([false, true, false]).modes.forEach(({ mode, yielded }) => {
+      test(`${mode}`, async () => {
+        expect((await yielded.some(Boolean)) satisfies boolean).toBe(true);
+      });
+    });
   });
 
-  test("has none", () => {
-    expect(
-      Yielded.from([false, false, false]).some(Boolean) satisfies boolean,
-    ).toBe(false);
+  describe("has none", () => {
+    createTestSets([false, false, false]).modes.forEach(({ mode, yielded }) => {
+      test(`${mode}`, async () => {
+        expect((await yielded.some(Boolean)) satisfies boolean).toBe(false);
+      });
+    });
   });
 
-  test("has every", () => {
-    expect(
-      Yielded.from([true, true, true]).some(Boolean) satisfies boolean,
-    ).toBe(true);
+  describe("has every", () => {
+    createTestSets([true, true, true]).modes.forEach(({ mode, yielded }) => {
+      test(`${mode}`, async () => {
+        expect((await yielded.some(Boolean)) satisfies boolean).toBe(true);
+      });
+    });
   });
 });

@@ -1,23 +1,43 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("batch", () => {
-  test("batch sync", () => {
-    const result = Yielded.from([1, 2, 3, 4, 5])
-      .batch((acc) => acc.length < 3)
-      .toArray() satisfies number[][];
+  describe("batch without left overs", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded
+          .batch((acc) => acc.length < 3)
+          .toArray()) satisfies number[][];
 
-    expect(result).toStrictEqual([
-      [1, 2, 3],
-      [4, 5],
-    ]);
+        expect(result).toStrictEqual([[1, 2, 3]]);
+      });
+    });
   });
 
-  test("batch with final", () => {
-    const result = Yielded.from([1, 2, 3])
-      .batch((acc) => acc.length < 3)
-      .toArray() satisfies number[][];
+  describe("batch without with 1 left over", () => {
+    createTestSets([1, 2, 3, 4]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded
+          .batch((acc) => acc.length < 3)
+          .toArray()) satisfies number[][];
 
-    expect(result).toStrictEqual([[1, 2, 3]]);
+        expect(result).toStrictEqual([[1, 2, 3], [4]]);
+      });
+    });
+  });
+
+  describe("batch without with 2 left over", () => {
+    createTestSets([1, 2, 3, 4, 5]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded
+          .batch((acc) => acc.length < 3)
+          .toArray()) satisfies number[][];
+
+        expect(result).toStrictEqual([
+          [1, 2, 3],
+          [4, 5],
+        ]);
+      });
+    });
   });
 });

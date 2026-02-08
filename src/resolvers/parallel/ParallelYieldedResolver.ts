@@ -78,9 +78,7 @@ export class ParallelYieldedResolver<T>
     initialValue: IMaybeAsync<TOut>,
   ): Promise<TOut>;
 
-  reduce(
-    reducer: (acc: T, next: T, index: number) => T,
-  ): Promise<T | undefined>;
+  reduce(reducer: (acc: T, next: T, index: number) => T): Promise<T>;
 
   reduce(...args: unknown[]) {
     // @ts-expect-error

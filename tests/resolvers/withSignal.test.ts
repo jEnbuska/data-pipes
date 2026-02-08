@@ -1,57 +1,112 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src";
-import { delay } from "../utils/delay.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("withSignal", () => {
-  test("abort sync", () => {
-    const controller = new AbortController();
-    let tapped = 0;
-    Yielded.from([1, 2, 3])
-      .tap(() => {
-        tapped++;
-      })
-      .withSignal(controller.signal)
-      .forEach((n) => {
-        if (n === 2) {
-          controller.abort();
-        }
+  describe("abort during iteration", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ yielded, mode }) => {
+      const controller = new AbortController();
+      let tapped = 0;
+      test(mode, async () => {
+        await yielded
+          .tap(() => {
+            tapped++;
+          })
+          .withSignal(controller.signal)
+          .forEach((_, i) => {
+            if (i === 1) {
+              controller.abort();
+            }
+          });
+        expect(tapped).toBe(2);
       });
-    expect(tapped).toBe(2);
+    });
   });
+  describe("abort before iteration", () => {
+    const createSet = () =>
+      createTestSets([1, 2, 3]).modes.map(({ yielded, mode }) => {
+        const controller = new AbortController();
+        controller.abort();
+        let tapped = 0;
 
-  test("abort async", async () => {
-    const controller = new AbortController();
-    let tapped = 0;
-    await Yielded.from([1, 2, 3])
-      .map((it) => delay(it, 100))
-      .awaited()
-      .tap(() => {
-        tapped++;
-      })
-      .withSignal(controller.signal)
-      .forEach((n) => {
-        if (n === 2) {
-          controller.abort();
-        }
+        return {
+          mode,
+          getTapped() {
+            return tapped;
+          },
+          yielded: yielded
+            .tap(() => {
+              tapped++;
+            })
+            .withSignal(controller.signal),
+        };
       });
-    expect(tapped).toBe(2);
-  });
+    describe("reduce", () => {
+      describe("without initial value", () => {
+        createSet().forEach(({ yielded, mode, getTapped }) => {
+          const apply = async () => {
+            await yielded.reduce((acc, next) => acc + next);
+          };
+          test(mode, async () => {
+            await expect(apply()).rejects.toThrowError(TypeError);
+            expect(getTapped()).toBe(0);
+          });
+        });
+      });
 
-  test("abort parallel", async () => {
-    const controller = new AbortController();
-    let tapped = 0;
-    await Yielded.from([1, 2, 3])
-      .parallel(3)
-      .map((it) => delay(it, 100))
-      .tap(() => {
-        tapped++;
-      })
-      .withSignal(controller.signal)
-      .forEach((_, i) => {
-        if (i === 1) {
-          controller.abort();
-        }
+      describe("without initial value", () => {
+        createSet().forEach(({ yielded, mode, getTapped }) => {
+          test(mode, async () => {
+            await (yielded.reduce as any)(
+              (acc: any, next: any) => acc + next,
+              0,
+            );
+            expect(getTapped()).toBe(0);
+          });
+        });
       });
-    expect(tapped).toBe(2);
+    });
+    describe("groupBy", () => {
+      createSet().forEach(({ yielded, mode, getTapped }) =>
+        test(mode, async () => {
+          await (yielded.groupBy as any)((next: any) => `${next}`);
+          expect(getTapped()).toBe(0);
+        }),
+      );
+    });
+
+    (
+      ["find", "maxBy", "every", "some", "minBy", "sumBy", "forEach"] as const
+    ).map((method) => {
+      describe(method, () => {
+        createSet().forEach(({ yielded, mode, getTapped }) =>
+          test(mode, async () => {
+            await yielded[method]((_) => _);
+            expect(getTapped()).toBe(0);
+          }),
+        );
+      });
+    });
+
+    (
+      [
+        "consume",
+        "toArray",
+        "toSorted",
+        "toSet",
+        "toReversed",
+        "first",
+        "last",
+        "count",
+      ] as const
+    ).forEach((method) => {
+      describe(method, () => {
+        createSet().forEach(({ yielded, mode, getTapped }) =>
+          test(mode, async () => {
+            await yielded[method]();
+            expect(getTapped()).toBe(0);
+          }),
+        );
+      });
+    });
   });
 });

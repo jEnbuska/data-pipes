@@ -1,54 +1,61 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("takeLast", () => {
-  test("take last when empty", () => {
-    expect(Yielded.from([]).takeLast(3).toArray()).toStrictEqual([]);
+  describe("take last when empty", () => {
+    createTestSets([]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.takeLast(3).toArray()).toStrictEqual([]);
+      });
+    });
   });
 
-  test("take last when count is 0", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(0).toArray()).toStrictEqual([]);
+  describe("take last when count is 0", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.takeLast(0).toArray()).toStrictEqual([]);
+      });
+    });
   });
 
-  test("take last when count is more than number of inputs", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(5).toArray()).toStrictEqual([
-      1, 2, 3,
-    ]);
+  describe("take last when count is more than number of inputs", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.takeLast(5).toArray()).toStrictEqual([1, 2, 3]);
+      });
+    });
+  });
+  describe("take last when count negative ", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(() => yielded.takeLast(-1)).toThrowError(RangeError);
+      });
+    });
   });
 
-  test("take last when count negative ", () => {
-    expect(() => Yielded.from([1, 2, 3]).takeLast(-1)).toThrow(RangeError);
-    expect(() => Yielded.from([1, 2, 3]).awaited().takeLast(-1)).toThrow(
-      RangeError,
-    );
-    expect(() => Yielded.from([1, 2, 3]).parallel(2).takeLast(-1)).toThrow(
-      RangeError,
-    );
+  describe("take last when count less than array length ", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.takeLast(2).toArray()).toStrictEqual([2, 3]);
+      });
+    });
   });
 
-  test("take last when count less than array length ", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(2).toArray()).toStrictEqual([2, 3]);
+  describe("take last when empty", () => {
+    createTestSets<number>([]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded.takeLast(3).toArray()) satisfies number[];
+        expect(result).toStrictEqual([]);
+      });
+    });
   });
 
-  test("take last when empty", async () => {
-    await expect(
-      Yielded.from(Promise.resolve([])).takeLast(3).toArray() satisfies Promise<
-        number[]
-      >,
-    ).resolves.toStrictEqual([]);
-  });
-
-  test("take last when count is 0", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(0).toArray()).toStrictEqual([]);
-  });
-
-  test("take last when count is more than number of inputs", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(5).toArray()).toStrictEqual([
-      1, 2, 3,
-    ]);
-  });
-
-  test("take last when count less than array length ", () => {
-    expect(Yielded.from([1, 2, 3]).takeLast(2).toArray()).toStrictEqual([2, 3]);
+  describe("take last when count is 0", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded.takeLast(0).toArray()) satisfies number[];
+        expect(result).toStrictEqual([]);
+      });
+    });
   });
 });

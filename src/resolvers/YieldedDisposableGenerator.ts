@@ -20,8 +20,13 @@ export class YieldedDisposableResolver<
         void parent?.[Symbol.dispose]();
       },
     });
-    signal?.addEventListener("abort", () => {
-      this.generator[Symbol.dispose]();
-    });
+    if (signal?.aborted) {
+      void generator.return?.(undefined);
+      void parent?.[Symbol.dispose]();
+    } else {
+      signal?.addEventListener("abort", () => {
+        this.generator[Symbol.dispose]();
+      });
+    }
   }
 }

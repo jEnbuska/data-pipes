@@ -4,6 +4,7 @@ import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
 import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
+import { getPlaceholder, isPlaceholder } from "./utils/placeholder.ts";
 
 export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   /**
@@ -34,8 +35,13 @@ export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
    * ```ts
    * // Without `initialValue`
    * Yielded.from([1,2,4,3])
-   *   .reduce((acc, next) => acc < next ? next : acc) satisfies undefined | number // 4
-   *   ```
+   *   .reduce((acc, next) => acc < next ? next : acc) satisfies number // 4
+   * ```
+   * ```ts
+   * // Without `initialValue` and no values produced
+   * Yielded.from<number>([])
+   *   .reduce((acc, next) => acc < next ? next : acc) satisfies number // throw TypeError
+   * ```
    * ```ts
    * // With `initialValue`
    * Yielded.from([] as number[])
@@ -52,7 +58,7 @@ export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   ): IResolverReturn<TOut, TFlow>;
   reduce(
     reducer: (acc: T, next: T, index: number) => ICallbackReturn<T, TFlow>,
-  ): IResolverReturn<T | undefined, TFlow>;
+  ): IResolverReturn<T, TFlow>;
 }
 
 export async function reduceAsync<T>(
@@ -74,7 +80,10 @@ export async function reduceAsync(
     acc = Promise.resolve(rest[0]);
   } else {
     const first = await generator.next();
-    if (first.done) return undefined;
+    if (first.done)
+      throw new TypeError(
+        "AsyncYielded.reduce requires an initial value or an iterator that is not done.",
+      );
     acc = Promise.resolve(first.value);
   }
   let index = 0;
@@ -95,20 +104,23 @@ export function reduceParallel(
   reducer: (acc: unknown, next: unknown, index: number) => unknown,
   ...rest: [unknown] | []
 ): ParallelGeneratorCallbackArgs<unknown, unknown> {
-  let acc: undefined | Promise<unknown> | unknown;
-  let hasAcc = !!rest.length;
-  if (hasAcc) acc = Promise.resolve(rest[0]);
+  let acc: symbol | Promise<unknown> | unknown = getPlaceholder();
+  if (!!rest.length) acc = Promise.resolve(rest[0]);
   let index = 0;
   return {
     onNext: throttle(1, async function onNext(value) {
-      if (!hasAcc) {
+      if (isPlaceholder(acc)) {
         acc = value;
-        hasAcc = true;
         return;
       }
       acc = await reducer(await acc, value, index++);
     }),
     async onDone(resolve) {
+      if (isPlaceholder(acc)) {
+        throw new TypeError(
+          "ParallelYielded reduce requires an initial value or an iterator that is not done.",
+        );
+      }
       resolve(acc);
     },
   };

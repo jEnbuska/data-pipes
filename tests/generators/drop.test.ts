@@ -1,30 +1,45 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("drop", () => {
-  test("chainable drop 1", () => {
-    expect(Yielded.from([1, 2, 3]).drop(1).toArray()).toStrictEqual([2, 3]);
+  describe("drop none", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.drop(0).toArray()).toStrictEqual([1, 2, 3]);
+      });
+    });
   });
 
-  test("drop all", () => {
-    expect(Yielded.from([1, 2, 3]).drop(5).toArray()).toStrictEqual([]);
+  describe("drop 1", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.drop(1).toArray()).toStrictEqual([2, 3]);
+      });
+    });
+  });
+  describe("drop all", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.drop(3).toArray()).toStrictEqual([]);
+      });
+    });
+  });
+  describe("drop more", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(await yielded.drop(5).toArray()).toStrictEqual([]);
+      });
+    });
   });
 
-  test("drop none", () => {
-    expect(Yielded.from([1, 2, 3]).drop(0).toArray()).toStrictEqual([1, 2, 3]);
-  });
-
-  test("drop negative", () => {
-    expect(() => Yielded.from([1, 2, 3]).drop(-1).toArray()).toThrow(
-      RangeError,
-    );
-  });
-
-  test("drop negative async", () => {
-    expect(() =>
-      Yielded.from(Promise.resolve([1, 2, 3]))
-        .drop(-1)
-        .toArray(),
-    ).toThrow(RangeError);
+  describe("drop negative", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        async function apply() {
+          return yielded.drop(-1).toArray();
+        }
+        await expect(apply()).rejects.toThrowError(RangeError);
+      });
+    });
   });
 });

@@ -1,29 +1,41 @@
 import { describe, expect, test } from "vitest";
 import { Yielded } from "../../src/index.ts";
+import { createTestSets } from "../utils/createTestSets.ts";
 import { sleep } from "../utils/sleep.ts";
 
 describe("toSorted", () => {
-  test("toSorted numbers", () => {
-    expect(Yielded.from([3, 1, 2]).toSorted((a, z) => a - z)).toStrictEqual([
-      1, 2, 3,
-    ]);
+  describe("toSorted numbers", () => {
+    createTestSets([3, 1, 2]).modes.forEach(({ yielded, mode }) => {
+      test(mode, async () => {
+        const arr = (await yielded.toSorted(
+          (a, z) => a - z,
+        )) satisfies number[];
+        expect(arr).toStrictEqual([1, 2, 3]);
+      });
+    });
   });
 
-  test("toSorted empty", () => {
-    expect(Yielded.from<number>([]).toSorted((a, z) => a - z)).toStrictEqual(
-      [],
-    );
-  });
-  test("toSorted resolver", async () => {
-    expect(
-      await (Yielded.from<number>([2, 1, 3])
-        .map((value) => Promise.resolve(value))
-        .awaited()
-        .toSorted((a, z) => a - z) satisfies Promise<number[]>),
-    ).toStrictEqual([1, 2, 3]);
+  describe("toSorted without comparator", () => {
+    createTestSets(["a", "x", "b"]).modes.forEach(({ yielded, mode }) => {
+      test(mode, async () => {
+        const arr = (await yielded.toSorted()) satisfies string[];
+        expect(arr).toStrictEqual(["a", "b", "x"]);
+      });
+    });
   });
 
-  test.only("toSorted resolver parallel partial", async () => {
+  describe("toSorted empty", () => {
+    createTestSets<number>([]).modes.forEach(({ yielded, mode }) => {
+      test(mode, async () => {
+        const arr = (await yielded.toSorted(
+          (a, z) => a - z,
+        )) satisfies number[];
+        expect(arr).toStrictEqual([]);
+      });
+    });
+  });
+
+  test("toSorted parallel 3", async () => {
     expect(
       await (Yielded.from<number>([500, 30, 100, 50])
         .map((value) => sleep(value).then(() => value))
@@ -32,7 +44,7 @@ describe("toSorted", () => {
     ).toStrictEqual([30, 50, 100, 500]);
   });
 
-  test("toSorted resolver parallel all", async () => {
+  test("toSorted parallel all", async () => {
     expect(
       await (Yielded.from<number>([500, 30, 100, 50])
         .map((value) => sleep(value).then(() => value))

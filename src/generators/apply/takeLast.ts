@@ -65,11 +65,9 @@ export function takeLastParallel<T>(
     parallel,
     onNext(next) {
       acc.push(next);
-      if (acc.length <= count) return;
-      return [acc.shift()!];
+      if (acc.length > count) [acc.shift()!];
     },
     onDone() {
-      if (!acc.length) return;
       return acc;
     },
   });

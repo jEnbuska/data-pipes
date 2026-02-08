@@ -1,31 +1,42 @@
 import { describe, expect, test } from "vitest";
-import { Yielded } from "../../src";
+import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("take", () => {
-  test("take 1", () => {
-    expect(Yielded.from([1, 2, 3]).take(1).toArray()).toStrictEqual([1]);
-  });
-  test("take 2", () => {
-    expect(Yielded.from([1, 2, 3]).take(2).toArray()).toStrictEqual([1, 2]);
-  });
-
-  test("take 2 async", async () => {
-    expect(
-      await Yielded.from([1, 2, 3]).awaited().take(2).toArray(),
-    ).toStrictEqual([1, 2]);
+  describe("take 1", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded.take(1).toArray()) satisfies number[];
+        expect(result).toStrictEqual([1]);
+      });
+    });
   });
 
-  test("take none", () => {
-    expect(Yielded.from([1, 2, 3]).take(0).toArray()).toStrictEqual([]);
+  describe("take 2", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded.take(2).toArray()) satisfies number[];
+        expect(result).toStrictEqual([1, 2]);
+      });
+    });
   });
 
-  test("take negative", () => {
-    expect(() => Yielded.from([1, 2, 3]).take(-1)).toThrow(RangeError);
-    expect(() => Yielded.from([1, 2, 3]).awaited().take(-1)).toThrow(
-      RangeError,
-    );
-    expect(() => Yielded.from([1, 2, 3]).parallel(2).take(-1)).toThrow(
-      RangeError,
-    );
+  describe("take none", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        const result = (await yielded.take(0).toArray()) satisfies number[];
+        expect(result).toStrictEqual([]);
+      });
+    });
+  });
+
+  describe("take negative", () => {
+    createTestSets([1, 2, 3]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        async function apply() {
+          return yielded.take(-1).toArray();
+        }
+        await expect(apply()).rejects.toThrowError(RangeError);
+      });
+    });
   });
 });

@@ -13,13 +13,19 @@ describe("sources", () => {
 
   test("generator function", () => {
     expect(
-      Yielded.from(generatorFunction).toArray() satisfies number[],
+      Yielded.from(generatorFunction()).toArray() satisfies number[],
     ).toStrictEqual(numbers);
   });
 
-  test("generator", () => {
+  test("set", () => {
+    expect(Yielded.from(new Set(numbers)).toArray().sort()).toStrictEqual(
+      [1, 2, 3].sort(),
+    );
+  });
+
+  test("Iterator", () => {
     expect(
-      Yielded.from(generatorFunction()).toArray() satisfies number[],
+      Yielded.from(Iterator.from(numbers)).toArray() satisfies number[],
     ).toStrictEqual(numbers);
   });
 });
