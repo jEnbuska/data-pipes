@@ -11,8 +11,6 @@ import type { IYieldedFlatMap } from "./apply/flatMap.ts";
 import type { IYieldedLift } from "./apply/lift.ts";
 import type { IYieldedMap } from "./apply/map.ts";
 import type { IYieldedMapPairwise } from "./apply/mapPairwise.ts";
-import type { IYieldedReverse } from "./apply/reversed.ts";
-import type { IYieldedSorted } from "./apply/sorted.ts";
 import type { IYieldedTake } from "./apply/take.ts";
 import type { IYieldedTakeLast } from "./apply/takeLast.ts";
 import type { IYieldedTakeWhile } from "./apply/takeWhile.ts";
@@ -44,8 +42,6 @@ export interface IYieldedOperations<T, TFlow extends IYieldedFlow>
     IYieldedTake<T, TFlow>,
     IYieldedTakeLast<T, TFlow>,
     IYieldedTakeWhile<T, TFlow>,
-    IYieldedSorted<T, TFlow>,
-    IYieldedReverse<T, TFlow>,
     IYieldedFilter<T, TFlow>,
     IYieldedMap<T, TFlow>,
     IYieldedFlatMap<T, TFlow>,

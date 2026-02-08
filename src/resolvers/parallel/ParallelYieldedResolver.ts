@@ -92,7 +92,7 @@ export class ParallelYieldedResolver<T>
   }
 
   toSet() {
-    return this.#apply(toSetParallel);
+    return this.#apply(toSetParallel<T>);
   }
 
   every(...args: Parameters<IAsyncYieldedResolver<T>["every"]>) {

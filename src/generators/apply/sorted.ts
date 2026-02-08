@@ -3,19 +3,15 @@ import type {
   INextYielded,
   IYieldedFlow,
 } from "../../general/types.ts";
-import { throttle } from "../../general/utils/parallel.ts";
-import {
-  createIndexFinderAsync,
-  toSortedAsync,
-  toSortedSync,
-} from "../../resolvers/apply/toSorted.ts";
+import { toSortedAsync, toSortedSync } from "../../resolvers/apply/toSorted.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
-export interface IYieldedSorted<T, TFlow extends IYieldedFlow> {
+export interface IYieldedSorted<
+  T,
+  TFlow extends Exclude<IYieldedFlow, "parallel">,
+> {
   /**
    * Sorts the items produced by the generator according to the provided
    * comparison function, then yields them one by one to the next operation
@@ -38,44 +34,20 @@ export interface IYieldedSorted<T, TFlow extends IYieldedFlow> {
    * ```
    */
   sorted(
-    compareFn: (a: T, b: T) => ICallbackReturn<number, TFlow>,
+    compareFn?: (a: T, b: T) => ICallbackReturn<number, TFlow>,
   ): INextYielded<T, TFlow>;
 }
 
 export function* sortedSync<T>(
   generator: IYieldedSyncGenerator<T>,
-  compareFn: (a: T, b: T) => number,
+  compareFn?: (a: T, b: T) => number,
 ): IYieldedSyncGenerator<T> {
   yield* toSortedSync(generator, compareFn);
 }
 
 export async function* sortedAsync<T = never>(
   generator: IYieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => IMaybeAsync<number>,
+  compareFn?: (a: T, b: T) => IMaybeAsync<number>,
 ): IYieldedAsyncGenerator<T> {
   yield* await toSortedAsync(generator, compareFn);
-}
-
-export function sortedParallel<T = never>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
-  compareFn: (a: T, b: T) => IMaybeAsync<number>,
-): IYieldedParallelGenerator<T> {
-  const arr: T[] = [];
-  const findIndex = createIndexFinderAsync(arr, compareFn);
-  const lockedUpdate = throttle(1, async (next: T) => {
-    const index = await findIndex(next);
-    arr.splice(index, 0, next);
-  });
-  return ParallelGenerator.create<T, T>({
-    generator,
-    parallel,
-    async onNext(next) {
-      await lockedUpdate(next);
-      return;
-    },
-    async onDone() {
-      return arr;
-    },
-  });
 }

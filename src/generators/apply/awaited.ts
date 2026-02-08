@@ -44,7 +44,7 @@ export async function* syncToAwaited<T>(
 export async function* parallelToAwaited<T>(
   generator: IYieldedParallelGenerator<T>,
   parallel: number,
-  signal: AbortSignal | undefined,
+  signal?: AbortSignal,
 ): IYieldedAsyncGenerator<Awaited<T>> {
   let done = false;
   const buffer: T[] = [];

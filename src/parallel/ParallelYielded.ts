@@ -13,16 +13,12 @@ import { liftParallel } from "../generators/apply/lift.ts";
 import { mapParallel } from "../generators/apply/map.ts";
 import { mapPairwiseParallel } from "../generators/apply/mapPairwise.ts";
 import { parallelUpdate } from "../generators/apply/parallel.ts";
-import { reversedParallel } from "../generators/apply/reversed.ts";
-import { sortedParallel } from "../generators/apply/sorted.ts";
 import { takeParallel } from "../generators/apply/take.ts";
 import { takeLastParallel } from "../generators/apply/takeLast.ts";
 import { takeWhileParallel } from "../generators/apply/takeWhile.ts";
 import { tapParallel } from "../generators/apply/tap.ts";
 import { assertNotNegative } from "../generators/apply/utils/take.ts";
-import type { IYieldedAsyncGenerator } from "../generators/async/types.ts";
 import type { IYieldedParallelGenerator } from "../generators/parallel/types.ts";
-import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
 import { ParallelYieldedResolver } from "../resolvers/parallel/ParallelYieldedResolver.ts";
 import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IParallelYielded } from "./types.ts";
@@ -32,12 +28,7 @@ export class ParallelYielded<T>
   implements IParallelYielded<T>
 {
   public constructor(
-    parent: Disposable &
-      (
-        | IYieldedParallelGenerator<any>
-        | IYieldedSyncGenerator<any>
-        | IYieldedAsyncGenerator<any>
-      ),
+    parent: Disposable | undefined,
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
   ) {
@@ -121,14 +112,6 @@ export class ParallelYielded<T>
 
   tap(...args: Parameters<IAsyncYielded<T>["tap"]>) {
     return this.#next(tapParallel, ...args);
-  }
-
-  reversed() {
-    return this.#next(reversedParallel);
-  }
-
-  sorted(...args: Parameters<IAsyncYielded<T>["sorted"]>) {
-    return this.#next(sortedParallel, ...args);
   }
 
   lift<TOut>(middleware: any): IParallelYielded<TOut> {

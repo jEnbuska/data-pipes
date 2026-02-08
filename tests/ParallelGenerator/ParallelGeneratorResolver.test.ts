@@ -7,7 +7,7 @@ import {
 
 describe("ParallelGeneratorResolver", () => {
   test("Empty parallel 1", async () => {
-    const result = await ParallelGeneratorResolver.run({
+    const result = await ParallelGeneratorResolver.run<number, boolean>({
       generator: MockIYieldedParallelGenerator([]),
       parallel: 1,
       onNext() {},
@@ -35,7 +35,7 @@ describe("ParallelGeneratorResolver", () => {
 
   test("10 values parallel 3", async () => {
     const acc: number[] = [];
-    const result = await ParallelGeneratorResolver.run({
+    const result = await ParallelGeneratorResolver.run<number, number[]>({
       generator: MockDelayedValuesGenerator(vi.useFakeTimers(), [
         [1000, 1], // (0-1000) 7
         [0, 2], // (0-0) 1

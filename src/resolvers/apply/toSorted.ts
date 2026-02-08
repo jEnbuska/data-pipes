@@ -24,11 +24,14 @@ export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
    * - returns `0` to keep their relative order
    * */
   toSorted(
-    compare: (previous: T, next: T) => ICallbackReturn<number, TFlow>,
+    compare?: (previous: T, next: T) => ICallbackReturn<number, TFlow>,
   ): IResolverReturn<T[], TFlow>;
 }
 
-function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
+function createIndexFinder<T>(
+  arr: T[],
+  comparator: (a: T, b: T) => number = defaultCompare,
+) {
   return function findIndex(next: T, low = 0, high = arr.length - 1) {
     if (low > high) {
       return low;
@@ -44,7 +47,7 @@ function createIndexFinder<T>(arr: T[], comparator: (a: T, b: T) => number) {
 
 export function createIndexFinderAsync<T>(
   arr: T[],
-  comparator: (a: T, b: T) => IMaybeAsync<number>,
+  comparator: (a: T, b: T) => IMaybeAsync<number> = defaultCompare,
 ) {
   return async function findIndexAsync(
     next: T,
@@ -65,7 +68,7 @@ export function createIndexFinderAsync<T>(
 
 export function toSortedSync<T>(
   generator: IYieldedSyncGenerator<T>,
-  compareFn: (a: T, b: T) => number,
+  compareFn?: (a: T, b: T) => number,
 ): T[] {
   const arr: T[] = [];
   const findIndex = createIndexFinder(arr, compareFn);
@@ -77,7 +80,7 @@ export function toSortedSync<T>(
 
 export async function toSortedAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
-  compareFn: (a: T, b: T) => IMaybeAsync<number>,
+  compareFn?: (a: T, b: T) => IMaybeAsync<number>,
 ): Promise<T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
@@ -91,8 +94,15 @@ export async function toSortedAsync<T>(
   return arr;
 }
 
+const defaultCompare = (a: unknown, b: unknown) => {
+  const sa = String(a);
+  const sb = String(b);
+  if (sa < sb) return -1;
+  if (sa > sb) return 1;
+  return 0;
+};
 export function toSortedParallel<T>(
-  compareFn: (a: T, b: T) => IMaybeAsync<number>,
+  compareFn?: (a: T, b: T) => IMaybeAsync<number>,
 ): ParallelGeneratorCallbackArgs<T, T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);

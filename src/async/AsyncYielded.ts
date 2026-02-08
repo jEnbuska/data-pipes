@@ -18,8 +18,6 @@ import { takeWhileAsync } from "../generators/apply/takeWhile.ts";
 import { tapAsync } from "../generators/apply/tap.ts";
 import { assertNotNegative } from "../generators/apply/utils/take.ts";
 import type { IYieldedAsyncGenerator } from "../generators/async/types.ts";
-import type { IYieldedParallelGenerator } from "../generators/parallel/types.ts";
-import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
 import { ParallelYielded } from "../parallel/ParallelYielded.ts";
 import type { IParallelYielded } from "../parallel/types.ts";
 import { AsyncYieldedResolver } from "../resolvers/async/AsyncYieldedResolver.ts";
@@ -31,14 +29,7 @@ export class AsyncYielded<T>
   implements IAsyncYielded<T>
 {
   public constructor(
-    parent:
-      | undefined
-      | (Disposable &
-          (
-            | IYieldedAsyncGenerator
-            | IYieldedSyncGenerator
-            | IYieldedParallelGenerator
-          )),
+    parent: undefined | Disposable,
     generator: IYieldedAsyncGenerator<T>,
   ) {
     super(parent, generator);

@@ -1,7 +1,7 @@
 import { assertIsValidParallel } from "../../general/utils/parallel.ts";
 import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
 
-type ResolveCallback<TReturn> = PromiseWithResolvers<TReturn>["resolve"];
+type ResolveCallback<TReturn> = (value: TReturn) => void;
 
 type OnNext<T, TReturn> = (
   value: T,
@@ -15,7 +15,7 @@ type ParallelGeneratorResolversArguments<T, TReturn> = {
   parallel: number;
   onNext?: OnNext<T, TReturn>;
   onDone?: OnDone<TReturn>;
-  signal: AbortSignal | undefined;
+  signal?: AbortSignal;
 };
 
 export type ParallelGeneratorCallbackArgs<T, TReturn> = Pick<
@@ -83,9 +83,9 @@ export class ParallelGeneratorResolver<T, TReturn> {
     this.#state = "rejected";
   }
 
-  static run<T = unknown, TReturn = unknown>(
+  static run<T, TReturn = T>(
     options: ParallelGeneratorResolversArguments<T, TReturn>,
-  ) {
+  ): Disposable & Promise<TReturn> {
     const { generator, parallel, onNext, onDone, signal } = options;
     const resolver = new ParallelGeneratorResolver<T, TReturn>(
       generator,

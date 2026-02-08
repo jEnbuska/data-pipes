@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest";
 import { Yielded } from "../../src/index.ts";
-import { sleep } from "../utils/sleep.ts";
 
 describe("sorted", () => {
   test("sort numbers", () => {
@@ -26,25 +25,5 @@ describe("sorted", () => {
         .sorted((a, z) => a - z)
         .toArray() satisfies Promise<number[]>),
     ).toStrictEqual([1, 2, 3]);
-  });
-
-  test("sort resolver parallel partial", async () => {
-    expect(
-      await (Yielded.from<number>([500, 30, 100, 50])
-        .map((value) => sleep(value).then(() => value))
-        .parallel(3)
-        .sorted((a, z) => a - z)
-        .toArray() satisfies Promise<number[]>),
-    ).toStrictEqual([30, 50, 100, 500]);
-  });
-
-  test.only("sort resolver parallel all", async () => {
-    const result = await (Yielded.from<number>([500, 30, 100, 50])
-      .map((value) => sleep(value).then(() => value))
-      .parallel(10)
-      .sorted((a, z) => a - z)
-      .toArray() satisfies Promise<number[]>);
-
-    expect(result).toStrictEqual([30, 50, 100, 500]);
   });
 });

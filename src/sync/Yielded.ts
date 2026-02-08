@@ -30,7 +30,7 @@ import type { IYielded } from "./types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
-    parent: undefined | (IYieldedSyncGenerator & Disposable),
+    parent: undefined | Disposable,
     generator: IYieldedSyncGenerator<T>,
   ) {
     super(parent, generator);

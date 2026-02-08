@@ -57,7 +57,6 @@ describe("parallel", () => {
       // 550 (140), 450 (40)              -> 450
       // 550 (100)                        -> 550
       // [300, 10, 100, 450, 550]
-
       .toArray()) satisfies number[];
     expect(result).toStrictEqual([300, 10, 100, 450, 550]);
   });
@@ -80,7 +79,4 @@ describe("parallel", () => {
       expect(result).toStrictEqual([300, 10, 100, 450, 550]);
     });
   });
-
-  // parallel to awaited
-  // parallel count update
 });
