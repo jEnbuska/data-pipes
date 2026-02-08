@@ -5,7 +5,7 @@ export function assertNotNegative(count: number): asserts count is number {
 }
 
 export function assertIsNotZero(count: number): asserts count is number {
-  if (count !== 0) throw new RangeError(`${count} cant be zero`);
+  if (count === 0) throw new RangeError(`${count} cant be zero`);
 }
 
 const emptyAsyncGenerator: AsyncGenerator<any> = (async function* () {})();
