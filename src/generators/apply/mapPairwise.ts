@@ -4,8 +4,7 @@ import type {
   IYieldedFlow,
 } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
@@ -59,14 +58,10 @@ export async function* mapPairwiseAsync<T, TOut>(
 }
 
 export function mapPairwiseParallel<T, TOut>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   mapper: (previous: T, next: T) => IMaybeAsync<TOut>,
-): IYieldedParallelGenerator<TOut> {
+): IParallelGeneratorCallbacks<T, TOut> {
   let previous: { value: T } | undefined = undefined;
-  return ParallelGenerator.create<T, TOut>({
-    generator,
-    parallel,
+  return {
     async onNext(next) {
       if (!previous) {
         previous = { value: next };
@@ -77,5 +72,5 @@ export function mapPairwiseParallel<T, TOut>(
       }
       previous = { value: next };
     },
-  });
+  };
 }

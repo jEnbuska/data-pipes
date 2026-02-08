@@ -1,7 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedTakeLast<T, TFlow extends IYieldedFlow> {
@@ -55,14 +54,10 @@ export async function* takeLastAsync<T>(
 }
 
 export function takeLastParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   count: number,
-): IYieldedParallelGenerator<T> {
+): IParallelGeneratorCallbacks<T> {
   const acc: Array<T> = [];
-  return ParallelGenerator.create<T>({
-    generator,
-    parallel,
+  return {
     onNext(next) {
       acc.push(next);
       if (acc.length > count) [acc.shift()!];
@@ -70,5 +65,5 @@ export function takeLastParallel<T>(
     onDone() {
       return acc;
     },
-  });
+  };
 }

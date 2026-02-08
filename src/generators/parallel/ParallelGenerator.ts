@@ -7,10 +7,10 @@ import { ParallelBufferGenerator } from "../../resolvers/parallel/ParallelBuffer
 import type { IYieldedGenerator } from "../types.ts";
 import { ParallelAbortError } from "./ParallelAbortError.ts";
 import type {
+  IParallelGeneratorOnDone,
+  IParallelGeneratorOnNext,
+  IParallelGeneratorState,
   IYieldedParallelGenerator,
-  ParallelGeneratorOnDone,
-  ParallelGeneratorOnNext,
-  ParallelGeneratorState,
 } from "./types.ts";
 
 const returnResult: IteratorReturnResult<void | undefined> = {
@@ -21,11 +21,11 @@ export class ParallelGenerator<
   T,
   TOut,
 > implements IYieldedParallelGenerator<TOut> {
-  #state: ParallelGeneratorState = "running";
+  #state: IParallelGeneratorState = "running";
 
-  readonly #onNext: ParallelGeneratorOnNext<T, TOut>;
+  readonly #onNext: IParallelGeneratorOnNext<T, TOut>;
 
-  readonly #onDone?: ParallelGeneratorOnDone<TOut>;
+  readonly #onDone?: IParallelGeneratorOnDone<TOut>;
 
   #pendingWork = new Set<any>();
 
@@ -46,8 +46,8 @@ export class ParallelGenerator<
 
   static create<T, TOut = T>(options: {
     generator: IYieldedGenerator<T, IYieldedFlow>;
-    onNext?: ParallelGeneratorOnNext<T, TOut>;
-    onDone?: ParallelGeneratorOnDone<TOut>;
+    onNext?: IParallelGeneratorOnNext<T, TOut>;
+    onDone?: IParallelGeneratorOnDone<TOut>;
     parallel: number;
   }): IYieldedParallelGenerator<TOut> {
     const {
@@ -66,8 +66,8 @@ export class ParallelGenerator<
   private constructor(
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
-    onNext: ParallelGeneratorOnNext<T, TOut>,
-    onDone?: ParallelGeneratorOnDone<TOut>,
+    onNext: IParallelGeneratorOnNext<T, TOut>,
+    onDone?: IParallelGeneratorOnDone<TOut>,
   ) {
     parallel = Math.floor(parallel);
     assertIsValidParallel(parallel);
@@ -98,7 +98,7 @@ export class ParallelGenerator<
     throw err;
   }
 
-  #setState(state: ParallelGeneratorState) {
+  #setState(state: IParallelGeneratorState) {
     switch (state) {
       case "running":
         throw new Error('Cannot transition to "running" state');

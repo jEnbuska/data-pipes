@@ -9,16 +9,21 @@ export type IYieldedParallelGenerator<TOut = unknown> = AsyncGenerator<
   void
 >;
 
-export type ParallelCallbackReturn<TOut> =
+export type IParallelCallbackReturn<TOut> =
   | void
   | "STOP"
   | IYieldedIterableSource<TOut, "parallel">;
 
-export type ParallelGeneratorState = "running" | "done" | "aborted";
+export type IParallelGeneratorState = "running" | "done" | "aborted";
 
-export type ParallelGeneratorOnNext<T, TOut> = (
+export type IParallelGeneratorOnNext<T, TOut> = (
   value: T,
-) => IMaybeAsync<ParallelCallbackReturn<TOut>>;
+) => IMaybeAsync<IParallelCallbackReturn<TOut>>;
 
-export type ParallelGeneratorOnDone<TOut> =
+export type IParallelGeneratorOnDone<TOut> =
   () => IMaybeAsync<void | IYieldedIterableSource<TOut, "parallel">>;
+
+export type IParallelGeneratorCallbacks<T, TOut = T> = {
+  onNext?: IParallelGeneratorOnNext<T, TOut>;
+  onDone?: IParallelGeneratorOnDone<TOut>;
+};

@@ -4,8 +4,7 @@ import type {
   IYieldedFlow,
 } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
@@ -75,10 +74,8 @@ export async function* chunkByAsync<T, TIdentifier = any>(
 }
 
 export function chunkByParallel<T, TIdentifier = any>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   keySelector: (next: T) => IMaybeAsync<TIdentifier>,
-): IYieldedParallelGenerator<T[]> {
+): IParallelGeneratorCallbacks<T, T[]> {
   const acc: T[][] = [];
   const indexMap = new Map<TIdentifier, number>();
   async function stash(next: T) {
@@ -90,14 +87,12 @@ export function chunkByParallel<T, TIdentifier = any>(
     const index = indexMap.get(key)!;
     acc[index]!.push(next);
   }
-  return ParallelGenerator.create<T, T[]>({
-    generator,
-    parallel,
+  return {
     async onNext(next) {
       await stash(next);
     },
     onDone() {
       if (acc.length) return acc;
     },
-  });
+  };
 }

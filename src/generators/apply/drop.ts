@@ -1,7 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 
 export interface IYieldedDrop<T, TFlow extends IYieldedFlow> {
   /**
@@ -46,13 +45,9 @@ export async function* dropAsync<T>(
 }
 
 export function dropParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   count: number,
-): IYieldedParallelGenerator<T> {
-  return ParallelGenerator.create<T>({
-    generator,
-    parallel,
+): IParallelGeneratorCallbacks<T, T> {
+  return {
     onNext(next) {
       if (count > 0) {
         count--;
@@ -60,5 +55,5 @@ export function dropParallel<T>(
       }
       return [next];
     },
-  });
+  };
 }

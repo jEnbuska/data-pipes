@@ -5,8 +5,7 @@ import type {
   IYieldedIterableSource,
 } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 import {
@@ -99,23 +98,19 @@ export async function* flatMapAsync<T, TOut>(
 }
 
 export function flatMapParallel<T, TOut>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   callback: (
     next: T,
     index: number,
   ) => IMaybeAsync<
     readonly TOut[] | IYieldedIterableSource<TOut, "parallel"> | TOut
   >,
-): IYieldedParallelGenerator<TOut> {
+): IParallelGeneratorCallbacks<T, TOut> {
   let index = 0;
-  return ParallelGenerator.create<T, TOut>({
-    generator,
-    parallel,
+  return {
     async onNext(next) {
       const res = await callback(next, index++);
       if (isAsyncIterableProvider<TOut>(res)) return res;
       return [res];
     },
-  });
+  };
 }

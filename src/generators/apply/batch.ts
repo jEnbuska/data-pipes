@@ -5,8 +5,7 @@ import type {
 } from "../../general/types.ts";
 import { throttle } from "../../general/utils/parallel.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import { ParallelGenerator } from "../parallel/ParallelGenerator.ts";
-import type { IYieldedParallelGenerator } from "../parallel/types.ts";
+import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
@@ -72,15 +71,11 @@ export async function* batchAsync<T>(
 }
 
 export function batchParallel<T>(
-  generator: IYieldedParallelGenerator<T>,
-  parallel: number,
   predicate: (batch: T[], index: number) => IMaybeAsync<boolean>,
-): IYieldedParallelGenerator<T[]> {
+): IParallelGeneratorCallbacks<T, T[]> {
   let index = 0;
   let acc: T[] = [];
-  return ParallelGenerator.create<T, T[]>({
-    generator,
-    parallel,
+  return {
     onNext: throttle(1, async function onNext(next) {
       acc.push(next);
       const match = await predicate(acc, index++);
@@ -92,5 +87,5 @@ export function batchParallel<T>(
     onDone() {
       if (acc.length) return [acc];
     },
-  });
+  };
 }

@@ -17,8 +17,15 @@ import { takeParallel } from "../generators/apply/take.ts";
 import { takeLastParallel } from "../generators/apply/takeLast.ts";
 import { takeWhileParallel } from "../generators/apply/takeWhile.ts";
 import { tapParallel } from "../generators/apply/tap.ts";
-import { assertNotNegative } from "../generators/apply/utils/take.ts";
-import type { IYieldedParallelGenerator } from "../generators/parallel/types.ts";
+import {
+  assertNotNegative,
+  getEmptyAsyncGenerator,
+} from "../generators/apply/utils/take.ts";
+import { ParallelGenerator } from "../generators/parallel/ParallelGenerator.ts";
+import type {
+  IParallelGeneratorCallbacks,
+  IYieldedParallelGenerator,
+} from "../generators/parallel/types.ts";
 import { ParallelYieldedResolver } from "../resolvers/parallel/ParallelYieldedResolver.ts";
 import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IParallelYielded } from "./types.ts";
@@ -36,16 +43,17 @@ export class ParallelYielded<T>
   }
 
   #next<TNext, TArgs extends any[]>(
-    next: (
-      generator: IYieldedParallelGenerator<T>,
-      parallel: number,
-      ...args: TArgs
-    ) => IYieldedParallelGenerator<TNext>,
+    next: (...args: TArgs) => IParallelGeneratorCallbacks<T, TNext>,
     ...args: TArgs
   ): IParallelYielded<TNext> {
+    const nextGenerator = ParallelGenerator.create({
+      generator: this.generator,
+      parallel: this._parallel,
+      ...next(...args),
+    });
     return new ParallelYielded<TNext>(
       this.generator,
-      next(this.generator, this._parallel, ...args),
+      nextGenerator,
       this._parallel,
     );
   }
@@ -68,7 +76,7 @@ export class ParallelYielded<T>
   }
 
   flat<Depth extends number = 1>(depth?: Depth) {
-    return this.#next(flatParallel, depth);
+    return this.#next(flatParallel<T, Depth>, depth);
   }
 
   flatMap<TOut>(
@@ -88,22 +96,29 @@ export class ParallelYielded<T>
 
   drop(count: number) {
     assertNotNegative(count);
-    return this.#next(dropParallel, count);
+    return this.#next(dropParallel<T>, count);
   }
 
   dropLast(count: number) {
     assertNotNegative(count);
-    return this.#next(dropLastParallel, count);
+    return this.#next(dropLastParallel<T>, count);
   }
 
-  take(count: number) {
+  take(count: number): IParallelYielded<T> {
     assertNotNegative(count);
-    return this.#next(takeParallel, count);
+    if (count) {
+      return this.#next(takeParallel<T>, count);
+    }
+    return new ParallelYielded(
+      this.generator,
+      getEmptyAsyncGenerator<T>(),
+      this._parallel,
+    );
   }
 
   takeLast(count: number) {
     assertNotNegative(count);
-    return this.#next(takeLastParallel, count);
+    return this.#next(takeLastParallel<T>, count);
   }
 
   takeWhile(...args: Parameters<IParallelYielded<T>["takeWhile"]>) {
