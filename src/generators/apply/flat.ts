@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedFlat<T, TFlow extends IYieldedFlow> {
@@ -63,9 +63,10 @@ export async function* flatAsync<T, const Depth extends number = 1>(
 
 export function flatParallel<T, const Depth extends number = 1>(
   depth?: Depth,
-): IParallelGeneratorCallbacks<T, FlatArray<T[], Depth>> {
+): IParallelGeneratorSubConfig<T, FlatArray<T[], Depth>> {
   depth = depth ?? (1 as Depth);
   return {
+    name: "flat",
     onNext: (next) => nextToFlat(next, depth),
   };
 }

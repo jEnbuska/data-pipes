@@ -2,10 +2,13 @@ import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import {
+  type IParallelResolverName,
+  type IParallelResolverSubConfig,
+} from "../parallel/ParallelGeneratorResolver.ts";
 import type { IYieldedResolver } from "../sync/types.ts";
 import type { IResolverReturn } from "../types.ts";
-import { createYieldedEmptyError } from "./utils/createYieldedEmptyError.ts";
+import { createGeneratorEmptyMsg } from "./utils/createGeneratorEmptyMsg.ts";
 import { getEmptySlot, isEmptySlot } from "./utils/emptySlot.ts";
 import { memoize } from "./utils/memoize.ts";
 
@@ -68,7 +71,7 @@ export function handleMaxBySync(
   let index = 0;
   if (next.done) {
     if (rest.length) return rest[0];
-    throw new TypeError(createYieldedEmptyError("Yielded", method));
+    throw new TypeError(createGeneratorEmptyMsg("Yielded", method));
   }
   let current = next.value;
   let currentMax = callback(current, index++);
@@ -108,7 +111,7 @@ export async function handleMaxByAsync(
   const next = await generator.next();
   if (next.done) {
     if (rest.length) return rest[0];
-    throw new TypeError(createYieldedEmptyError("AsyncYielded", method));
+    throw new TypeError(createGeneratorEmptyMsg("AsyncYielded", method));
   }
   let index = 0;
   let acc = next.value;
@@ -125,23 +128,23 @@ export async function handleMaxByAsync(
 
 export function maxByParallel<T>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): ParallelGeneratorCallbackArgs<T, T>;
+): IParallelResolverSubConfig<T, T>;
 export function maxByParallel<T, TDefault>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
   defaultValue: TDefault,
-): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+): IParallelResolverSubConfig<T, T | TDefault>;
 export function maxByParallel(
   callback: (next: unknown, index: number) => IMaybeAsync<number>,
   ...rest: unknown[]
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   return handleMaxByParallel("maxBy", callback, rest);
 }
 
 export function handleMaxByParallel(
-  method: keyof IYieldedResolver<any> & string,
+  name: IParallelResolverName,
   callback: (next: unknown, index: number) => IMaybeAsync<number>,
   rest: unknown[],
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   let acc: { item: unknown | symbol; value: number | symbol } = {
     item: getEmptySlot(),
     value: getEmptySlot(),
@@ -149,6 +152,7 @@ export function handleMaxByParallel(
   const getAccValue = memoize(callback);
   let index = 0;
   return {
+    name,
     async onNext(value) {
       if (isEmptySlot(acc.item)) {
         acc.item = value;
@@ -166,7 +170,7 @@ export function handleMaxByParallel(
     onDone(resolve) {
       if (!isEmptySlot(acc.item)) return resolve(acc.item);
       if (rest.length) return resolve(rest[0]);
-      throw new TypeError(createYieldedEmptyError("ParallelYielded", method));
+      throw new TypeError(createGeneratorEmptyMsg("ParallelYielded", name));
     },
   };
 }

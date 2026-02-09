@@ -50,6 +50,7 @@ export async function* parallelToAwaited<T>(
   const buffer: T[] = [];
   let resolvable = Promise.withResolvers<void>();
   using _ = ParallelGeneratorResolver.run<T, void>({
+    name: "consume",
     generator,
     signal,
     parallel,

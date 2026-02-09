@@ -1,5 +1,6 @@
 import type { IMaybeAsync } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
+import type { IDisposableParent } from "../../generators/types.ts";
 import { consumeAsync } from "../apply/consume.ts";
 import { countAsync } from "../apply/count.ts";
 import { everyAsync } from "../apply/every.ts";
@@ -17,16 +18,16 @@ import { toArrayAsync } from "../apply/toArray.ts";
 import { toReversedAsync } from "../apply/toReversed.ts";
 import { toSetAsync } from "../apply/toSet.ts";
 import { toSortedAsync } from "../apply/toSorted.ts";
+import { ResolversDisposableParent } from "../ResolversDisposableParent.ts";
 import type { IYieldedResolver } from "../sync/types.ts";
-import { YieldedDisposableResolver } from "../YieldedDisposableGenerator.ts";
 import type { IAsyncYieldedResolver } from "./types.ts";
 
 export class AsyncYieldedResolver<T>
-  extends YieldedDisposableResolver<IYieldedAsyncGenerator<T>>
+  extends ResolversDisposableParent<IYieldedAsyncGenerator<T>>
   implements IAsyncYieldedResolver<T>
 {
   protected constructor(
-    parent: undefined | Disposable,
+    parent: IDisposableParent,
     generator: IYieldedAsyncGenerator<T>,
     signal?: AbortSignal,
   ) {

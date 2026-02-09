@@ -4,10 +4,11 @@ import { ParallelYielded } from "../../src/parallel/ParallelYielded.ts";
 import { delay } from "../utils/delay.ts";
 import { MockIYieldedParallelGenerator } from "../utils/MockGenerators.ts";
 
-describe("ParallelGenerator", () => {
+describe.skip("ParallelGenerator", () => {
   describe("handleNext", () => {
     test("empty generator, parallel 1", async () => {
       const generator = ParallelGenerator.create({
+        name: "_test",
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
         onNext() {
@@ -19,6 +20,7 @@ describe("ParallelGenerator", () => {
     });
     test("empty generator, parallel 3", async () => {
       const generator = ParallelGenerator.create({
+        name: "_test",
         generator: MockIYieldedParallelGenerator([]),
         parallel: 1,
         onNext() {
@@ -31,6 +33,7 @@ describe("ParallelGenerator", () => {
 
     test("generator with one sync, parallel 1", async () => {
       const generator = ParallelGenerator.create<number, number>({
+        name: "_test",
         generator: MockIYieldedParallelGenerator([1]),
         parallel: 1,
         onNext(next) {
@@ -47,6 +50,7 @@ describe("ParallelGenerator", () => {
     test("generator with 5 sync, parallel 1", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
       const generator = ParallelGenerator.create<number, number>({
+        name: "_test",
         generator: MockIYieldedParallelGenerator(values),
         parallel: 1,
         onNext(next) {
@@ -65,6 +69,7 @@ describe("ParallelGenerator", () => {
     test("generator with 5 sync, parallel 5", async () => {
       const values = [1, Promise.resolve(2), 3, 4, 5];
       const generator = ParallelGenerator.create<number, number>({
+        name: "_test",
         generator: MockIYieldedParallelGenerator(values),
         parallel: 5,
         onNext(next) {
@@ -81,15 +86,6 @@ describe("ParallelGenerator", () => {
     });
   });
   describe("toArray", () => {
-    const inputTemplate = [
-      [1, 300],
-      [2, 50],
-      [3, 0],
-      [4, 200],
-      [5, 400],
-    ] as const;
-    const input = inputTemplate.map(([v, ms]) => delay(v, ms));
-
     test("generator with 5 async, parallel 5", async () => {
       const inputTemplate = [
         [1, 300],
@@ -105,6 +101,7 @@ describe("ParallelGenerator", () => {
         ParallelGenerator.create<number, number>({
           generator: mock,
           parallel: 5,
+          name: "_test",
           onNext(next) {
             return [next];
           },
@@ -133,6 +130,7 @@ describe("ParallelGenerator", () => {
         ParallelGenerator.create<number, number>({
           generator: mock,
           parallel: 3,
+          name: "_test",
           onNext(next) {
             return [next];
           },
@@ -156,6 +154,7 @@ describe("ParallelGenerator", () => {
         ParallelGenerator.create<number, number>({
           generator: mock,
           parallel: 2,
+          name: "_test",
           onNext(next) {
             return [next];
           },

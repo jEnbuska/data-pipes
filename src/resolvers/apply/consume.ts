@@ -1,7 +1,7 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedConsume<TFlow extends IYieldedFlow> {
@@ -32,11 +32,9 @@ export async function consumeAsync(generator: IYieldedAsyncGenerator) {
   }
 }
 
-export function consumeParallel(): ParallelGeneratorCallbackArgs<
-  unknown,
-  void
-> {
+export function consumeParallel(): IParallelResolverSubConfig<unknown, void> {
   return {
+    name: "consume",
     onDone(resolve) {
       resolve();
     },

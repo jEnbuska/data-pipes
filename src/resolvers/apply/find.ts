@@ -1,7 +1,7 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedFind<T, TFlow extends IYieldedFlow> {
@@ -55,15 +55,16 @@ export async function findAsync(
 
 export function findParallel<T, TOut extends T = T>(
   predicate: (value: T, index: number) => value is TOut,
-): ParallelGeneratorCallbackArgs<T, TOut | undefined>;
+): IParallelResolverSubConfig<T, TOut | undefined>;
 export function findParallel<T>(
   predicate: (value: T, index: number) => unknown,
-): ParallelGeneratorCallbackArgs<T, T | undefined>;
+): IParallelResolverSubConfig<T, T | undefined>;
 export function findParallel(
   predicate: (value: unknown, index: number) => unknown,
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   let index = 0;
   return {
+    name: "find",
     async onNext(value, resolve) {
       const match = await predicate(value, index++);
       if (!match) return;

@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import { createTestSets } from "../utils/createTestSets.ts";
 
-const createSet = () =>
-  createTestSets([1, 2, 3]).modes.map(({ yielded, mode }) => {
+const createAbortedSet = () =>
+  createTestSets([1, 2, 3, 4, 5]).modes.map(({ yielded, mode }) => {
     const controller = new AbortController();
     controller.abort();
     let tapped = 0;
@@ -42,7 +42,7 @@ describe("withSignal", () => {
   describe("abort before iteration", () => {
     describe("reduce", () => {
       describe("without initial value", () => {
-        createSet().forEach(({ yielded, mode, getTapped }) => {
+        createAbortedSet().forEach(({ yielded, mode, getTapped }) => {
           const apply = async () => {
             await yielded.reduce((acc, next) => acc + next);
           };
@@ -54,7 +54,7 @@ describe("withSignal", () => {
       });
 
       describe("without initial value", () => {
-        createSet().forEach(({ yielded, mode, getTapped }) => {
+        createAbortedSet().forEach(({ yielded, mode, getTapped }) => {
           test(mode, async () => {
             await (yielded.reduce as any)(
               (acc: any, next: any) => acc + next,
@@ -66,7 +66,7 @@ describe("withSignal", () => {
       });
     });
     describe("groupBy", () => {
-      createSet().forEach(({ yielded, mode, getTapped }) =>
+      createAbortedSet().forEach(({ yielded, mode, getTapped }) =>
         test(mode, async () => {
           await (yielded.groupBy as any)((next: any) => `${next}`);
           expect(getTapped()).toBe(0);
@@ -76,7 +76,7 @@ describe("withSignal", () => {
 
     (["find", "some", "sumBy", "forEach"] as const).map((method) => {
       describe(method, () => {
-        createSet().forEach(({ yielded, mode, getTapped }) =>
+        createAbortedSet().forEach(({ yielded, mode, getTapped }) =>
           test(mode, async () => {
             await yielded[method]((_) => _);
             expect(getTapped()).toBe(0);
@@ -96,12 +96,37 @@ describe("withSignal", () => {
       ] as const
     ).forEach((method) => {
       describe(method, () => {
-        createSet().forEach(({ yielded, mode, getTapped }) =>
+        createAbortedSet().forEach(({ yielded, mode, getTapped }) =>
           test(mode, async () => {
             await yielded[method]();
             expect(getTapped()).toBe(0);
           }),
         );
+      });
+    });
+
+    const firstAndLast = ["first", "last"] as const;
+    firstAndLast.forEach((method) => {
+      createAbortedSet().forEach(({ yielded, mode, getTapped }) => {
+        test(`${method} ${mode} should throw without default`, async () => {
+          async function apply() {
+            return (yielded[method] as any)();
+          }
+          expect(getTapped()).toBe(0);
+          await expect(apply()).rejects.toThrowError(TypeError);
+        });
+      });
+    });
+
+    firstAndLast.forEach((method) => {
+      createAbortedSet().forEach(({ yielded, mode, getTapped }) => {
+        test(`${method} ${mode} should not throw with default`, async () => {
+          async function apply() {
+            return (yielded[method] as any)("-1");
+          }
+          expect(getTapped()).toBe(0);
+          expect(await apply()).toBe("-1");
+        });
       });
     });
   });

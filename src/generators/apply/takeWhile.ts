@@ -4,7 +4,7 @@ import type {
   IYieldedFlow,
 } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
@@ -56,8 +56,9 @@ export async function* takeWhileAsync<T>(
 
 export function takeWhileParallel<T>(
   predicate: (next: T) => IMaybeAsync<boolean>,
-): IParallelGeneratorCallbacks<T> {
+): IParallelGeneratorSubConfig<T> {
   return {
+    name: "takeWhile",
     async onNext(next) {
       if (await predicate(next)) return [next];
       return "STOP";

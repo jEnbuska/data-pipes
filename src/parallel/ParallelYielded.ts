@@ -23,9 +23,10 @@ import {
 } from "../generators/apply/utils/take.ts";
 import { ParallelGenerator } from "../generators/parallel/ParallelGenerator.ts";
 import type {
-  IParallelGeneratorCallbacks,
+  IParallelGeneratorSubConfig,
   IYieldedParallelGenerator,
 } from "../generators/parallel/types.ts";
+import type { IDisposableParent } from "../generators/types.ts";
 import { ParallelYieldedResolver } from "../resolvers/parallel/ParallelYieldedResolver.ts";
 import type { ISharedYieldedResolver } from "../resolvers/types.ts";
 import type { IParallelYielded } from "./types.ts";
@@ -35,7 +36,7 @@ export class ParallelYielded<T>
   implements IParallelYielded<T>
 {
   public constructor(
-    parent: Disposable | undefined,
+    parent: IDisposableParent,
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
   ) {
@@ -43,7 +44,7 @@ export class ParallelYielded<T>
   }
 
   #next<TNext, TArgs extends any[]>(
-    next: (...args: TArgs) => IParallelGeneratorCallbacks<T, TNext>,
+    next: (...args: TArgs) => IParallelGeneratorSubConfig<T, TNext>,
     ...args: TArgs
   ): IParallelYielded<TNext> {
     const nextGenerator = ParallelGenerator.create({

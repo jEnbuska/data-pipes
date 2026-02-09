@@ -45,6 +45,7 @@ export function parallel<T>(
   parallel: number,
 ): IYieldedParallelGenerator<Awaited<T>> {
   return ParallelGenerator.create<T, Awaited<T>>({
+    name: "parallel",
     parallel,
     generator,
   });
@@ -56,6 +57,7 @@ export function parallelUpdate<T>(
   nextParallel: number,
 ): IYieldedParallelGenerator<Awaited<T>> {
   return ParallelGenerator.create<T, Awaited<T>>({
+    name: "parallel",
     parallel: nextParallel,
     generator: parallelToAwaited(generator, currentParallel),
   });

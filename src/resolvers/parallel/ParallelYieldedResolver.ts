@@ -2,6 +2,7 @@ import type { IMaybeAsync } from "../../general/types.ts";
 import { assertIsValidParallel } from "../../general/utils/parallel.ts";
 import { parallelToAwaited } from "../../generators/apply/awaited.ts";
 import type { IYieldedParallelGenerator } from "../../generators/parallel/types.ts";
+import type { IDisposableParent } from "../../generators/types.ts";
 import { consumeParallel } from "../apply/consume.ts";
 import { countParallel } from "../apply/count.ts";
 import { everyParallel } from "../apply/every.ts";
@@ -20,22 +21,22 @@ import { toReversedParallel } from "../apply/toReversed.ts";
 import { toSetParallel } from "../apply/toSet.ts";
 import { toSortedParallel } from "../apply/toSorted.ts";
 import type { IAsyncYieldedResolver } from "../async/types.ts";
+import { ResolversDisposableParent } from "../ResolversDisposableParent.ts";
 import type { IYieldedResolver } from "../sync/types.ts";
-import { YieldedDisposableResolver } from "../YieldedDisposableGenerator.ts";
 import {
-  type ParallelGeneratorCallbackArgs,
+  type IParallelResolverSubConfig,
   ParallelGeneratorResolver,
 } from "./ParallelGeneratorResolver.ts";
 import type { IParallelYieldedResolver } from "./types.ts";
 
 export class ParallelYieldedResolver<T>
-  extends YieldedDisposableResolver<IYieldedParallelGenerator<T>>
+  extends ResolversDisposableParent<IYieldedParallelGenerator<T>>
   implements IParallelYieldedResolver<T>
 {
   protected _parallel: number;
 
   protected constructor(
-    parent: undefined | Disposable,
+    parent: IDisposableParent,
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
     signal?: AbortSignal,
@@ -57,7 +58,7 @@ export class ParallelYieldedResolver<T>
   }
 
   async #apply<TReturn, TArgs extends any[]>(
-    cb: (...args: TArgs) => ParallelGeneratorCallbackArgs<T, TReturn>,
+    cb: (...args: TArgs) => IParallelResolverSubConfig<T, TReturn>,
     ...args: TArgs
   ): Promise<TReturn> {
     using generator = this.generator;

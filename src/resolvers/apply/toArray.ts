@@ -1,6 +1,6 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToArray<T, TFlow extends IYieldedFlow> {
@@ -25,9 +25,10 @@ export async function toArrayAsync<T>(
   return arr;
 }
 
-export function toArrayParallel<T>(): ParallelGeneratorCallbackArgs<T, T[]> {
+export function toArrayParallel<T>(): IParallelResolverSubConfig<T, T[]> {
   const arr: T[] = [];
   return {
+    name: "toArray",
     onNext(value) {
       arr.push(value);
     },

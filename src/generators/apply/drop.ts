@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 
 export interface IYieldedDrop<T, TFlow extends IYieldedFlow> {
   /**
@@ -46,8 +46,9 @@ export async function* dropAsync<T>(
 
 export function dropParallel<T>(
   count: number,
-): IParallelGeneratorCallbacks<T, T> {
+): IParallelGeneratorSubConfig<T, T> {
   return {
+    name: "drop",
     onNext(next) {
       if (count > 0) {
         count--;

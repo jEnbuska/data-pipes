@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedDropLast<T, TFlow extends IYieldedFlow> {
@@ -69,10 +69,11 @@ export async function* dropLastAsync<T>(
 }
 export function dropLastParallel<T>(
   count: number,
-): IParallelGeneratorCallbacks<T> {
+): IParallelGeneratorSubConfig<T> {
   const buffer: Array<T> = [];
   let skipped = 0;
   return {
+    name: "dropLast",
     onNext(next) {
       buffer.push(next);
       if (skipped < count) {

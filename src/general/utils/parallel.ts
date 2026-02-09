@@ -103,10 +103,17 @@ export function throttle<TArgs extends any[], TReturn>(
   );
 }
 export function assertIsValidParallel(parallel: number) {
+  if (!Number.isInteger(parallel)) {
+    throw new RangeError(`parallel must be an integer but got ${parallel}`);
+  }
   if (parallel <= 0) {
-    throw new RangeError("parallel must be greater than 0");
+    throw new RangeError(
+      `parallel must be greater than 0, but got ${parallel}`,
+    );
   }
   if (parallel > 50) {
-    throw new RangeError("parallel must must be 50 or less");
+    throw new RangeError(
+      `parallel must must be 50 or less, but got ${parallel}`,
+    );
   }
 }

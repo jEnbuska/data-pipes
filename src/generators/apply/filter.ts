@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import type { ICallbackReturn } from "../types.ts";
 
 export interface IYieldedFilter<T, TFlow extends IYieldedFlow> {
@@ -55,15 +55,16 @@ export async function* filterAsync(
 
 export function filterParallel<T, TOut extends T = T>(
   predicate: (next: T, index: number) => next is TOut,
-): IParallelGeneratorCallbacks<TOut>;
+): IParallelGeneratorSubConfig<TOut>;
 export function filterParallel<T>(
   predicate: (next: T, index: number) => unknown,
-): IParallelGeneratorCallbacks<T>;
+): IParallelGeneratorSubConfig<T>;
 export function filterParallel(
   predicate: (next: unknown, index: number) => unknown,
-): IParallelGeneratorCallbacks<unknown, unknown> {
+): IParallelGeneratorSubConfig<unknown, unknown> {
   let index = 0;
   return {
+    name: "filter",
     async onNext(next) {
       const match = await predicate(next, index++);
       if (!match) return;

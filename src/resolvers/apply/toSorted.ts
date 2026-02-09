@@ -3,7 +3,7 @@ import { throttle } from "../../general/utils/parallel.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedToSorted<T, TFlow extends IYieldedFlow> {
@@ -103,7 +103,7 @@ const defaultCompare = (a: unknown, b: unknown) => {
 };
 export function toSortedParallel<T>(
   compareFn?: (a: T, b: T) => IMaybeAsync<number>,
-): ParallelGeneratorCallbackArgs<T, T[]> {
+): IParallelResolverSubConfig<T, T[]> {
   const arr: T[] = [];
   const findIndex = createIndexFinderAsync(arr, compareFn);
   const handleSort = throttle(1, async function handleSort(value: T) {
@@ -111,6 +111,7 @@ export function toSortedParallel<T>(
     arr.splice(index, 0, value);
   });
   return {
+    name: "toSorted",
     async onNext(value) {
       await handleSort(value);
     },

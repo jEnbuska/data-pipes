@@ -21,7 +21,10 @@ import { takeWhileSync } from "../generators/apply/takeWhile.ts";
 import { tapSync } from "../generators/apply/tap.ts";
 import { assertNotNegative } from "../generators/apply/utils/take.ts";
 import type { IYieldedSyncGenerator } from "../generators/sync/types.ts";
-import type { IYieldedGenerator } from "../generators/types.ts";
+import type {
+  IDisposableParent,
+  IYieldedGenerator,
+} from "../generators/types.ts";
 import { ParallelYielded } from "../parallel/ParallelYielded.ts";
 import type { IParallelYielded } from "../parallel/types.ts";
 import { YieldedResolver } from "../resolvers/sync/YieldedResolver.ts";
@@ -30,7 +33,7 @@ import type { IYielded } from "./types.ts";
 
 export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
   private constructor(
-    parent: undefined | Disposable,
+    parent: IDisposableParent,
     generator: IYieldedSyncGenerator<T>,
   ) {
     super(parent, generator);

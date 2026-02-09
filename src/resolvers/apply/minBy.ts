@@ -2,7 +2,7 @@ import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 import {
   handleMaxByAsync,
@@ -91,15 +91,15 @@ export async function minByAsync(
 
 export function minByParallel<T>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): ParallelGeneratorCallbackArgs<T, T>;
+): IParallelResolverSubConfig<T, T>;
 export function minByParallel<T, TDefault>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
   defaultValue: TDefault,
-): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+): IParallelResolverSubConfig<T, T | TDefault>;
 export function minByParallel(
   callback: (next: unknown, index: number) => IMaybeAsync<number>,
   ...rest: unknown[]
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   return handleMaxByParallel(
     "minBy",
     async (...args) => {

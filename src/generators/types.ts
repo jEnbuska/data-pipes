@@ -52,3 +52,7 @@ export interface IYieldedOperations<T, TFlow extends IYieldedFlow>
     IYieldedMapPairwise<T, TFlow> {
   withSignal(signal?: AbortSignal): ISharedYieldedResolver<T, TFlow>;
 }
+
+export type IDisposableParent =
+  | (Disposable & (IteratorObject<any> | AsyncGenerator<any>))
+  | undefined;

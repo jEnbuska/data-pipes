@@ -15,12 +15,20 @@ describe("filter", () => {
   function module2(value: number) {
     return value % 2;
   }
+
+  createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+    test(mode, async () => {
+      expect(
+        (await yielded.filter(module2).toArray()) satisfies number[],
+      ).toStrictEqual([1, 3]);
+    });
+  });
+
   const {
     fromResolvedPromises,
 
     fromPromises,
     fromArray,
-    empty,
   } = createTestSets(numbers);
 
   test("from resolved promises", async () => {
@@ -46,9 +54,13 @@ describe("filter", () => {
     ).toStrictEqual([1, 3]);
   });
 
-  test("from empty", () => {
-    expect(empty.filter(module2).toArray() satisfies number[]).toStrictEqual(
-      [],
-    );
+  describe("from empty", () => {
+    createTestSets<number>([]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.filter(module2).toArray()) satisfies number[],
+        ).toStrictEqual([]);
+      });
+    });
   });
 });

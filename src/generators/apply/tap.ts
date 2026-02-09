@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import type { IYieldedSyncGenerator } from "../sync/types.ts";
 
 export interface IYieldedTap<T, TFlow extends IYieldedFlow> {
@@ -52,9 +52,10 @@ export async function* tapAsync<T>(
 
 export function tapParallel<T>(
   consumer: (next: T, index: number) => unknown,
-): IParallelGeneratorCallbacks<T> {
+): IParallelGeneratorSubConfig<T> {
   let index = 0;
   return {
+    name: "tap",
     async onNext(value) {
       await consumer(value, index++);
       return [value];

@@ -1,6 +1,6 @@
 import type { INextYielded, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../async/types.ts";
-import type { IParallelGeneratorCallbacks } from "../parallel/types.ts";
+import type { IParallelGeneratorSubConfig } from "../parallel/types.ts";
 import { assertIsNotZero } from "./utils/take.ts";
 
 export interface IYieldedTake<T, TFlow extends IYieldedFlow> {
@@ -49,9 +49,10 @@ export async function* takeAsync<T>(
   }
 }
 
-export function takeParallel<T>(count: number): IParallelGeneratorCallbacks<T> {
+export function takeParallel<T>(count: number): IParallelGeneratorSubConfig<T> {
   assertIsNotZero(count);
   return {
+    name: "take",
     onNext(next) {
       if (count-- <= 0) return "STOP";
       return [next];

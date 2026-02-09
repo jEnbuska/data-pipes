@@ -2,6 +2,7 @@ import type {
   IMaybeAsync,
   IYieldedIterableSource,
 } from "../../general/types.ts";
+import type { IYieldedOperations } from "../types.ts";
 
 export type IYieldedParallelGenerator<TOut = unknown> = AsyncGenerator<
   TOut,
@@ -23,7 +24,14 @@ export type IParallelGeneratorOnNext<T, TOut> = (
 export type IParallelGeneratorOnDone<TOut> =
   () => IMaybeAsync<void | IYieldedIterableSource<TOut, "parallel">>;
 
-export type IParallelGeneratorCallbacks<T, TOut = T> = {
+export type IParallelGeneratorSubConfig<T, TOut = T> = {
   onNext?: IParallelGeneratorOnNext<T, TOut>;
   onDone?: IParallelGeneratorOnDone<TOut>;
+  name: IParallelGeneratorName;
 };
+
+export type IParallelGeneratorName =
+  | keyof IYieldedOperations<any, any>
+  | "parallel"
+  | "awaited"
+  | "_test";

@@ -8,6 +8,7 @@ import {
 describe("ParallelGeneratorResolver", () => {
   test("Empty parallel 1", async () => {
     const result = await ParallelGeneratorResolver.run<number, boolean>({
+      name: "_test",
       generator: MockIYieldedParallelGenerator([]),
       parallel: 1,
       onNext() {},
@@ -21,6 +22,7 @@ describe("ParallelGeneratorResolver", () => {
   test("One value parallel 1", async () => {
     const acc: number[] = [];
     const result = await ParallelGeneratorResolver.run<number, number[]>({
+      name: "_test",
       generator: MockIYieldedParallelGenerator([1]),
       parallel: 1,
       onNext(value) {
@@ -36,6 +38,7 @@ describe("ParallelGeneratorResolver", () => {
   test("10 values parallel 3", async () => {
     const acc: number[] = [];
     const result = await ParallelGeneratorResolver.run<number, number[]>({
+      name: "_test",
       generator: MockDelayedValuesGenerator(vi.useFakeTimers(), [
         [1000, 1], // (0-1000) 7
         [0, 2], // (0-0) 1
@@ -62,6 +65,7 @@ describe("ParallelGeneratorResolver", () => {
   test("10 values parallel 15", async () => {
     const acc: number[] = [];
     const result = ParallelGeneratorResolver.run<number, number[]>({
+      name: "_test",
       generator: MockDelayedValuesGenerator(vi.useFakeTimers(), [
         [1000, 1],
         [0, 2],
@@ -88,6 +92,7 @@ describe("ParallelGeneratorResolver", () => {
   test("5 values parallel 5", async () => {
     const acc: number[] = [];
     const result = ParallelGeneratorResolver.run<number, number[]>({
+      name: "_test",
       generator: MockDelayedValuesGenerator(vi.useFakeTimers(), [
         [0, 1],
         [100, 2],

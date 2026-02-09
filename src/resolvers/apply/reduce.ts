@@ -2,7 +2,7 @@ import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import { throttle } from "../../general/utils/parallel.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 import { getEmptySlot, isEmptySlot } from "./utils/emptySlot.ts";
 
@@ -95,18 +95,19 @@ export async function reduceAsync(
 
 export function reduceParallel<T>(
   reducer: (acc: T, next: T, index: number) => IMaybeAsync<T>,
-): ParallelGeneratorCallbackArgs<T, T>;
+): IParallelResolverSubConfig<T, T>;
 export function reduceParallel<T, TOut>(
   reducer: (acc: TOut, next: T, index: number) => IMaybeAsync<TOut>,
   initialValue: IMaybeAsync<TOut>,
-): ParallelGeneratorCallbackArgs<T, TOut>;
+): IParallelResolverSubConfig<T, TOut>;
 export function reduceParallel(
   reducer: (acc: unknown, next: unknown, index: number) => unknown,
   ...rest: [unknown] | []
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   let acc: unknown | symbol = !!rest.length ? rest[0]! : getEmptySlot();
   let index = 0;
   return {
+    name: "reduce",
     onNext: throttle(1, async function onNext(value) {
       if (isEmptySlot(acc)) {
         acc = value;

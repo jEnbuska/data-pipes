@@ -1,17 +1,15 @@
-export class YieldedDisposableResolver<
+import type { IDisposableParent } from "../generators/types.ts";
+
+export class ResolversDisposableParent<
   T extends IteratorObject<any> | AsyncGenerator<any>,
 > {
   protected readonly generator: Disposable & T;
 
-  protected readonly parent: undefined | Disposable;
+  protected readonly parent: IDisposableParent;
 
   protected readonly signal?: AbortSignal;
 
-  constructor(
-    parent: undefined | Disposable,
-    generator: T,
-    signal?: AbortSignal,
-  ) {
+  constructor(parent: IDisposableParent, generator: T, signal?: AbortSignal) {
     this.parent = parent;
     this.signal = signal;
     this.generator = Object.assign(generator, {
@@ -24,6 +22,7 @@ export class YieldedDisposableResolver<
       void parent?.[Symbol.dispose]();
     } else {
       signal?.addEventListener("abort", () => {
+        void this.parent?.return?.(undefined);
         this.generator[Symbol.dispose]();
       });
     }

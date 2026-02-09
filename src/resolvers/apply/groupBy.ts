@@ -2,7 +2,7 @@ import type { IMaybeAsync, IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
@@ -99,9 +99,10 @@ export async function groupByAsync(
 export function groupByParallel(
   keySelector: (next: unknown) => IMaybeAsync<PropertyKey>,
   groups: PropertyKey[] = [],
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   const record = createInitialGroups(groups);
   return {
+    name: "groupBy",
     async onNext(value) {
       const key = await keySelector(value);
       if (!(key in record)) {

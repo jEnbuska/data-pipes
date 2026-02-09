@@ -1,6 +1,6 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedSome<T, TFlow extends IYieldedFlow> {
@@ -48,9 +48,10 @@ export async function someAsync<T>(
 
 export function someParallel<T>(
   predicate: (value: T, index: number) => unknown,
-): ParallelGeneratorCallbackArgs<T, boolean> {
+): IParallelResolverSubConfig<T, boolean> {
   let index = 0;
   return {
+    name: "some",
     async onNext(value, resolve) {
       const match = await predicate(value, index++);
       if (match) resolve(true);

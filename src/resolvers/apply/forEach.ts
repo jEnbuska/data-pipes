@@ -1,6 +1,6 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
 
 export interface IYieldedForEach<T, TFlow extends IYieldedFlow> {
@@ -41,9 +41,10 @@ export async function forEachAsync<T>(
 
 export function forEachParallel<T>(
   callback: (next: T, index: number) => unknown,
-): ParallelGeneratorCallbackArgs<T, void> {
+): IParallelResolverSubConfig<T, void> {
   let index = 0;
   return {
+    name: "forEach",
     onNext(value) {
       callback(value, index++);
     },

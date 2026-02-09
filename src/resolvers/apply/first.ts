@@ -1,9 +1,9 @@
 import type { IYieldedFlow } from "../../general/types.ts";
 import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
-import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import { type IParallelResolverSubConfig } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
-import { createYieldedEmptyError } from "./utils/createYieldedEmptyError.ts";
+import { createGeneratorEmptyMsg } from "./utils/createGeneratorEmptyMsg.ts";
 
 export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
   /**
@@ -28,7 +28,7 @@ export function firstSync(
   const next = generator.next();
   if (next.done) {
     if (rest.length) return rest[0];
-    throw new TypeError(createYieldedEmptyError("Yielded", "first"));
+    throw new TypeError(createGeneratorEmptyMsg("Yielded", "first"));
   }
   return next.value;
 }
@@ -47,25 +47,26 @@ export async function firstAsync(
   const next = await generator.next();
   if (next.done) {
     if (rest.length) return rest[0];
-    throw new TypeError(createYieldedEmptyError("AsyncYielded", "first"));
+    throw new TypeError(createGeneratorEmptyMsg("AsyncYielded", "first"));
   }
   return next.value;
 }
 
-export function firstParallel<T>(): ParallelGeneratorCallbackArgs<T, T>;
+export function firstParallel<T>(): IParallelResolverSubConfig<T, T>;
 export function firstParallel<T, TDefault>(
   defaultValue: TDefault,
-): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+): IParallelResolverSubConfig<T, T | TDefault>;
 export function firstParallel(
   ...rest: unknown[]
-): ParallelGeneratorCallbackArgs<unknown, unknown> {
+): IParallelResolverSubConfig<unknown, unknown> {
   return {
+    name: "first",
     onNext(value, resolve) {
       resolve(value);
     },
     onDone(resolve) {
       if (rest.length) return resolve(rest[0]);
-      throw new TypeError(createYieldedEmptyError("ParallelYielded", "first"));
+      throw new TypeError(createGeneratorEmptyMsg("ParallelYielded", "first"));
     },
   };
 }

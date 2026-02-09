@@ -3,67 +3,66 @@ import { Yielded } from "../../src/index.ts";
 import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("find", () => {
-  test("find first", () => {
-    expect(Yielded.from([1, 2, 3]).find((it) => it === 1)).toStrictEqual(1);
+  const numbers = [1, 2, 3];
+  describe("find first", () => {
+    createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.find((it) => it === 1)) satisfies number | undefined,
+        ).toBe(1);
+      });
+    });
   });
 
-  test("find second", () => {
-    expect(
-      Yielded.from([1, 2, 3]).find((it) => it === 2) satisfies
-        | number
-        | undefined,
-    ).toStrictEqual(2);
+  describe("find second", () => {
+    createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.find((it) => it === 2)) satisfies number | undefined,
+        ).toBe(2);
+      });
+    });
   });
 
-  test("find last", () => {
-    expect(Yielded.from([1, 2, 3]).find((it) => it === 3)).toStrictEqual(3);
+  describe("find last", () => {
+    createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.find((it) => it === 3)) satisfies number | undefined,
+        ).toBe(3);
+      });
+    });
   });
 
-  test("find none", () => {
-    expect(Yielded.from([1, 2, 3]).find((it) => it === 4)).toStrictEqual(
-      undefined,
-    );
+  describe("find none", () => {
+    createTestSets(numbers).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect(
+          (await yielded.find((it) => it === 4)) satisfies number | undefined,
+        ).toBe(undefined);
+      });
+    });
   });
 
   test("find with type-guard", () => {
     expect(
-      Yielded.from([1, 2, 3]).find((it): it is 1 => it === 1) satisfies
+      Yielded.from(numbers).find((it): it is 1 => it === 1) satisfies
         | 1
         | undefined,
     ).toStrictEqual(1);
   });
 
-  const numbers = [1, 2, 3];
-  const {
-    fromResolvedPromises,
-
-    fromPromises,
-    fromArray,
-    empty,
-  } = createTestSets(numbers);
-
   function find2(value: number) {
     return value === 2;
   }
 
-  test("from resolved promises", async () => {
-    expect(
-      await (fromResolvedPromises.find(find2) satisfies Promise<number | void>),
-    ).toBe(2);
-  });
-
-  test("from promises", async () => {
-    expect(
-      await (fromPromises.awaited().find(find2) satisfies Promise<
-        void | number
-      >),
-    ).toBe(2);
-  });
-  test("from array", () => {
-    expect(fromArray.find(find2) satisfies number | void).toBe(2);
-  });
-
-  test("from empty", () => {
-    expect(empty.find(find2) satisfies number | void).toBe(undefined);
+  describe("from empty", () => {
+    createTestSets<number>([]).modes.forEach(({ mode, yielded }) => {
+      test(mode, async () => {
+        expect((await yielded.find(find2)) satisfies number | void).toBe(
+          undefined,
+        );
+      });
+    });
   });
 });

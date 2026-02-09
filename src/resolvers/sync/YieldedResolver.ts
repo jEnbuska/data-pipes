@@ -1,4 +1,5 @@
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
+import type { IDisposableParent } from "../../generators/types.ts";
 import { consumeSync } from "../apply/consume.ts";
 import { countSync } from "../apply/count.ts";
 import { firstSync } from "../apply/first.ts";
@@ -9,15 +10,15 @@ import { minBySync } from "../apply/minBy.ts";
 import { sumBySync } from "../apply/sumBy.ts";
 import { toReversedSync } from "../apply/toReversed.ts";
 import { toSortedSync } from "../apply/toSorted.ts";
-import { YieldedDisposableResolver } from "../YieldedDisposableGenerator.ts";
+import { ResolversDisposableParent } from "../ResolversDisposableParent.ts";
 import type { IYieldedResolver } from "./types.ts";
 
 export class YieldedResolver<T>
-  extends YieldedDisposableResolver<IYieldedSyncGenerator<T>>
+  extends ResolversDisposableParent<IYieldedSyncGenerator<T>>
   implements IYieldedResolver<T>, Iterable<T>
 {
   protected constructor(
-    parent: undefined | Disposable,
+    parent: IDisposableParent,
     generator: IYieldedSyncGenerator<T>,
     signal?: AbortSignal,
   ) {
