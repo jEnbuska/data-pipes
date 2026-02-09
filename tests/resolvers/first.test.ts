@@ -8,7 +8,7 @@ describe("minBy", () => {
     createTestSets<number>([]).modes.forEach(({ mode, yielded }) => {
       test(mode, async () => {
         async function apply(): Promise<number> {
-          return yielded.minBy(modulo4);
+          return yielded.first();
         }
         await expect(apply()).rejects.toThrowError(TypeError);
       });
@@ -67,14 +67,14 @@ describe("minBy", () => {
     });
     test("parallelDelayed", async () => {
       expect(
-        (await parallel
+        (await parallelDelayed
           .withSignal(controller.signal)
           .minBy(modulo4, "0")) satisfies number | string,
       ).toBe("0");
     });
     test("mixedParallel", async () => {
       expect(
-        (await parallel
+        (await mixedParallel
           .withSignal(controller.signal)
           .minBy(modulo4, "0")) satisfies number | string,
       ).toBe("0");

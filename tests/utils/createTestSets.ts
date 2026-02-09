@@ -17,7 +17,14 @@ export function createTestSets<T>(array: T[]) {
     .map((it) => it)
     .parallel(3)
     .map((it) => delay(it, 1));
+
   return {
+    sync,
+    awaited,
+    awaitedDelayed,
+    parallel,
+    parallelDelayed,
+    mixedParallel,
     empty: Yielded.from<T>([]),
     fromArray: Yielded.from(array),
     fromPromises: Yielded.from(array).map((next) => Promise.resolve(next)),
@@ -29,7 +36,7 @@ export function createTestSets<T>(array: T[]) {
       { mode: "sync", yielded: sync },
       { mode: "async", yielded: awaited },
       { mode: "async delayed", yielded: awaitedDelayed },
-    ],
+    ] as const,
     modes: [
       { mode: "sync", yielded: sync },
       { mode: "async", yielded: awaited },

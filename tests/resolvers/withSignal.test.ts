@@ -1,6 +1,24 @@
 import { describe, expect, test } from "vitest";
 import { createTestSets } from "../utils/createTestSets.ts";
 
+const createSet = () =>
+  createTestSets([1, 2, 3]).modes.map(({ yielded, mode }) => {
+    const controller = new AbortController();
+    controller.abort();
+    let tapped = 0;
+
+    return {
+      mode,
+      getTapped() {
+        return tapped;
+      },
+      yielded: yielded
+        .tap(() => {
+          tapped++;
+        })
+        .withSignal(controller.signal),
+    };
+  });
 describe("withSignal", () => {
   describe("abort during iteration", () => {
     createTestSets([1, 2, 3]).modes.forEach(({ yielded, mode }) => {
@@ -22,24 +40,6 @@ describe("withSignal", () => {
     });
   });
   describe("abort before iteration", () => {
-    const createSet = () =>
-      createTestSets([1, 2, 3]).modes.map(({ yielded, mode }) => {
-        const controller = new AbortController();
-        controller.abort();
-        let tapped = 0;
-
-        return {
-          mode,
-          getTapped() {
-            return tapped;
-          },
-          yielded: yielded
-            .tap(() => {
-              tapped++;
-            })
-            .withSignal(controller.signal),
-        };
-      });
     describe("reduce", () => {
       describe("without initial value", () => {
         createSet().forEach(({ yielded, mode, getTapped }) => {
@@ -74,9 +74,7 @@ describe("withSignal", () => {
       );
     });
 
-    (
-      ["find", "maxBy", "every", "some", "minBy", "sumBy", "forEach"] as const
-    ).map((method) => {
+    (["find", "some", "sumBy", "forEach"] as const).map((method) => {
       describe(method, () => {
         createSet().forEach(({ yielded, mode, getTapped }) =>
           test(mode, async () => {
@@ -94,8 +92,6 @@ describe("withSignal", () => {
         "toSorted",
         "toSet",
         "toReversed",
-        "first",
-        "last",
         "count",
       ] as const
     ).forEach((method) => {

@@ -3,6 +3,7 @@ import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
+import { createYieldedEmptyError } from "./utils/createYieldedEmptyError.ts";
 
 export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
   /**
@@ -11,31 +12,60 @@ export interface IYieldedFirst<T, TFlow extends IYieldedFlow> {
    * Iteration stops as soon as the first item is produced, so the generator
    * is **not fully consumed**.
    * If the generator produces no items, `undefined` is returned. */
-  first(): IResolverReturn<T | undefined, TFlow>;
+  first(): IResolverReturn<T, TFlow>;
+  first<TDefault>(defaultValue: TDefault): IResolverReturn<T | TDefault, TFlow>;
 }
 
-export function firstSync<T>(generator: IYieldedSyncGenerator<T>) {
+export function firstSync<T, TDefault>(
+  generator: IYieldedSyncGenerator<T>,
+  defaultValue: TDefault,
+): T | TDefault;
+export function firstSync<T>(generator: IYieldedSyncGenerator<T>): T;
+export function firstSync(
+  generator: IYieldedSyncGenerator,
+  ...rest: unknown[]
+): unknown {
   const next = generator.next();
-  if (next.done) return undefined;
+  if (next.done) {
+    if (rest.length) return rest[0];
+    throw new TypeError(createYieldedEmptyError("Yielded", "first"));
+  }
   return next.value;
 }
 
-export async function firstAsync<T>(generator: IYieldedAsyncGenerator<T>) {
+export async function firstAsync<T, TDefault>(
+  generator: IYieldedAsyncGenerator<T>,
+  defaultValue: TDefault,
+): Promise<T | TDefault>;
+export async function firstAsync<T>(
+  generator: IYieldedAsyncGenerator<T>,
+): Promise<T>;
+export async function firstAsync(
+  generator: IYieldedAsyncGenerator,
+  ...rest: unknown[]
+): Promise<unknown> {
   const next = await generator.next();
-  if (next.done) return undefined;
+  if (next.done) {
+    if (rest.length) return rest[0];
+    throw new TypeError(createYieldedEmptyError("AsyncYielded", "first"));
+  }
   return next.value;
 }
 
-export function firstParallel<T>(): ParallelGeneratorCallbackArgs<
-  T,
-  T | undefined
-> {
+export function firstParallel<T>(): ParallelGeneratorCallbackArgs<T, T>;
+export function firstParallel<T, TDefault>(
+  defaultValue: TDefault,
+): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+export function firstParallel(
+  ...rest: unknown[]
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
   return {
     onNext(value, resolve) {
       resolve(value);
     },
     onDone(resolve) {
-      resolve(undefined);
+      if (rest.length) return resolve(rest[0]);
+      throw new TypeError(createYieldedEmptyError("ParallelYielded", "first"));
     },
   };
 }

@@ -25,4 +25,12 @@ describe("some", () => {
       });
     });
   });
+
+  describe("empty", () => {
+    createTestSets<boolean>([]).modes.forEach(({ mode, yielded }) => {
+      test(`${mode}`, async () => {
+        expect((await yielded.some(Boolean)) satisfies boolean).toBe(false);
+      });
+    });
+  });
 });

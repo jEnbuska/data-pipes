@@ -92,7 +92,14 @@ export class Yielded<T> extends YieldedResolver<T> implements IYielded<T> {
         iterable[Symbol.asyncIterator](),
       ) as any;
     }
-    return new Yielded<unknown>(undefined, iterable[Symbol.iterator]()) as any;
+    return new Yielded<unknown>(
+      undefined,
+      (function* () {
+        for (const next of iterable[Symbol.iterator]()) {
+          yield next;
+        }
+      })(),
+    ) as any;
   }
 
   static concat<T>(...sources: Array<IYieldedSource<T>>): IYielded<T>;

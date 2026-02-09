@@ -16,7 +16,6 @@ export class YieldedDisposableResolver<
     this.signal = signal;
     this.generator = Object.assign(generator, {
       [Symbol.dispose]() {
-        void generator.return?.(undefined);
         void parent?.[Symbol.dispose]();
       },
     });

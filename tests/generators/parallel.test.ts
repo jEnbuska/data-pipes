@@ -4,7 +4,7 @@ import { delay } from "../utils/delay.ts";
 
 describe("parallel", () => {
   test("Parallel 2, 0 values", async () => {
-    const result = (await Yielded.from([] as number[])
+    const result = (await Yielded.from<number>([])
       .parallel(2)
       .toArray()) satisfies number[];
     expect(result).toStrictEqual([]);

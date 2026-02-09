@@ -37,7 +37,7 @@ export interface IYieldedGroupBy<T, TFlow extends IYieldedFlow> {
    */
   groupBy<TKey extends PropertyKey, const TGroups extends PropertyKey>(
     keySelector: (next: T) => ICallbackReturn<TKey, TFlow>,
-    groups: TGroups[],
+    groups: TGroups[] | readonly TGroups[],
   ): IResolverReturn<
     Record<TGroups, T[]> & Partial<Record<Exclude<TKey, TGroups>, T[]>>,
     TFlow

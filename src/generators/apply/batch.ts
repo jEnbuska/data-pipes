@@ -30,7 +30,7 @@ export interface IYieldedBatch<T, TFlow extends IYieldedFlow> {
    *   .toArray() satisfies number[][] // [[1, 2, 3], [4, 5]]
    * ```
    * ```ts
-   * Yielded.from([] as number[])
+   * Yielded.from<number>([])
    *   .batch(acc => acc.length < 3)
    *   .toArray() satisfies number[][] // []
    * ```

@@ -4,7 +4,7 @@ import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
 import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
-import { getPlaceholder, isPlaceholder } from "./utils/placeholder.ts";
+import { getEmptySlot, isEmptySlot } from "./utils/emptySlot.ts";
 
 export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
   /**
@@ -44,7 +44,7 @@ export interface IYieldedReduce<T, TFlow extends IYieldedFlow> {
    * ```
    * ```ts
    * // With `initialValue`
-   * Yielded.from([] as number[])
+   * Yielded.from<number>([])
    *   .reduce((sum, n) => sum + n, 0) satisfies number // 0
    * ```
    */
@@ -82,7 +82,7 @@ export async function reduceAsync(
     const first = await generator.next();
     if (first.done)
       throw new TypeError(
-        "AsyncYielded.reduce requires an initial value or an iterator that is not done.",
+        `AsyncYielded.reduce requires an initial value or an iterator that is not done.`,
       );
     acc = Promise.resolve(first.value);
   }
@@ -104,24 +104,23 @@ export function reduceParallel(
   reducer: (acc: unknown, next: unknown, index: number) => unknown,
   ...rest: [unknown] | []
 ): ParallelGeneratorCallbackArgs<unknown, unknown> {
-  let acc: symbol | Promise<unknown> | unknown = getPlaceholder();
-  if (!!rest.length) acc = Promise.resolve(rest[0]);
+  let acc: unknown | symbol = !!rest.length ? rest[0]! : getEmptySlot();
   let index = 0;
   return {
     onNext: throttle(1, async function onNext(value) {
-      if (isPlaceholder(acc)) {
+      if (isEmptySlot(acc)) {
         acc = value;
         return;
       }
       acc = await reducer(await acc, value, index++);
     }),
     async onDone(resolve) {
-      if (isPlaceholder(acc)) {
-        throw new TypeError(
-          "ParallelYielded reduce requires an initial value or an iterator that is not done.",
-        );
+      if (!isEmptySlot(acc)) {
+        return resolve(acc);
       }
-      resolve(acc);
+      throw new TypeError(
+        `ParallelYielded.reduce requires an initial value or an iterator that is not done.`,
+      );
     },
   };
 }

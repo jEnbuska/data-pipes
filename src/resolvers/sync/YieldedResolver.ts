@@ -94,11 +94,27 @@ export class YieldedResolver<T>
     return this.#apply(toReversedSync);
   }
 
-  minBy(...args: Parameters<IYieldedResolver<T>["minBy"]>) {
+  minBy(selector: (next: T, index: number) => number): T;
+
+  minBy<TDefault>(
+    selector: (next: T, index: number) => number,
+    defaultValue: TDefault,
+  ): T | TDefault;
+
+  minBy(...args: unknown[]) {
+    // @ts-ignore
     return this.#apply(minBySync, ...args);
   }
 
-  maxBy(...args: Parameters<IYieldedResolver<T>["maxBy"]>) {
+  maxBy(selector: (next: T, index: number) => number): T;
+
+  maxBy<TDefault>(
+    selector: (next: T, index: number) => number,
+    defaultValue: TDefault,
+  ): T | TDefault;
+
+  maxBy(...args: unknown[]) {
+    // @ts-ignore
     return this.#apply(maxBySync, ...args);
   }
 
@@ -129,11 +145,21 @@ export class YieldedResolver<T>
     return this.#apply(consumeSync);
   }
 
-  first() {
-    return this.#apply(firstSync);
+  first<TDefault>(defaultValue: TDefault): T | TDefault;
+
+  first(): T;
+
+  first(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(firstSync, ...args);
   }
 
-  last() {
-    return this.#apply(lastSync);
+  last<TDefault>(defaultValue: TDefault): T | TDefault;
+
+  last(): T;
+
+  last(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(lastSync, ...args);
   }
 }

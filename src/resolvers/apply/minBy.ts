@@ -4,7 +4,11 @@ import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
 import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
 import type { IResolverReturn } from "../types.ts";
-import { maxByAsync, maxByParallel, maxBySync } from "./maxBy.ts";
+import {
+  handleMaxByAsync,
+  handleMaxByParallel,
+  handleMaxBySync,
+} from "./maxBy.ts";
 
 export interface IYieldedMinBy<T, TFlow extends IYieldedFlow> {
   /**
@@ -18,44 +22,90 @@ export interface IYieldedMinBy<T, TFlow extends IYieldedFlow> {
    * @example
    * ```ts
    * Yielded.from([2,1,3,4])
-   *  .minBy(n => n) satisfies number | undefined // 1
+   *  .minBy(n => n) satisfies number // 1
    * ```
    * ```ts
-   * Yielded.from([] as number[])
-   *  .minBy(n => n) satisfies number | undefined // undefined
+   * Yielded.from<number>([])
+   *  .minBy(n => n) satisfies number // throw TypeError
    *  ```
-   *  ```ts
-   * Yielded.from(people)
-   *  .minBy(p => p.age) satisfies Person | undefined // Returns the youngest person
+   * ```ts
+   * Yielded.from<number>([])
+   *  .minBy(n => n, undefined) satisfies number | undefined // undefined
    *  ```
    */
   minBy(
     selector: (next: T, index: number) => ICallbackReturn<number, TFlow>,
-  ): IResolverReturn<T | undefined, TFlow>;
+  ): IResolverReturn<T, TFlow>;
+  minBy<TDefault>(
+    selector: (next: T, index: number) => ICallbackReturn<number, TFlow>,
+    defaultValue: TDefault,
+  ): IResolverReturn<T | TDefault, TFlow>;
 }
 
 export function minBySync<T>(
   generator: IYieldedSyncGenerator<T>,
   callback: (next: T, index: number) => number,
-): T | undefined {
-  return maxBySync(generator, (...args) => -callback(...args));
+): T;
+export function minBySync<T, TDefault>(
+  generator: IYieldedSyncGenerator<T>,
+  callback: (next: T, index: number) => number,
+  defaultValue: TDefault,
+): T | TDefault;
+export function minBySync(
+  generator: IYieldedSyncGenerator,
+  callback: (next: unknown, index: number) => number,
+  ...rest: unknown[]
+): unknown {
+  return handleMaxBySync(
+    "minBy",
+    generator,
+    (...args) => -callback(...args),
+    rest,
+  );
 }
 
 export async function minByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): Promise<T | undefined> {
-  return maxByAsync(generator, async (...args) => {
-    const numb = await callback(...args);
-    return -numb;
-  });
+): Promise<T>;
+export async function minByAsync<T, TDefault>(
+  generator: IYieldedAsyncGenerator<T>,
+  callback: (next: T, index: number) => IMaybeAsync<number>,
+  defaultValue: TDefault,
+): Promise<T | TDefault>;
+export async function minByAsync(
+  generator: IYieldedAsyncGenerator,
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  ...rest: unknown[]
+): Promise<unknown> {
+  return handleMaxByAsync(
+    "minBy",
+    generator,
+    async (...args) => {
+      const numb = await callback(...args);
+      return -numb;
+    },
+    rest,
+  );
 }
 
 export function minByParallel<T>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): ParallelGeneratorCallbackArgs<T, T | undefined> {
-  return maxByParallel<T>(async (...args) => {
-    const numb = await callback(...args);
-    return -numb;
-  });
+): ParallelGeneratorCallbackArgs<T, T>;
+export function minByParallel<T, TDefault>(
+  callback: (next: T, index: number) => IMaybeAsync<number>,
+  defaultValue: TDefault,
+): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+export function minByParallel(
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  ...rest: unknown[]
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
+  return handleMaxByParallel(
+    "minBy",
+    async (...args) => {
+      const numb = await callback(...args);
+      return -numb;
+    },
+    rest,
+  );
 }

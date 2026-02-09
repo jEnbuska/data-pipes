@@ -17,7 +17,7 @@ export interface IYieldedSumBy<T, TFlow extends IYieldedFlow> {
    * .sumBy(n => n) satisfies number | undefined // 15
    *
    * @example
-   * Yielded.from([] as number[])
+   * Yielded.from<number>([])
    * .sumBy(n => n) satisfies number | undefined // 0
    */
   sumBy(fn: (next: T) => number): IResolverReturn<number, TFlow>;

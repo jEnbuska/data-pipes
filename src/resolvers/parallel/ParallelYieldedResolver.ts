@@ -35,7 +35,7 @@ export class ParallelYieldedResolver<T>
   protected _parallel: number;
 
   protected constructor(
-    parent: Disposable | undefined,
+    parent: undefined | Disposable,
     generator: IYieldedParallelGenerator<T>,
     parallel: number,
     signal?: AbortSignal,
@@ -120,11 +120,27 @@ export class ParallelYieldedResolver<T>
     return this.#apply(toReversedParallel<T>);
   }
 
-  minBy(...args: Parameters<IAsyncYieldedResolver<T>["minBy"]>) {
-    return this.#apply(minByParallel, ...args);
+  minBy(selector: (next: T, index: number) => IMaybeAsync<number>): Promise<T>;
+
+  minBy<TDefault>(
+    selector: (next: T, index: number) => IMaybeAsync<number>,
+    defaultValue: TDefault,
+  ): Promise<T>;
+
+  minBy(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(minByParallel<T>, ...args);
   }
 
-  maxBy(...args: Parameters<IAsyncYieldedResolver<T>["maxBy"]>) {
+  maxBy(selector: (next: T, index: number) => IMaybeAsync<number>): Promise<T>;
+
+  maxBy<TDefault>(
+    selector: (next: T, index: number) => IMaybeAsync<number>,
+    defaultValue: TDefault,
+  ): Promise<T>;
+
+  maxBy(...args: unknown[]) {
+    // @ts-ignore
     return this.#apply(maxByParallel, ...args);
   }
 
@@ -157,11 +173,21 @@ export class ParallelYieldedResolver<T>
     return this.#apply(consumeParallel);
   }
 
-  first() {
-    return this.#apply(firstParallel<T>);
+  first<TDefault>(defaultValue: TDefault): Promise<T | TDefault>;
+
+  first(): Promise<T>;
+
+  first(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(firstParallel, ...args);
   }
 
-  last() {
-    return this.#apply(lastParallel<T>);
+  last<TDefault>(defaultValue: TDefault): Promise<T | TDefault>;
+
+  last(): Promise<T>;
+
+  last(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(lastParallel, ...args);
   }
 }

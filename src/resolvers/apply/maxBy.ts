@@ -3,9 +3,11 @@ import type { IYieldedAsyncGenerator } from "../../generators/async/types.ts";
 import type { IYieldedSyncGenerator } from "../../generators/sync/types.ts";
 import type { ICallbackReturn } from "../../generators/types.ts";
 import { type ParallelGeneratorCallbackArgs } from "../parallel/ParallelGeneratorResolver.ts";
+import type { IYieldedResolver } from "../sync/types.ts";
 import type { IResolverReturn } from "../types.ts";
+import { createYieldedEmptyError } from "./utils/createYieldedEmptyError.ts";
+import { getEmptySlot, isEmptySlot } from "./utils/emptySlot.ts";
 import { memoize } from "./utils/memoize.ts";
-import { getPlaceholder, isPlaceholder } from "./utils/placeholder.ts";
 
 export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
   /**
@@ -22,26 +24,52 @@ export interface IYieldedMaxBy<T, TFlow extends IYieldedFlow> {
    *  .maxBy(n => n) satisfies number | undefined // 4
    * ```
    * ```ts
-   * Yielded.from([] as number[])
-   *  .maxBy(n => n) satisfies number | undefined // undefined
+   * Yielded.from<number>([])
+   *  .maxBy(n => n) satisfies number // throw TypeError
    *  ```
-   *  ```ts
-   * Yielded.from(people)
-   *  .maxBy(p => p.age) satisfies Person | undefined // Returns the oldest person
+   * ```ts
+   * Yielded.from<number>([])
+   *  .maxBy(n => n, undefined) satisfies number | undefined // undefined
    *  ```
    */
   maxBy(
     selector: (next: T) => ICallbackReturn<number, TFlow>,
-  ): IResolverReturn<T | undefined, TFlow>;
+  ): IResolverReturn<T, TFlow>;
+  maxBy<TDefault>(
+    selector: (next: T) => ICallbackReturn<number, TFlow>,
+    defaultValue: TDefault,
+  ): IResolverReturn<T | TDefault, TFlow>;
 }
 
+export function maxBySync<T, TDefault>(
+  generator: IYieldedSyncGenerator<T>,
+  callback: (next: T, index: number) => number,
+  defaultValue: TDefault,
+): T | TDefault;
 export function maxBySync<T>(
   generator: IYieldedSyncGenerator<T>,
   callback: (next: T, index: number) => number,
-): T | undefined {
+): T;
+export function maxBySync(
+  generator: IYieldedSyncGenerator,
+  callback: (next: unknown, index: number) => number,
+  ...rest: unknown[]
+): unknown {
+  return handleMaxBySync("maxBy", generator, callback, rest);
+}
+
+export function handleMaxBySync(
+  method: keyof IYieldedResolver<any> & string,
+  generator: IYieldedSyncGenerator,
+  callback: (next: unknown, index: number) => number,
+  rest: unknown[],
+): unknown {
   const next = generator.next();
   let index = 0;
-  if (next.done) return;
+  if (next.done) {
+    if (rest.length) return rest[0];
+    throw new TypeError(createYieldedEmptyError("Yielded", method));
+  }
   let current = next.value;
   let currentMax = callback(current, index++);
   for (const next of generator) {
@@ -57,9 +85,31 @@ export function maxBySync<T>(
 export async function maxByAsync<T>(
   generator: IYieldedAsyncGenerator<T>,
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): Promise<T | undefined> {
+): Promise<T>;
+export async function maxByAsync<T, TDefault>(
+  generator: IYieldedAsyncGenerator<T>,
+  callback: (next: T, index: number) => IMaybeAsync<number>,
+  defaultValue: TDefault,
+): Promise<T | TDefault>;
+export async function maxByAsync(
+  generator: IYieldedAsyncGenerator,
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  ...rest: unknown[]
+): Promise<unknown> {
+  return handleMaxByAsync("maxBy", generator, callback, rest);
+}
+
+export async function handleMaxByAsync(
+  method: keyof IYieldedResolver<any> & string,
+  generator: IYieldedAsyncGenerator,
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  rest: unknown[],
+): Promise<unknown> {
   const next = await generator.next();
-  if (next.done) return;
+  if (next.done) {
+    if (rest.length) return rest[0];
+    throw new TypeError(createYieldedEmptyError("AsyncYielded", method));
+  }
   let index = 0;
   let acc = next.value;
   let max = await callback(acc, index++);
@@ -75,20 +125,36 @@ export async function maxByAsync<T>(
 
 export function maxByParallel<T>(
   callback: (next: T, index: number) => IMaybeAsync<number>,
-): ParallelGeneratorCallbackArgs<T, T | undefined> {
-  let acc: { item: T | symbol; value: number | symbol } = {
-    item: getPlaceholder(),
-    value: getPlaceholder(),
+): ParallelGeneratorCallbackArgs<T, T>;
+export function maxByParallel<T, TDefault>(
+  callback: (next: T, index: number) => IMaybeAsync<number>,
+  defaultValue: TDefault,
+): ParallelGeneratorCallbackArgs<T, T | TDefault>;
+export function maxByParallel(
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  ...rest: unknown[]
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
+  return handleMaxByParallel("maxBy", callback, rest);
+}
+
+export function handleMaxByParallel(
+  method: keyof IYieldedResolver<any> & string,
+  callback: (next: unknown, index: number) => IMaybeAsync<number>,
+  rest: unknown[],
+): ParallelGeneratorCallbackArgs<unknown, unknown> {
+  let acc: { item: unknown | symbol; value: number | symbol } = {
+    item: getEmptySlot(),
+    value: getEmptySlot(),
   };
   const getAccValue = memoize(callback);
   let index = 0;
   return {
     async onNext(value) {
-      if (isPlaceholder(acc.item)) {
+      if (isEmptySlot(acc.item)) {
         acc.item = value;
         return;
       }
-      if (isPlaceholder(acc.value)) {
+      if (isEmptySlot(acc.value)) {
         acc.value = await getAccValue(acc.item, 0);
         index++;
       }
@@ -98,8 +164,9 @@ export function maxByParallel<T>(
       }
     },
     onDone(resolve) {
-      if (isPlaceholder(acc.item)) return resolve(undefined);
-      resolve(acc.item);
+      if (!isEmptySlot(acc.item)) return resolve(acc.item);
+      if (rest.length) return resolve(rest[0]);
+      throw new TypeError(createYieldedEmptyError("ParallelYielded", method));
     },
   };
 }

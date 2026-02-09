@@ -99,11 +99,27 @@ export class AsyncYieldedResolver<T>
     return this.#apply(toReversedAsync);
   }
 
-  minBy(...args: Parameters<IAsyncYieldedResolver<T>["minBy"]>) {
+  minBy(selector: (next: T, index: number) => IMaybeAsync<number>): Promise<T>;
+
+  minBy<TDefault>(
+    selector: (next: T, index: number) => IMaybeAsync<number>,
+    defaultValue: TDefault,
+  ): Promise<T | TDefault>;
+
+  minBy(...args: unknown[]) {
+    // @ts-ignore
     return this.#apply(minByAsync, ...args);
   }
 
-  maxBy(...args: Parameters<IAsyncYieldedResolver<T>["maxBy"]>) {
+  maxBy(selector: (next: T, index: number) => IMaybeAsync<number>): Promise<T>;
+
+  maxBy<TDefault>(
+    selector: (next: T, index: number) => IMaybeAsync<number>,
+    defaultValue: TDefault,
+  ): Promise<T | TDefault>;
+
+  maxBy(...args: unknown[]) {
+    // @ts-ignore
     return this.#apply(maxByAsync, ...args);
   }
 
@@ -136,11 +152,21 @@ export class AsyncYieldedResolver<T>
     return this.#apply(consumeAsync);
   }
 
-  first() {
-    return this.#apply(firstAsync);
+  first<TDefault>(defaultValue: TDefault): Promise<T | TDefault>;
+
+  first(): Promise<T>;
+
+  first(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(firstAsync, ...args);
   }
 
-  last() {
-    return this.#apply(lastAsync);
+  last<TDefault>(defaultValue: TDefault): Promise<T | TDefault>;
+
+  last(): Promise<T>;
+
+  last(...args: unknown[]) {
+    // @ts-ignore
+    return this.#apply(lastAsync, ...args);
   }
 }

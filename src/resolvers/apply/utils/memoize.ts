@@ -1,4 +1,4 @@
-import { getPlaceholder } from "./placeholder.ts";
+import { getEmptySlot } from "./emptySlot.ts";
 
 /**
  * Creates a memoized version of the given function that caches the result
@@ -29,7 +29,7 @@ import { getPlaceholder } from "./placeholder.ts";
 export function memoize<TArgs extends any[], TReturn>(
   cb: (...args: TArgs) => TReturn,
 ) {
-  let prevArgs: TArgs = [getPlaceholder()] as unknown as any;
+  let prevArgs: TArgs = [getEmptySlot()] as unknown as any;
   let prevReturn: TReturn;
   return function memoizedFunction(...args: TArgs): TReturn {
     let allSame = prevArgs.length === args.length;

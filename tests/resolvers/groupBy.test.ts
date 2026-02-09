@@ -3,39 +3,232 @@ import { Yielded } from "../../src/index.ts";
 import { createTestSets } from "../utils/createTestSets.ts";
 
 describe("groupBy", () => {
-  describe("identity", () => {
+  function group123(n: number) {
+    return Math.max(n % 4, 1);
+  }
+  describe("without groups", () => {
+    const {
+      sync,
+      awaited,
+      awaitedDelayed,
+      parallel,
+      parallelDelayed,
+      mixedParallel,
+    } = createTestSets([1, 2, 3, 4]);
     const expected = {
-      1: [1],
+      1: [1, 4],
       2: [2],
       3: [3],
     };
-
-    test("chainable", () => {
-      const groups = Yielded.from([1, 2, 3]).groupBy((x) => x);
+    test("sync", () => {
+      const groups = sync.groupBy(group123) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited", async () => {
+      const groups = (await awaited.groupBy(group123)) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited delayed", async () => {
+      const groups = (await awaitedDelayed.groupBy(group123)) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel", async () => {
+      const groups = (await parallel.groupBy(group123)) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel delayed", async () => {
+      const groups = (await parallelDelayed.groupBy(
+        group123,
+      )) satisfies Partial<Record<number, number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("mixed parallel", async () => {
+      const groups = (await mixedParallel.groupBy(group123)) satisfies Partial<
+        Record<number, number[]>
+      >;
       expect(groups).toStrictEqual(expected);
     });
   });
-
-  describe("identity with groups", () => {
+  describe("with groups", () => {
+    const {
+      sync,
+      awaited,
+      awaitedDelayed,
+      parallel,
+      parallelDelayed,
+      mixedParallel,
+    } = createTestSets([1, 2, 3, 4]);
     const expected = {
-      1: [1],
+      1: [1, 4],
       2: [2],
       3: [3],
       4: [],
     };
-    test("chainable", () => {
-      const groups = Yielded.from([1, 2, 3]).groupBy((x) => x, [1, 2, 4]);
+    const g = [1, 2, 4] as const;
+    test("sync", () => {
+      const groups = sync.groupBy(group123, g) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited", async () => {
+      const groups = (await awaited.groupBy(group123, g)) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited delayed", async () => {
+      const groups = (await awaitedDelayed.groupBy(
+        group123,
+        g,
+      )) satisfies Partial<Record<number, number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel", async () => {
+      const groups = (await parallel.groupBy(group123, g)) satisfies Partial<
+        Record<number, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel delayed", async () => {
+      const groups = (await parallelDelayed.groupBy(
+        group123,
+        g,
+      )) satisfies Partial<Record<number, number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("mixed parallel", async () => {
+      const groups = (await mixedParallel.groupBy(
+        group123,
+        g,
+      )) satisfies Partial<Record<number, number[]>>;
       expect(groups).toStrictEqual(expected);
     });
   });
 
-  describe("module 2", () => {
+  function evenOdd(n: number) {
+    return n % 2 ? "odd" : "even";
+  }
+  describe("even odd", () => {
+    const {
+      sync,
+      awaited,
+      awaitedDelayed,
+      parallel,
+      parallelDelayed,
+      mixedParallel,
+    } = createTestSets([1, 2, 3, 4]);
     const expected = {
-      1: [1, 3],
-      0: [2, 4],
+      odd: [1, 3],
+      even: [2, 4],
     };
-    test("chainable", () => {
-      const groups = Yielded.from([1, 2, 3, 4]).groupBy((x) => x % 2);
+    test("sync", () => {
+      const groups = sync.groupBy(evenOdd) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited", async () => {
+      const groups = (await awaited.groupBy(evenOdd)) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited delayed", async () => {
+      const groups = (await awaitedDelayed.groupBy(evenOdd)) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel", async () => {
+      const groups = (await parallel.groupBy(evenOdd)) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel delayed", async () => {
+      const groups = (await parallelDelayed.groupBy(evenOdd)) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("mixed parallel", async () => {
+      const groups = (await mixedParallel.groupBy(evenOdd)) satisfies Partial<
+        Record<string, number[]>
+      >;
+      expect(groups).toStrictEqual(expected);
+    });
+  });
+
+  describe("even odd with groups", () => {
+    const g = ["even", "other"] as const;
+    const {
+      sync,
+      awaited,
+      awaitedDelayed,
+      parallel,
+      parallelDelayed,
+      mixedParallel,
+    } = createTestSets([1, 2, 3, 4]);
+    const expected = {
+      odd: [1, 3],
+      even: [2, 4],
+      other: [],
+    };
+    test("sync", () => {
+      const groups = sync.groupBy(evenOdd, g) satisfies Record<
+        "even" | "other",
+        number[]
+      > &
+        Partial<Record<"odd", number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited", async () => {
+      const groups = (await awaited.groupBy(evenOdd, g)) satisfies Record<
+        "even" | "other",
+        number[]
+      > &
+        Partial<Record<"odd", number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("awaited delayed", async () => {
+      const groups = (await awaitedDelayed.groupBy(
+        evenOdd,
+        g,
+      )) satisfies Record<"even" | "other", number[]> &
+        Partial<Record<"odd", number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel", async () => {
+      const groups = (await parallel.groupBy(evenOdd, g)) satisfies Record<
+        "even" | "other",
+        number[]
+      > &
+        Partial<Record<"odd", number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("parallel delayed", async () => {
+      const groups = (await parallelDelayed.groupBy(
+        evenOdd,
+        g,
+      )) satisfies Record<"even" | "other", number[]> &
+        Partial<Record<"odd", number[]>>;
+      expect(groups).toStrictEqual(expected);
+    });
+    test("mixed parallel", async () => {
+      const groups = (await mixedParallel.groupBy(evenOdd, g)) satisfies Record<
+        "even" | "other",
+        number[]
+      > &
+        Partial<Record<"odd", number[]>>;
       expect(groups).toStrictEqual(expected);
     });
   });
@@ -47,10 +240,10 @@ describe("groupBy", () => {
       other: [],
     };
     test("chainable", () => {
-      const groups = Yielded.from([1, 2, 3, 4]).groupBy(
-        (x) => (x % 2 ? "odd" : "even"),
-        ["even", "other"],
-      ) satisfies Record<"even" | "other", number[]> &
+      const groups = Yielded.from([1, 2, 3, 4]).groupBy(evenOdd, [
+        "even",
+        "other",
+      ]) satisfies Record<"even" | "other", number[]> &
         Partial<Record<"odd", number[]>>;
       expect(groups).toStrictEqual(expected);
     });
@@ -62,14 +255,11 @@ describe("groupBy", () => {
       even: [2, 4],
     };
     test("chainable", () => {
-      const groups = Yielded.from([1, 2, 3, 4]).groupBy((x) =>
-        x % 2 ? "odd" : "even",
-      );
+      const groups = Yielded.from([1, 2, 3, 4]).groupBy(evenOdd);
       expect(groups).toStrictEqual(expected);
     });
   });
 
-  const getKey = (n: number) => (n % 2 ? "odd" : "even");
   const numbers = [1, 2, 3];
   const {
     fromResolvedPromises,
@@ -85,7 +275,7 @@ describe("groupBy", () => {
 
   test("from resolved promises", async () => {
     expect(
-      await (fromResolvedPromises.groupBy(getKey) satisfies Promise<
+      await (fromResolvedPromises.groupBy(evenOdd) satisfies Promise<
         Partial<ExpectedReturnType> | undefined
       >),
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -93,7 +283,7 @@ describe("groupBy", () => {
 
   test("from promises", async () => {
     expect(
-      (await fromPromises.awaited().groupBy(getKey)) satisfies
+      (await fromPromises.awaited().groupBy(evenOdd)) satisfies
         | Partial<ExpectedReturnType>
         | undefined,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
@@ -101,13 +291,13 @@ describe("groupBy", () => {
 
   test("from array", () => {
     expect(
-      fromArray.groupBy(getKey) satisfies Partial<ExpectedReturnType> | void,
+      fromArray.groupBy(evenOdd) satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({ odd: [1, 3], even: [2] });
   });
 
   test("from empty", () => {
     expect(
-      empty.groupBy(getKey) satisfies Partial<ExpectedReturnType> | void,
+      empty.groupBy(evenOdd) satisfies Partial<ExpectedReturnType> | void,
     ).toStrictEqual({});
   });
 });
