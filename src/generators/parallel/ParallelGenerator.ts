@@ -37,8 +37,6 @@ export class ParallelGenerator<
 
   #pendingWork = new Set<any>();
 
-  #abortResolvable = Promise.withResolvers<ParallelAbortError>();
-
   #doneResolvable: PromiseWithResolvers<void> & { resolved?: boolean } =
     Promise.withResolvers<void>();
 
